@@ -1,0 +1,156 @@
+
+sup {
+
+    text-decoration: underline;
+}
+
+div.line-container[indent="1"] div.line {
+
+    margin-left:10%;
+}
+
+div.footnote sup.footnote-number {
+
+    margin-right:4px;
+}
+
+div.footnote {
+
+    margin-top:1%;
+    margin-left:3%;
+}
+
+div.footnote sup.footnote-number {
+
+    float:left;
+}
+
+span.blackletter {
+
+    font-family: UnifrakturCook;
+}
+
+span.small-caps {
+
+    font-variant: small-caps;
+}
+
+span.display-initial {
+
+    font-size:x-large;
+}
+
+span.line-number {
+
+    float:left;
+    width:5%;
+    text-align:right;
+}
+
+div.line h2.headnote {
+
+    /*
+    margin-left: 20%;
+    */
+    text-align: center;
+}
+
+div.line {
+
+    font-size:small;
+    font-family: Impact, Charcoal, sans-serif;
+    margin-left:7%;
+
+}
+
+div.line-container {
+
+    /*
+    */
+}
+
+
+
+div.letter {
+
+
+}
+
+div.poem {
+
+
+}
+
+div.paragraph {
+
+    text-align:left;
+    margin-left:37%;
+    margin-top:2.5%;
+    width:25%;
+}
+
+div.stanza {
+
+    text-align:left;
+    /*
+    margin-left:41%;
+    */
+
+    margin-left:37%;
+    margin-top:2.5%;
+    
+    width:26%;
+}
+
+div.book {
+
+    margin-bottom:2%;
+    text-align:center;
+    font-size:smaller;
+
+    text-align:center;
+}
+
+h2 {
+
+    font-size:90%;
+}
+
+h1 sup {
+
+    font-size:65%;
+    text-decoration: none;
+}
+
+h1 {
+
+    text-decoration: underline;
+    font-size:120%;
+}
+
+div.attribution span {
+
+    margin-left: 5px;
+}
+
+div.title {
+
+    font-size:large;
+}
+
+div.titles {
+
+    margin-left:20%;
+    margin-right:20%;
+}
+
+div.header {
+
+    text-align:center;
+}
+
+body {
+
+/*
+ */
+}

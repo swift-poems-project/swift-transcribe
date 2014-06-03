@@ -1,0 +1,17 @@
+!!! 5
+
+%h1
+  The Swift Poems Project
+%h2
+  Swift Poem Annotation Collections
+- Dir.foreach(appPath) do |collId| 
+
+  %h3=collId
+  %ul
+  - Dir.foreach("#{appPath}/#{collId}") do |docId|
+
+    - unless docId == '.' or docId == '..'
+      %li
+        %a(title=docId){:href => "/spp/#{collId}/#{docId}"} #{docId} (TEI P5)
+      %li
+        %a(title=docId){:href => "/spp/xhtml/#{collId}/#{docId}"} #{docId} (XHTML 1.1)

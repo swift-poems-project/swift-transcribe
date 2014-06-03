@@ -6,15 +6,19 @@ require 'sinatra'
 require 'sinatra/cross_origin'
 require 'haml'
 
-set :bind, '139.147.162.165'
-set :port, ARGV[0] if ARGV[0]
+require 'parseconfig'
+config = ParseConfig.new(File.join(File.dirname(__FILE__), 'config/server.conf').chomp)
+set :bind, config['host']
+set :port, config['port']
+
+NB_STORE_PATH = config['nb_store_path']
 
 post '/xhtml/compare' do
 
   docs = params.values.map do |docId|
 
     collId = docId.to_s.split(/\-/)[1]
-    SwiftPoetryProject::TeiParser.new("#{SwiftPoetryProject::TeiParser::NB_STORE_PATH}/#{collId}/#{docId}").parse()
+    SwiftPoetryProject::TeiParser.new("#{NB_STORE_PATH}/#{collId}/#{docId}").parse()
   end
 
   tmpFilePath = "/tmp/swiftpoemsd_#{rand(10000).to_s}.xml"
@@ -31,7 +35,7 @@ post '/compare' do
   docs = params.values.map do |docId|
 
     collId = docId.to_s.split(/\-/)[1]
-    SwiftPoetryProject::TeiParser.new("#{SwiftPoetryProject::TeiParser::NB_STORE_PATH}/#{collId}/#{docId}").parse()
+    SwiftPoetryProject::TeiParser.new("#{NB_STORE_PATH}/#{collId}/#{docId}").parse()
   end
 
   return SwiftPoetryProject::TeiDocumentSet.new(docs).deeplyIntegrate().to_xml
@@ -44,7 +48,7 @@ end
 
 get '/xhtml/:collId/:docId' do
 
-  @parser = SwiftPoetryProject::TeiParser.new "#{SwiftPoetryProject::TeiParser::NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
+  @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
   @parser.parse
   @parser.getXhtml.to_xml
 end
@@ -58,7 +62,7 @@ get '/:collId/:docId' do
 
   content_type :tei
 
-  @parser = SwiftPoetryProject::TeiParser.new "#{SwiftPoetryProject::TeiParser::NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
+  @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
   @parser.parse.to_xml
 end
 
@@ -98,7 +102,7 @@ get '/archive' do
 
             File.open(teiP5FilePath, 'w') do |teiP5File|
         
-              @parser = SwiftPoetryProject::TeiParser.new "#{SwiftPoetryProject::TeiParser::NB_STORE_PATH}/#{collId}/#{docId}"
+              @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{collId}/#{docId}"
               teiP5File << @parser.parse.to_xml
             end
           end
@@ -138,13 +142,12 @@ set :haml, :format => :html5
 
 get '/' do
 
-  haml :index, :locals => { :appPath => "#{settings.root}/master" }
+  haml :index, :locals => { :appPath => NB_STORE_PATH }
 end
 
 # Support for the TEI P5 MIME type within a production environment
 configure do
 
-  mime_type :tei, 'application/tei+xml'
   mime_type :tei, 'application/tei+xml'
   enable :cross_origin
 end

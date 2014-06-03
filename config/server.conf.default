@@ -1,0 +1,6 @@
+# Server
+host=localhost
+port=4568
+
+# Nota Bene local file store
+nb_store_path=/usr/local/nb_store

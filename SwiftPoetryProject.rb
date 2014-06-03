@@ -115,7 +115,6 @@ EOF
     /─ / => '─'    
   }
 
-
   class NotaBeneHeadFieldParser
 
     attr_reader :teiParser, :document
@@ -289,8 +288,7 @@ EOF
       'Small collections 1728--' => 801..900
       
     }
-    
-    
+
     # The XML TEI namespace
     TEI_NS = {'tei' => 'http://www.tei-c.org/ns/1.0'}
     
@@ -364,32 +362,32 @@ EOF
 
     # For deltas
     # The begin-center (FC, FL) delta
-    '«FC»' => {
+      '«FC»' => {
       
-      '«FL»' => { 'head' => {} }
-    },
+        '«FL»' => { 'head' => {} }
+      },
 
-    # The end-of-center (FL, FL) delta
-    '«FL»' => {
+      # The end-of-center (FL, FL) delta
+      '«FL»' => {
       
-      '«FL»' => { 'head' => {} }
-    },
+        '«FL»' => { 'head' => {} }
+      },
 
-    # The flush right (FR, FL) delta
+      # The flush right (FR, FL) delta
       '«FR»' => {
         
         '«FL»' => { 'head' => {} }
       }
     }
 
-  # This hash is for Nota Bene tokens which encompass a single line (i. e. they are terminated by a newline character rather than another token)
-  NB_SINGLE_TOKEN_TEI_MAP = {
+    # This hash is for Nota Bene tokens which encompass a single line (i. e. they are terminated by a newline character rather than another token)
+    NB_SINGLE_TOKEN_TEI_MAP = {
 
-    # The flush right (LD) delta
-    '«LD »' => {
+      # The flush right (LD) delta
+      '«LD »' => {
       
-      'head' => {}
-    },
+        'head' => {}
+      },
 
     # Footnotes encompassing an entire line
     '«FN1·»' => {

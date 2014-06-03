@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
-nokogiri
-sinatra
-sinatra-cross_origin
-haml
-rubydora
+gem 'nokogiri'
+gem 'sinatra'
+gem 'sinatra-cross_origin'
+gem 'haml'
+gem 'parseconfig'
+gem 'rspec'

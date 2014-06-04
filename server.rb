@@ -58,6 +58,59 @@ get '/html/:collId/:docId' do
   return 'HTML transformations not yet implemented'
 end
 
+#error ArchiveError do
+
+#  'Could not generate the gzip-compressed tape archive for the SPP documents'
+#end
+
+get '/archive/:collId' do
+
+  collId = params[:collId]
+
+  # Convert and archive the collection
+#  begin
+
+  tmpCollDirPath = "tmp/#{collId}"
+
+  if not Dir.exists?(tmpCollDirPath)
+
+    Dir.mkdir(tmpCollDirPath, 0755)
+  end
+
+  Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
+
+    doc_id = File.basename(file_path)
+    teiP5FilePath = "#{tmpCollDirPath}/#{doc_id}.xml"
+      
+    File.open(teiP5FilePath, 'w') do |teiP5File|
+        
+      @parser = SwiftPoetryProject::TeiParser.new file_path
+      teiP5File << @parser.parse.to_xml
+    end
+  end
+
+#  rescue Exception => ex
+
+#    $stderr.puts "Error generating the TEIP5-XML Document for #{file_path}: #{ex.message}"
+#  end
+
+  # Compress the XML Documents into a GZipped TArchive
+  # puts 'tar' + ' -cvzf' + " tmp/#{collId}.tar.gz" + ' tmp/*xml'
+
+  Dir.chdir('tmp')
+  system('tar', '-cvzf', "#{collId}.tar.gz", "#{collId}")
+
+  Dir.glob("#{collId}/*xml").each { |tei_doc| File.delete(tei_doc) }
+
+  send_file("#{collId}.tar.gz",
+            {
+              :filename => "#{collId}.tar.gz",
+              :type => 'application/x-gzip'
+            })
+
+  Dir.chdir('..')
+end
+
 get '/:collId/:docId' do
 
   content_type :tei
@@ -65,11 +118,6 @@ get '/:collId/:docId' do
   @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
   @parser.parse.to_xml
 end
-
-#error ArchiveError do
-
-#  'Could not generate the gzip-compressed tape archive for the SPP documents'
-#end
 
 get '/archive' do
 
@@ -111,14 +159,6 @@ get '/archive' do
 
           $stderr.puts "Error generating the TEIP5-XML Document for #{collId}/#{docId}: #{ex.message}"
         end
-
-=begin
-a. omit all the html files
-b. omit the first five characters of the file name--so in these cases, omit the leading "06E2_"
-c. omit the "tei."
-=end
-        
-
       end
     end
   end

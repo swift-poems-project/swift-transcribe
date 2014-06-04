@@ -298,6 +298,7 @@ EOF
     # A hash relating Nota Bene markup tokens to TEI element names, related TEI attribute names, and related TEI attribute values
     # Initial Nota Bene markup token => { terminal Nota Bene markup token =>  { TEI element name => { TEI attribute name => TEI attribute value
     
+    # Extend markup for the following:
     # 
 
     NB_MARKUP_TEI_MAP = {
@@ -353,15 +354,21 @@ EOF
         '«MDNM»' => { 'hi' => { 'rend' => 'sup' } },
         '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
       },
-      
+
       # For footnotes
       '«FN1·' => {
         
         '.»' => { 'note' => { 'place' => 'foot' } }
       },
 
-    # For deltas
-    # The begin-center (FC, FL) delta
+      # Additional footnotes
+      '«FN1' => {
+        
+        '»' => { 'note' => { 'place' => 'foot' } }
+      },
+
+      # For deltas
+      # The begin-center (FC, FL) delta
       '«FC»' => {
       
         '«FL»' => { 'head' => {} }
@@ -670,17 +677,15 @@ EOF
 
     line = originalNode.content
 
-    # puts 'line: ' + line
-
     # If the line contains with a footnote Nota Bene token...
-    if line.match(/«FN1·/)
+    if line.match(/«FN1·?/)
 
       lineElem.content = ''
       footNoteBlockOpen = false
 
       # ...split the lines into either footnote blocks...
 
-      substrings = line.split(/(?=«FN1·)|(?<=»)/)
+      substrings = line.split(/(?=«FN1·)|(?=«FN1)|(?<=»)/)
 
       _substrings = []
       substrings = substrings.each_with_index { |s, i|
@@ -710,7 +715,7 @@ EOF
       _substrings.each do |s|
 
         # If this substring contains the initial footnote token...
-        m = s.match(/«FN1·(.*)/)
+        m = s.match(/«FN1·?(.*)/)
         if m
 
           # If there is an unbalanced MDNM token within the substring...
@@ -723,11 +728,7 @@ EOF
             # "data<A/>data<A>data<A/>data"
             # "data<A>data<A/>data<A>data"
 
-            # puts s
-
             footNoteContent = m[1].sub(/«MDNM»(\.?»)/, '\1')
-            # puts s
-            # exit
           else
 
             footNoteContent = m[1]            
@@ -754,8 +755,9 @@ EOF
 
         lineElem.add_child node
       end
-    elsif @documentTokens.include? '«FN1·' # If there was a footnote token initiating block on a new line...
+    elsif @documentTokens.include? '«FN1·' or @documentTokens.include? '«FN1' # If there was a footnote token initiating block on a new line...
 
+      # _«MDRV»«FN1«MDNM»·«MDUL»O navis, referent in marete_novi Fluctus«MDNM».«MDRV»»«MDNM»
       raise NotImplementedError.new "Parsing for Nota Bene footnote tokens between multiple lines not implemented"
 
 =begin      
@@ -1049,14 +1051,16 @@ EOF
         termToken = lineTokens.pop
       end
 
+      # Extending footnote handling...
       if not NB_MARKUP_TEI_MAP.has_key? initToken
-        
+
+        # NotImplementedError: Parsing not implemented for the Nota Bene token «MDNM»: «MDNM»·«MDUL»O navis, referent in marete ([])
         raise NotImplementedError.new "Parsing not implemented for the Nota Bene token #{initToken}: #{line} (#{lineTokens.to_s})"
       elsif not NB_MARKUP_TEI_MAP[initToken].has_key? termToken
 
         raise NotImplementedError.new "Parsing not implemented for the Nota Bene tags #{initToken} #{termToken}: #{line}"
       end
-      
+
       # REFACTOR
       xmlElementName = NB_MARKUP_TEI_MAP[initToken][termToken].keys[0]
       

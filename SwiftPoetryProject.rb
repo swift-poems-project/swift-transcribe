@@ -864,8 +864,6 @@ EOF
 #            i = lineTokens.index(lineToken)
 #            lineTokens.delete_at(i)
 
-            puts 'dump2: ' + lineTokens.to_s
-
 #            (lineTokens.index(lineToken) - 1..lineTokens.length - 1).each do |i|
 #            (i..lineTokens.length - 1).each do |i|
 
@@ -874,8 +872,6 @@ EOF
 #            end
 
             lineTokens.slice!(lineTokens.index(lineToken)..lineTokens.length)
-
-            puts 'dump2a: ' + lineTokens.to_s
 
             # REFACTOR
             xmlElementName = NB_SINGLE_TOKEN_TEI_MAP[lineToken].keys[0]
@@ -1437,15 +1433,18 @@ EOF
          # Implementing support for extended superscript styles
          # Superscript styles are implemented using an initial backspace character (\u00A008 from the parsed Nota Bene)
          m = child.content.match(/\u00A008(.+?)\W/)
-         if m
+
+         # Ensure that the token is _NOT_ a comma
+         if m and m[1] != ','
 
            # If one or more underscore characters follow the backspace, render the previous superscript as underlined
            if /_+/.match(m[1])
 
-             child.previous_sibling()['rend']  = child.previous_sibling()['rend'] + ' underline'
+             child.previous_sibling()['rend'] = child.previous_sibling()['rend'] + ' underline'
            else
 
-             raise NotImplementedError.new "Support for the following superscript characters not yet implemented: #{child.content}"
+             # raise NotImplementedError.new "Support for the following superscript characters not yet implemented: #{child.content}"
+             raise NotImplementedError.new "Support for the following superscript characters not yet implemented: #{m[1]} (#{child.content})"
            end
 
            child.content = child.content.sub(/\u00A008#{m[1]}/, '')
@@ -1675,8 +1674,6 @@ EOF
            # This method maps one element to one or many elements
            e = parseFNTokens lineText
 
-#           puts 'dump2b: ' + e.to_xml
-
            # This returns a line element <tei:l/>
            s = Nokogiri::XML::NodeSet.new @teiDocument
 
@@ -1837,27 +1834,19 @@ EOF
            # If there are substrings prepended to, appended to, or surrounding the data, split strings
            strs = child.content.split(/(?=#{text})|(?<=#{text})/)
 
+           # ...if the phrase occurs more than once, attempt to further split the line
+           strs = child.content.split(/\w#{text}\w/) if strs.length > 3
+
            # If the phrase occurs more than once
            if strs.length > 3
              
-             # raise Exception.new("The phrase '#{searchStr}' occurs more than once in a phrase")
-             raise NotImplementedException.new("The phrase '#{text}' occurs more than once in a phrase")
+             raise NotImplementedError.new("The phrase '#{text}' occurs more than once in a phrase: #{strs}")
            else
 
+             # ...otherwise, create the <note type="sic"> element...
              e = Nokogiri::XML::Node.new('note', @teiDocument)
              e['type'] = 'sic'
              e.content = text
-
-=begin
-irb(main):130:0> 'AlphaBetaGamma'.split(/(?=Alpha)|(?<=Alpha)/)
-=> ["Alpha", "BetaGamma"]
-irb(main):131:0> 'AlphaBetaGamma'.split(/(?=Beta)|(?<=Beta)/)
-=> ["Alpha", "Beta", "Gamma"]
-irb(main):132:0> 'AlphaBetaGamma'.split(/(?=Gamma)|(?<=Gamma)/)
-=> ["AlphaBeta", "Gamma"]
-=end
-
-             #puts 'dump: ' + strs.to_s
 
              if strs.length > 2
 
@@ -1919,15 +1908,6 @@ irb(main):132:0> 'AlphaBetaGamma'.split(/(?=Gamma)|(?<=Gamma)/)
    # This method parses the SPP document footnotes
 
    def parseFootNotes
-
-=begin
-366-001A   $$«MDBO»Attribution:«MDNM» Swift
-366-001A   $$«MDBO»Table of contents title:«MDNM» --
-366-001A   $$«MDBO»Other title:«MDNM» Not listed in index
-366-001A   $$«MDBO»Remarks:«MDNM» MDUL = printed, not cursive, script. 5 and end: literally "andend"
-366-001A   $$«MDBO»Sic:«MDNM» 32 «MDUL»partiam«MDNM»   36 Os «MDUL»petrosum«MDNM»   40 sufferrers   42 fortnigt
-366-001A   $$«MDBO»To check:«MDNM» --
-=end
 
      sicLineNumber = nil
      

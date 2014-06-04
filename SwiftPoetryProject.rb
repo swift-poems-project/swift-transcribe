@@ -1079,23 +1079,16 @@ EOF
       m = line.match(/#{initToken}(.*?)#{termToken}/)
       if m
 
-        # puts "dump1: #{m[1]}"
-
         # node.content = m[1]
         nodeText = Nokogiri::XML::Text::new m[1], @teiDocument
         node.add_child nodeText
 
         parseXMLTextNode nodeText
-        # puts "dump2b: #{node.to_xml}"
-      else
+      elsif not line.empty? # Ensure that the line being parsed isn't empty
 
         raise NotImplementedError.new "#{initToken} and #{termToken} could not be extracted from the following line: #{line}"
       end
 
-#      puts 'node: ' + node.to_xml
-      # puts "dump line: #{line}"
-      # puts 'dump node content: ' + node.content
-      
       # This is problematic for cases in which the tokens contain the outermost content
       m = line.match(/(.*?)#{initToken}(.*?)#{termToken}(.*)/)
       if m
@@ -1435,7 +1428,8 @@ EOF
          m = child.content.match(/\u00A008(.+?)\W/)
 
          # Ensure that the token is _NOT_ a comma
-         if m and m[1] != ','
+         # ...also ensure that the token is _NOT_ a period
+         if m and m[1] != ',' and m[1] != '.'
 
            # If one or more underscore characters follow the backspace, render the previous superscript as underlined
            if /_+/.match(m[1])

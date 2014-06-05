@@ -634,8 +634,6 @@ EOF
           nameElem = Nokogiri::XML::Node.new('name', @teiDocument)
           #nameElem.content = /Proofed by & dates:«MDNM» (\w+) /.match(line)[1]
 
-          # puts "TRACE: " + line
-
           # Proofed by & dates:«MDNM» √'d JW 20JE07 agt 07H1; TNiese 25JA11
           # name = /Proofed by & dates:.?«MDNM.?» (\w+) ?/.match(line)[1]
 
@@ -872,7 +870,6 @@ EOF
 #            (lineTokens.index(lineToken) - 1..lineTokens.length - 1).each do |i|
 #            (i..lineTokens.length - 1).each do |i|
 
-#              puts 'dump: ' + lineTokens[i]
 #              lineTokens.delete_at(i)
 #            end
 
@@ -923,7 +920,6 @@ EOF
 
             newLineElem.add_child contentSet
 
-            #puts 'dump2: ' + newLineElem.to_xml
             #lineElem.add_child node
             #line = m[2]
 
@@ -931,9 +927,6 @@ EOF
             line = ''
           end
         end
-
-        #puts 'dump1: ' + newLineElem.to_xml
-        #puts 'dump1a: ' + lineTokens.to_s
 
         # ...and if this token was not parsed...
 
@@ -943,9 +936,6 @@ EOF
 
         # If there are still an odd number of tokens remaining to be parsed...
         if lineTokens.size % 2 > 0
-
-          #puts 'dump: ' + lineTokens.to_s
-#          exit
 
           # ...and if there are 3 or more tokens remaining to be parsed...
           if lineTokens.size > 1
@@ -1161,25 +1151,17 @@ EOF
       # Shift the SMALL-CAPS strings into the lower case
       if node['rend'] == 'SMALL-CAPS'
         
-        #puts 'before: ' + node.content
-        
         node.content = node.content.downcase
         #node.content.downcase!
-        #puts 'after: ' + node.content
       end
-
-#      puts 'dump6: ' + node.content
     end
 
     termTextElem = Nokogiri::XML::Text::new line, @teiDocument
-#    puts 'dump7: ' + termTextElem.to_xml
 
     newLineElem.add_child termTextElem
     parseXMLTextNode termTextElem
     # lineElem.add_child Nokogiri::XML::Text::new m[3], @teiDocument if m
 
-    # puts newLineElem.to_xml
-    
     # There may be cases for which the following is true:
     # "[...]<A>[...]<B>[...]</B>[...]\n"
     # "[...]</A>[...]<C>[...]</C>[...]"
@@ -1191,11 +1173,7 @@ EOF
       @documentTokens.unshift lineTokens.pop
     end
 
-    # puts 'dump6: ' + lineElem.to_xml
-
     # return lineElem
-
-    #puts 'dump6: ' + newLineElem.to_xml
     return newLineElem
   end
 
@@ -1244,13 +1222,7 @@ EOF
 
           headElem = parseNotaBeneToken('', '', headElem)
 
-          # puts 'dump5: ' + headText.to_xml
-
           parseForNbBlocks headText
-
-          # puts 'dump6: ' + headElem.to_xml
-
-          #puts 'before: ' + headElem.to_xml
 
           # parseXMLTextNode requires access to the parent node
           parseXMLTextNode headElem
@@ -1388,9 +1360,6 @@ EOF
 
      line = lineElement.content
 
-     #puts /\\\\(.{3,})\\\\/.match line
-     #puts /\\.{3,}\\/.match line
-
      pattern = /\\(.{3,})\\/
 
      m = line.match(pattern)
@@ -1499,12 +1468,9 @@ EOF
 
      line = lineNode.content
 
-     # puts 'dump3: '
-
      # Iterate through the patterns for Nota Bene block literals...
      NB_BLOCK_LITERAL_PATTERNS.each do |patternStr|
 
-       # puts 'dump1: ' + patternStr
        patternStr = Regexp.escape patternStr
 
        # ...and if there is a match...
@@ -1658,11 +1624,6 @@ EOF
              line.sub! /^\|+/, ''
            end
 
-           spaces = /\u00A0/.match(line)
-           # puts 'Hard spaces:' + line if spaces
-
-           puts line if /·/.match line
-
            # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
            NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
                    
@@ -1695,8 +1656,6 @@ EOF
              # This method also requires that "e" be the parent element being actively modified
              textElems = parseXMLTextNode c, e
 
-#             puts 'dump3: ' + c.to_xml
-
              # If the entire element is the child...
              # Refactor
              if textElems != e
@@ -1706,13 +1665,8 @@ EOF
                  e.swap (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])                 
                elsif textElems.name == e.name
 
-#                 puts 'dump4: ' + textElems.children.to_xml
-
                  c.swap textElems.children
                elsif textElems.content != c.content
-
-#                 puts 'dump4a: ' + textElems.children.to_xml
-#                 puts 'dump4b: ' + c.to_xml
 
                  c.swap (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])
                  #c = (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])
@@ -1764,7 +1718,6 @@ EOF
 
        if m
 
-         #puts "dump: #{@headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS).content}"
          authorText = stripNotaBeneTokens(@headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS).content)
          
          # When handling the content of the editor's annotations, text can only be parsed to a certain complexity
@@ -1934,9 +1887,6 @@ EOF
 
          sicField = m[1]
 
-         #puts "TRACE 7: " + m[1]
-         # '1 pleases [so 07S1]10 Lit [so 07S1]16 got [so 07S1]39 or [so 07E2, 703C]44 Raymond [so 07S1]'.split(']').each { |s| s.sub!('[','') }
-
          # (/(\d+\D+)(\d+.+)/).match[1] = ;
          # (/(\d+\D+)(\d+.+)/).match[2] = ;
 
@@ -1959,8 +1909,6 @@ EOF
                next
              end
 
-             #puts "TRACE 8: " + s
-
              s.split(/(?= \d.+\[)/)
                .each { |_s|
                
@@ -1974,9 +1922,6 @@ EOF
                  s = _s
                  m = /(H?N?\d+ \D+)\d/.match(s)
                end
-             
-               #puts "TRACE 9: " + sicLineNumber.to_s
-               #puts "TRACE 6: " + s
              
                s.strip!
                
@@ -2014,9 +1959,6 @@ EOF
              sicField.split(/(?= \d+ \w+)/).each do |s|
 
                s.strip!
-
-               #puts 'dump: "' + s + "\"\n"
-               # "36 Os «MDUL»petrosum«MDNM»"
 
                m = s.match(/(\d+) (.+)/)
                if m
@@ -2237,15 +2179,9 @@ EOF
          end
        end
          
-       #puts sicPhrase
-       #exit
-       
        #lineElem = @poemElem.at_xpath('tei:lg/tei:l[@n='+m[1]+']', TEI_NS)
        
-       line = lineElem.content
-       #puts 'dump: '+line
-       #puts 'dump: '+sicPhrase
-       
+       line = lineElem.content       
        lines = nil
        
        if line.include? sicPhrase
@@ -2271,8 +2207,6 @@ EOF
        end
      end
      
-     #puts lineElem
-     #puts @teiDocument
      return lineNumber
    end
 

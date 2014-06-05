@@ -459,6 +459,9 @@ EOF
     
     @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
 
+    # Should resolve issues related to the parsing of certain unicode characters
+    @teiDocument.encoding = 'utf-8'
+
     @textElem = @teiDocument.at_xpath('tei:TEI/tei:text/tei:body', TEI_NS)
 
     if filePath
@@ -1655,6 +1658,11 @@ EOF
              line.sub! /^\|+/, ''
            end
 
+           spaces = /\u00A0/.match(line)
+           # puts 'Hard spaces:' + line if spaces
+
+           puts line if /·/.match line
+
            # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
            NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
                    
@@ -1985,9 +1993,6 @@ EOF
                  while m
                    
                    sicValue = m[1]
-                   
-                   #puts "TRACE7: " + m[1]
-                   
                    sicLineNumber = parseSicRecord(sicValue, sicLineNumber)
                    s.sub!(sicValue, '')
                    m = /(\d+ \D+\]?)\d/.match(s)             

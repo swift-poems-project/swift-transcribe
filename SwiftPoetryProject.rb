@@ -14,6 +14,13 @@ module SwiftPoetryProject
     
   end
 
+  # \«MDUL»dash·in·left·margin«MDNM»\
+  TEI_P5_MANUSCRIPT = <<EOF
+<msDesc>
+  <additional></additional>
+</msDesc>
+EOF
+
   TEI_P5_CORPUS_DOC = <<EOF
 <teiCorpus version="5.2" xmlns="http://www.tei-c.org/ns/1.0" xml:lang="en">
   <teiHeader>
@@ -26,7 +33,6 @@ module SwiftPoetryProject
         <p>Distributed by Digital Scholarship Services at Lafayette College</p>
       </publicationStmt>
       <sourceDesc>
-        <p>Born digital: no previous source exists.</p>
       </sourceDesc>
     </fileDesc>
 
@@ -68,7 +74,7 @@ EOF
         <p>Distributed by Digital Scholarship Services at Lafayette College</p>
       </publicationStmt>
       <sourceDesc>
-        <p>Born digital: no previous source exists.</p>
+        #{TEI_P5_MANUSCRIPT}
       </sourceDesc>
     </fileDesc>
 
@@ -263,7 +269,18 @@ EOF
       return headElem
     end
   end
-  
+
+=begin
+<p>The manuscript contains the following marginalia:
+  <list>
+<item>
+<ref target="l[@n='L3.284']"></ref>
+</item>
+  </list>
+</p>
+=end
+
+
   class TeiParser
     
     attr_reader :teiDocument, :headerElement, :poemElem, :textElem
@@ -396,13 +413,12 @@ EOF
         'head' => {}
       },
 
-    # Footnotes encompassing an entire line
-    '«FN1·»' => {
+      # Footnotes encompassing an entire line
+      '«FN1·»' => {
       
-      'note' => { 'place' => 'foot' }
+        'note' => { 'place' => 'foot' }
+      }
     }
-
-  }
 
     #NB_CHAR_TOKEN_MAP = {
     #  
@@ -416,8 +432,6 @@ EOF
     #  /─ / => '─'
     #  
     #}
-
-    
 
     NB_UNPARSED_TOKENS = ['«MDNM»']
 
@@ -444,16 +458,16 @@ EOF
 
     def updateCollectionName(collectionName = nil)
 
-    if @poemID
+      if @poemID
 
-      @collectionName = getCollection(@poemID[0..2].to_i)
-    else
+        @collectionName = getCollection(@poemID[0..2].to_i)
+      else
 
-      @collectionName = collectionName
+        @collectionName = collectionName
+      end
     end
-  end
 
-  def initialize(filePath, kwargs = {})
+    def initialize(filePath, kwargs = {})
 
     @filePath = filePath
     
@@ -775,6 +789,40 @@ EOF
     return lineElem
   end
 
+  TEI_P5_MARGINALIA = <<EOF
+<p>The manuscript contains the following marginalia:
+  <list></list>
+</p>
+EOF
+
+  def marginal_list_elem
+
+    elem = @teiDocument.at_xpath('//msDesc/additional/p/list')
+    unless elem
+
+      addit_elem = @teiDocument.root.at_xpath('//TEI:msDesc/TEI:additional', {'TEI' => 'http://www.tei-c.org/ns/1.0'})
+
+      marginal_elem_set = Nokogiri::XML.fragment TEI_P5_MARGINALIA
+      addit_elem.add_child marginal_elem_set
+
+      elem = addit_elem.at_xpath('TEI:p/TEI:list', {'TEI' => 'http://www.tei-c.org/ns/1.0'})
+    end
+
+    return elem
+  end
+
+  def add_marginal_item(note, line_number)
+
+    ref_elem = Nokogiri::XML::Node.new 'ref', @teiDocument
+    ref_elem['target'] = "l[@n='#{line_number}']"
+
+    note_elem = Nokogiri::XML::Node.new 'item', @teiDocument
+    note_elem.content = note
+
+    ref_elem.add_child note_elem
+    marginal_list_elem().add_child ref_elem
+  end
+
   # originalNode: Nokogiri::XML::Text within either the <tei:l> or <tei:p> elements
   # 
 
@@ -812,6 +860,20 @@ EOF
       end
     end
 
+    # Implementing handling for marginalia notes
+    # @todo Restructure for atomic token parsing and phrase parsing
+    if /^dash.in.left.margin$/.match line
+
+      last_line_index = @teiDocument.at_xpath('(//TEI:l)[last()]/@n', {'TEI' => 'http://www.tei-c.org/ns/1.0'})
+
+      add_marginal_item line, last_line_index
+
+      line = lineElem.content = ''
+
+      # raise NotImplementedError
+      return
+    end
+
     # [SPP-5] Bug:
     # (Issue is resolved by interpreting code with Ruby versions >= 2.0.0p0
     # If the node does not contain any NB tokens, return the original node
@@ -843,7 +905,6 @@ EOF
           lineTokens.push poemToken
         elsif poemToken.match(/(?!=«)»$/)
 
-          #print 'dump: ' + @documentTokens.to_s
           raise NotImplementedError.new "Token-terminating character » found: #{line}"
         end
       end
@@ -1171,6 +1232,14 @@ EOF
       
       # ...assume that this token initiates a Nota Bene block, and prepend it to the document tokens
       @documentTokens.unshift lineTokens.pop
+    end
+
+    # Work-around
+    # Resolves SPP-57
+    # @todo Restructure into parseXMLTextNode
+    if node.name == 'hi' and node.content == ''
+
+      node.remove
     end
 
     # return lineElem

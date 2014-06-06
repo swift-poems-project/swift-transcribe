@@ -869,9 +869,17 @@ EOF
       add_marginal_item line, last_line_index
 
       line = lineElem.content = ''
-
-      # raise NotImplementedError
       return
+    elsif /^(hole.or.)?blot.obscures,.I.imagine,."(.+)"/.match line # For hole/blot obscurations (Resolves SPP-58)
+
+      unclear_m = /^(.*?blot.obscures),.I.imagine,."(.+)"/.match line
+
+      lineElem.name = 'unclear'
+      lineElem.remove_attribute 'rend'
+      lineElem['reason'] = unclear_m[1]
+      lineElem.content = unclear_m[2]
+
+      return lineElem
     end
 
     # [SPP-5] Bug:

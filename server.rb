@@ -25,7 +25,7 @@ post '/xhtml/compare' do
 
   File.open(tmpFilePath, 'w') {|f| f.write(SwiftPoetryProject::TeiDocumentSet.new(docs).deeplyIntegrate().to_xml()) }
      
-  return Nokogiri::XSLT(File.open("#{File.dirname(__FILE__)}/xslt/spp/xhtml.xsl", 'rb')).transform(Nokogiri.XML(File.open(tmpFilePath, 'rb')), ['class-name', 'swift-poems-project']).to_xml
+  return Nokogiri::XSLT(File.open("#{File.dirname(__FILE__)}/xslt/xhtml.xsl", 'rb')).transform(Nokogiri.XML(File.open(tmpFilePath, 'rb')), ['class-name', 'swift-poems-project']).to_xml
 end
 
 post '/compare' do

@@ -58,7 +58,7 @@ div.line h2.headnote {
 div.line {
 
     font-size:small;
-    font-family: Impact, Charcoal, sans-serif;
+    /* font-family: Impact, Charcoal, sans-serif; */
     margin-left:7%;
 
 }

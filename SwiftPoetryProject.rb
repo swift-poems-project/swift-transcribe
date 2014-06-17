@@ -384,6 +384,12 @@ EOF
         '»' => { 'note' => { 'place' => 'foot' } }
       },
 
+      # Additional footnotes
+      '«FN1«MDNM»' => {
+        
+        '»' => { 'note' => { 'place' => 'foot' } }
+      },
+
       # For deltas
       # The begin-center (FC, FL) delta
       '«FC»' => {
@@ -420,8 +426,8 @@ EOF
       }
     }
 
-    #NB_CHAR_TOKEN_MAP = {
-    #  
+    # NB_CHAR_TOKEN_MAP = {
+    #
     #  /\\ae\\/ => 'æ',
     #  /\\AE\\/ => 'Æ',
     #  /\\oe\\/ => 'œ',
@@ -430,8 +436,8 @@ EOF
     #  /''/ => '”',
     #  /(?<!«MDNM»|«FN1)·/ => ' ',
     #  /─ / => '─'
-    #  
-    #}
+    #
+    # }
 
     NB_UNPARSED_TOKENS = ['«MDNM»']
 
@@ -442,14 +448,6 @@ EOF
                                  '«MDSU»*«MDSD»*«MDSU»*«MDNM»'
                                 ]
 
-=begin
-    NB_BLOCK_LITERAL_PATTERNS = [
-                                 /«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*_«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*«MDSU»\*«MDNM»\*/,
-                                 /«MDSU»\*«MDSD»\*«MDSU»\*«MDSD»\*«MDSU»\*«MDSD»\*«MDSU»\*«MDSD»\*«MDSU»\*«MDNM»/,
-                                 /«MDSU»\*«MDSD»\*«MDSU»\*«MDSD»\*«MDSU»\*«MDSD»\*«MDSU»\*«MDNM»/,
-                                 /«MDSU»\*«MDSD»\*«MDSU»\*«MDNM»\*?/ ]
-=end
-    
     POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
     POEM = 0
     LETTER = 1
@@ -503,10 +501,7 @@ EOF
     # Extract the document ID
     @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
 
-    # @poemID = /(\d\d\d\-[0-9A-Z\!\-]{4})   /.match(lines)[1]
-
-
-    m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
+      m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
 
     # Searching for alternate patterns
     # Y46B45L5
@@ -525,7 +520,7 @@ EOF
     end
 
     # Retrieve the collection name from the NUMBERS index
-    updateCollectionName 
+    updateCollectionName
 
     # cp437 Encoding
     # lines = lines.split("$$\r\n")
@@ -636,8 +631,6 @@ EOF
 
           respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
           respElem.content = 'transcription'
-
-
           respStmtElem.add_child(respElem)
 
           @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
@@ -692,15 +685,36 @@ EOF
 
     line = originalNode.content
 
-    # If the line contains with a footnote Nota Bene token...
-    if line.match(/«FN1·?/)
+    # Work-around for SPP-73
+    # Refactor the tokens
+
+    if @isNextLineFn
+
+      # Note: THIS ASSUMES THAT THE LINE ITSELF DOES NOT CONTAIN NESTED FOOTNOTES
+      # Ensure that the contents of the footnote are added to the last appended footnote
+      text = line.split(/(?<=»)/).each {|s| s.sub!('»','') if (s.count '«') == 0 }.join
+      
+      node = @teiDocument.root.at_xpath('//TEI:note[@place="foot"][last()]', {'TEI' => 'http://www.tei-c.org/ns/1.0'})
+      node.add_child Nokogiri::XML::Node::new 'lb', @teiDocument
+      node.add_child Nokogiri::XML::Text::new text, @teiDocument
+      @isNextLineFn = false
+
+      lineElem.content = ''
+
+      # Extending the footnote parsing for the pattern «FN1«MDNM»
+      # Resolves SPP-73
+      #
+      # If the line contains with a footnote Nota Bene token...
+    elsif line.match(/«FN1·?/) or line.match(/«FN1«MDNM»/)
 
       lineElem.content = ''
       footNoteBlockOpen = false
 
+      # Extending the footnote parsing for the pattern «FN1«MDNM»
+      # Resolves SPP-73
       # ...split the lines into either footnote blocks...
 
-      substrings = line.split(/(?=«FN1·)|(?=«FN1)|(?<=»)/)
+      substrings = line.split(/(?=«FN1·)|(?=«FN1)|(?<=»)|(?=«FN1«MDNM»)/)
 
       _substrings = []
       substrings = substrings.each_with_index { |s, i|
@@ -729,14 +743,31 @@ EOF
       # line.split(/(?=«FN1·)|(?<=»)/).each do |s|
       _substrings.each do |s|
 
+        # Extending the footnote parsing for the pattern «FN1«MDNM»
+        # Resolves SPP-73
+        m = s.match(/«FN1(«MDNM»)(.*)/)
+
         # If this substring contains the initial footnote token...
-        m = s.match(/«FN1·?(.*)/)
+        m = s.match(/«FN1·?(.*)/) unless m
+
         if m
 
           # If there is an unbalanced MDNM token within the substring...
-          tokens = s.split(/(?=«)|(?<=»)/).select {|s| s.match /«.+»/}
+          tokens = s.split(/(?=«)|(?<=»)/).select { |s| s.match /«.+»/ }
 
-          if @documentTokens.count '«MDNM»' == 0 and (tokens.count % 2) > 0 and (s.count '«MDNM»' % 2) > 0
+          # Extending the footnote parsing for the pattern «FN1«MDNM»
+          # Resolves SPP-73
+
+          if m.length > 2
+
+            footNoteContent = m[2]
+
+            # puts footNoteContent
+            # Work-around for SPP-73
+            # Refactor the tokens
+            # @isNextLineFn = true
+
+          elsif @documentTokens.count '«MDNM»' == 0 and (tokens.count % 2) > 0 and (s.count '«MDNM»' % 2) > 0
 
             # ...find and remove the unbalanced MDNM token from the substring...
 
@@ -746,7 +777,7 @@ EOF
             footNoteContent = m[1].sub(/«MDNM»(\.?»)/, '\1')
           else
 
-            footNoteContent = m[1]            
+            footNoteContent = m[1]
           end
 
           node = Nokogiri::XML::Node::new 'note', @teiDocument
@@ -964,11 +995,7 @@ EOF
 
             # Insert the content of the Note Bene token
             m = line.match(/(.*?)#{lineToken}(.*?)$/)
-#            if m
 
-#              node.content = m[1]
-#            end
-            
 #            nodeText = Nokogiri::XML::Text::new line.sub(/#{lineToken}(.*?)$/, '\1'), @teiDocument
             nodeText = Nokogiri::XML::Text::new m[2], @teiDocument
             node.add_child nodeText
@@ -1245,7 +1272,7 @@ EOF
     # Work-around
     # Resolves SPP-57
     # @todo Restructure into parseXMLTextNode
-    if node.name == 'hi' and node.content == ''
+    if node and node.name == 'hi' and node.content == ''
 
       node.remove
     end
@@ -1279,35 +1306,6 @@ EOF
       else /HN\d/.match(line) # Create the header element
 
         NotaBeneHeadnoteParser.new(self, line).parse
-
-=begin
-        m = /HN(\d) ?(.*)/.match(line)
-
-        headIndex = m[1]
-        headContent = m[2]
-
-        if headContent != ''
-
-          headElem = Nokogiri::XML::Node.new('head', @teiDocument)
-          @poemElem.add_child(headElem)
-          headElem['n'] = headIndex
-          #headElem.content = m[2]
-
-          headText = Nokogiri::XML::Text.new m[2], @teiDocument
-
-          headElem.add_child headText
-
-          headElem = parseNotaBeneToken('', '', headElem)
-
-          parseForNbBlocks headText
-
-          # parseXMLTextNode requires access to the parent node
-          parseXMLTextNode headElem
-
-          #puts 'after: ' + headElem.to_xml
-        end
-=end
-
       end
     end
 
@@ -1605,7 +1603,11 @@ EOF
 
    def parsePoem
 
-     stanzas = @poem.split(/(?<!08|_)_/)
+     # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
+     # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
+
+     # stanzas = @poem.split(/(?<!08|_)_/)
+     stanzas = [@poem]
 
      # <lg n="I.1" type="stanza">
      stanzaElem = nil
@@ -1716,6 +1718,7 @@ EOF
 
            # Parse for <<FN .>> tokens
            # This method maps one element to one or many elements
+
            e = parseFNTokens lineText
 
            # This returns a line element <tei:l/>
@@ -1763,6 +1766,36 @@ EOF
            end
 
            #lineElem = parseNotaBeneMarkup(lineElem, stanzaElem)
+
+           { '_' => 'lb' }.each_pair do |char, markup|
+
+             if /_/.match(lineElem.content)
+
+               # While the subtree/branch contains a Text Node containing the "_", the exact Node must be recursively located
+               parent = lineElem
+               text_nodes_with_char = []
+
+               while text_nodes_with_char.empty?
+
+                 children = parent.children.select { |child| /_/.match child.content  }
+                 text_nodes_with_char = children.select { |child| child.is_a? Nokogiri::XML::Text }
+
+                 parent = children.first
+               end
+
+               text_node_with_char = text_nodes_with_char.first
+
+               # stanza = /(.+)?_/.match(text_node_with_char.first)
+               if text_node_with_char
+
+                 newChild = text_node_with_char.content.split('_').map { |text| Nokogiri::XML::NodeSet.new(@teiDocument, [ Nokogiri::XML::Text.new(text, @teiDocument), Nokogiri::XML::Node.new('lb', @teiDocument) ]) }.reduce(:|)
+                 text_node_with_char.add_next_sibling newChild if newChild
+                 text_node_with_char.remove
+               end
+
+               # text_node_with_char = Nokogiri::XML::Text.new( , @teiDocument) | Nokogiri::XML::Node.new('<lb />', @teiDocument) | Nokogiri::XML::Text.new( /_(.+)/.match(text_node_with_char.first.content)[1] , @teiDocument)
+             end
+           end
          end
        end
 
@@ -2315,12 +2348,12 @@ EOF
 
      #return transform '/usr/share/stylesheets/tei/xhtml2/tei.xsl'
      #return transform 'xslt/spp/xhtml.xsl'
-     return transform "#{File.dirname(__FILE__)}/xslt/spp/xhtml.xsl"
+     return transform "#{File.dirname(__FILE__)}/xslt/xhtml.xsl"
    end
 
    def getHtml()
 
-     return transform 'xslt/spp/xhtml.xsl'
+     return transform 'xslt/xhtml.xsl'
    end
    
    def getTeiBp()

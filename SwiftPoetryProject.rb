@@ -499,7 +499,7 @@ EOF
     # To each <div> shall be delegated a transcription file
     # Extract and strip certain metadata values at the document level
     # Extract the document ID
-    @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
+      @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
 
       m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
 
@@ -512,7 +512,9 @@ EOF
       @poemID = m[1]
 
       # Remove the poem ID (and trailing whitespace)
-      lines.gsub!(/#{@poemID}   /, '')
+      # Now this is being used for newline detection
+      # lines.gsub!(/#{@poemID}   /, '')
+
       @poemElem['n'] = @poemID
     else
 
@@ -1650,6 +1652,8 @@ EOF
 
      class TeiLine
 
+       attr_reader :elem
+
        def initialize(workType, stanza)
 
          @workType = workType
@@ -1671,13 +1675,21 @@ EOF
        def pushText(token)
 
          # Remove the 8 character identifier from the beginning of the line
-         token = token.sub(POEM_ID_PATTERN, '')
+         # token = token.sub(POEM_ID_PATTERN, '')
          # line.lstrip!
+
+         indexMatch = /\s{3}(\d+)\s{2}/.match token
+         if indexMatch
+
+           @elem['n'] = indexMatch.to_s.strip
+           token = token.sub /\s{3}(\d+)\s{2}/, ''
+         end
 
          # Transform pipes into @rend values
          if /\|/.match token and @current_leaf === @elem
 
            @current_leaf['rend'] = 'indent('+((token.split /\|/).size - 1).to_s+')'
+           token = token.sub /\|/, ''
          end
 
          # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
@@ -1743,7 +1755,6 @@ EOF
        @poemElem.add_child(@elem)
 
        lineElem = TeiLine.new @workType, self
-       # lineElem['n'] = '1'
        @lines = [ lineElem ]
      end
 
@@ -1760,11 +1771,20 @@ EOF
 
      def push(token)
 
-       if /\n/.match token
+       if @lines.length == 1 and @lines.last.elem.content.empty?
 
-         pushLine
+         token = token.sub POEM_ID_PATTERN, ''
+         @lines.last.push token
        else
 
+         # Trigger a new line
+         if POEM_ID_PATTERN.match token
+
+           pushLine
+           token = token.sub POEM_ID_PATTERN, ''
+         end
+
+         token = token.sub /\r/, ''
          @lines.last.push token
        end
      end
@@ -1776,12 +1796,10 @@ EOF
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
 
 #     puts @poem.split /(?=«)|(?<=»)/
-     initialTokens = @poem.split /(?=«)|(?<=»)/
+     initialTokens = @poem.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\n/
 
      poemTokens = []
      stanzas = [ TeiStanza.new(@workType, @poemElem) ]
-     
-
 
      # Classify our tokens
      initialTokens.each do |initialToken|

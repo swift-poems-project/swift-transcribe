@@ -137,8 +137,163 @@ EOF
   # One Nota Bene title field value for one TEI <title/> element  
   class NotaBeneTitleParser < NotaBeneHeadFieldParser
 
+    class TeiHeader
+
+      attr_reader :sponsor, :elem
+
+      class TeiTitle
+
+        attr_reader :elem
+
+        def initialize(document, header)
+
+          @document = document
+          @headerElement = header.elem
+
+          @elem = Nokogiri::XML::Node.new('title', @document)
+
+          @current_leaf = @elem
+          @tokens = []
+
+          # Add <title> elements directly underneath the <sponsor> element
+          # @headerElement.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS).add_previous_sibling(@elem)
+        end
+
+        def pushToken(token)
+
+          # If this is the first line, or, if this tag must be closed...
+          if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+
+            # Does this seem to close the current leaf?
+            if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+
+              # One cannot resolve the tag name and attributes until both tags have been fully parsed
+              @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+              @current_leaf = @current_leaf.parent
+
+              @has_opened_tag = false
+            else
+
+              # Add a new child node to the current leaf
+              # Temporarily use the token itself as a tagname
+              newLeaf = Nokogiri::XML::Node.new token, @document
+              @current_leaf.add_child newLeaf
+              @current_leaf = newLeaf
+              @has_opened_tag = true
+            end
+          else
+
+            # Add a new child node to the current leaf
+            # Temporarily use the token itself as a tagname
+            # @todo Refactor
+            newLeaf = Nokogiri::XML::Node.new token, @document
+            @current_leaf.add_child newLeaf
+            @current_leaf = newLeaf
+          end
+
+          @tokens << token
+        end
+
+        # Add this as a text node for the current line element
+        def pushText(token)
+
+          # Remove the 8 character identifier from the beginning of the line
+          indexMatch = /\s{3}(\d+)\s{2}/.match token
+          if indexMatch
+
+            @elem['n'] = indexMatch.to_s.strip
+            token = token.sub /\s{3}(\d+)\s{2}/, ''
+          end
+
+          # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+          NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+                   
+            token = token.gsub(nbCharTokenPattern, utf8Char)
+          end
+
+          if token == '_|'
+
+            @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+          else
+
+            @current_leaf.add_child Nokogiri::XML::Text.new token, @document
+          end
+        end
+
+        def push(token)
+
+          if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+
+            pushToken token
+          else
+
+            pushText token
+          end
+        end
+      end
+
+      def initialize(elem)
+
+        @elem = elem
+        @document = elem.document
+        @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
+        
+        @titles = [ TeiTitle.new(@document, self) ]
+      end
+
+      def pushTitle
+
+        @sponsor.add_previous_sibling @titles.last.elem
+        @titles << TeiTitle.new(@document, self)
+      end
+
+      def push(token)
+
+        if @titles.length == 1 and @titles.last.elem.content.empty?
+
+          token = token.sub /\s\|\s/, ''
+          @titles.last.push token
+        else
+
+          # Trigger a new line
+          if /\s\|\s/.match token
+
+            pushTitle
+            token = token.sub /\s\|\s/, ''
+          end
+
+          token = token.sub /\r/, ''
+          @titles.last.push token
+        end
+      end
+
+      def close(token)
+
+        pushTitle
+        token = token.sub /\r/, ''
+        @titles.last.push token
+
+        @titles.map { |title| title.elem }
+      end
+    end
+
     # Parse the text and append the TEI element to the document
     def parse
+
+      header = TeiHeader.new(@teiParser.headerElement)
+
+      initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
+
+      # As there exists no actual terminating character for titles, the index within the array must be used in order to generate the note
+      initialTokens[0..-2].each do |initialToken|
+
+        header.push initialToken
+      end
+
+      header.close initialTokens.last
+    end
+
+    def parse_deprecated
 
       titleElems = Nokogiri::XML::NodeSet.new @document
 
@@ -221,10 +376,147 @@ EOF
     end
   end
 
+  class TeiPoemHeads
+
+    attr_reader :elem
+
+    class TeiHead
+
+      attr_reader :elem
+      
+      def initialize(document, poem, index)
+
+        @document = document
+        @poem = poem
+
+        @elem = Nokogiri::XML::Node.new('head', @document)
+        @elem['n'] = index
+
+        @poem.elem.add_child @elem
+
+        @current_leaf = @elem
+        @tokens = []
+      end
+
+      def pushToken(token)
+
+        # If this is the first line, or, if this tag must be closed...
+        if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+
+          # Does this seem to close the current leaf?
+          if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+            
+            # One cannot resolve the tag name and attributes until both tags have been fully parsed
+            @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+            @current_leaf = @current_leaf.parent
+            
+            @has_opened_tag = false
+          else
+
+            # Add a new child node to the current leaf
+            # Temporarily use the token itself as a tagname
+            newLeaf = Nokogiri::XML::Node.new token, @document
+            @current_leaf.add_child newLeaf
+            @current_leaf = newLeaf
+            @has_opened_tag = true
+          end
+        else
+
+          # Add a new child node to the current leaf
+          # Temporarily use the token itself as a tagname
+          # @todo Refactor
+          newLeaf = Nokogiri::XML::Node.new token, @document
+          @current_leaf.add_child newLeaf
+          @current_leaf = newLeaf
+        end
+
+        @tokens << token
+      end
+
+      # Add this as a text node for the current line element
+      def pushText(token)
+
+        # Remove the 8 character identifier from the beginning of the line
+        indexMatch = /\s{3}(\d+)\s{2}/.match token
+        if indexMatch
+          
+          @elem['n'] = indexMatch.to_s.strip
+          token = token.sub /\s{3}(\d+)\s{2}/, ''
+        end
+        
+        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+        NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+          
+          token = token.gsub(nbCharTokenPattern, utf8Char)
+        end
+        
+        if token == '_|'
+            
+          @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+        else
+          
+          @current_leaf.add_child Nokogiri::XML::Text.new token, @document
+        end
+      end
+      
+      def push(token)
+
+        if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+          
+          pushToken token
+        else
+          
+          pushText token
+        end
+      end
+    end
+
+    def initialize(elem, index)
+
+      @elem = elem
+      @document = elem.document
+      
+      @heads = [ TeiHead.new(@document, self, index) ]
+    end
+    
+    def pushHead
+
+      @heads << TeiHead.new(@document, self, @heads.last.elem['n'].to_i + 1)
+    end
+
+    def push(token)
+
+      if @heads.length == 1 and @heads.last.elem.content.empty?
+
+        token = token.sub /\s\|\s/, ''
+        @heads.last.push token
+      else
+
+        # Trigger a new line
+        if /\s\|\s/.match token
+
+          pushHead
+          token = token.sub /\s\|\s/, ''
+        end
+
+        token = token.sub /\r/, ''
+        @heads.last.push token
+      end
+    end
+
+    def close(token)
+
+      token = token.sub /\r/, ''
+      @heads.last.push token
+      pushHead
+        
+      @heads.map { |title| title.elem }
+    end
+  end
+
   class NotaBeneHeadnoteParser < NotaBeneHeadFieldParser
 
     # Refactor
-
     def parse
 
       m = /HN(\d) ?(.*)/.match(@text)
@@ -234,6 +526,21 @@ EOF
 
       if headContent != ''
 
+        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+
+        poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
+
+        initialTokens.each do |initialToken|
+
+          poem.push initialToken
+        end
+      end
+    end
+
+    def parse_deprecated
+
+      if headContent != ''
+      
         headElem = Nokogiri::XML::Node.new('head', @document)
         @teiParser.poemElem.add_child(headElem)
         headElem['n'] = headIndex
@@ -344,7 +651,8 @@ EOF
         #'«MDNM»' => { 'hi' => { 'rend' => 'bold underline' } }
         # NOTE: This is not within the standard TEI (?)
         # (Formerly "special-state")
-        '«MDNM»' => { 'hi' => { 'rend' => 'blackletter' } }
+        '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } },
+        '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
       },
 
       '«MDDN»' => {
@@ -375,7 +683,7 @@ EOF
       # For footnotes
       '«FN1·' => {
         
-        '.»' => { 'note' => { 'place' => 'foot' } }
+        '»' => { 'note' => { 'place' => 'foot' } }
       },
 
       # Additional footnotes
@@ -407,6 +715,12 @@ EOF
       '«FR»' => {
         
         '«FL»' => { 'head' => {} }
+      },
+
+      # <gap>
+      'om' => {
+        
+        '.' => { 'gap' => {} }
       }
     }
 
@@ -499,7 +813,7 @@ EOF
     # To each <div> shall be delegated a transcription file
     # Extract and strip certain metadata values at the document level
     # Extract the document ID
-    @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
+      @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
 
       m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
 
@@ -512,7 +826,9 @@ EOF
       @poemID = m[1]
 
       # Remove the poem ID (and trailing whitespace)
-      lines.gsub!(/#{@poemID}   /, '')
+      # Now this is being used for newline detection
+      # lines.gsub!(/#{@poemID}   /, '')
+
       @poemElem['n'] = @poemID
     else
 
@@ -1605,10 +1921,240 @@ EOF
      return lineElem
    end
 
+   def getLineIndex(line)
+
+     # Attempt to extract the line number from the index specified at the beginning of the line
+     m = /(\d+)  /.match(line)
+
+     if m
+
+       lineIndex = m[1]
+     elsif _lineIndex
+
+       lineIndex = _lineIndex
+     else
+
+       # Attempt to retrieve the line index by parsing the TEI Document
+       lastLineElems = @poemElem.xpath('tei:' + @blockElemName + '[last()]/tei:' + @lineElemName + '[last()]', TEI_NS)
+
+       if lastLineElems.size > 0
+
+         # If the index was specified for the last line appended to the poem/letter stanza body, increment it by 1
+         lineIndex = (lastLineElems.shift['n'].to_i + 1).to_s
+       else
+
+         # If the index was specified for the last line appended to the entire poem/letter body, increment it by 1
+         lastLineElems = @poemElem.xpath('tei:' + @lineElemName + '[last()]', TEI_NS)
+
+         if lastLineElems.size > 0
+           
+           lineIndex = (lastLineElems.shift['n'].to_i + 1).to_s
+         elsif @lineElemName == 'p' # Refactor
+           
+           lineIndex = @lineIndex.to_s
+           @lineIndex += 1
+         end
+       end
+     end
+
+     # Store the individual line index and store it into the @n attribute of the <p> element
+     # http://www.tei-c.org/release/doc/tei-p5-doc/en/html/ST.html#STGAid
+
+     lineIndex = 1.to_s
+     return lineIndex
+   end
+
+   class TeiStanza
+
+     attr_reader :document, :elem
+
+     class TeiLine
+
+       attr_reader :elem, :has_opened_tag
+
+       def initialize(workType, stanza)
+
+         @workType = workType
+         @stanza = stanza
+
+         # @teiDocument = teiDocument
+         @teiDocument = stanza.document
+
+         @lineElemName = @workType == POEM ? 'l' : 'p'
+
+         # Set the current leaf of the tree being constructed to be the root node itself
+         @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
+         stanza.elem.add_child @elem
+
+         @current_leaf = @elem
+         @tokens = []
+       end
+
+       # Add this as a text node for the current line element
+       def pushText(token)
+
+         # Remove the 8 character identifier from the beginning of the line
+         indexMatch = /\s{3}(\d+)\s{2}/.match token
+         if indexMatch
+
+           @elem['n'] = indexMatch.to_s.strip
+           token = token.sub /\s{3}(\d+)\s{2}_?/, ''
+         end
+
+         # Transform triplet indicators for the stanza
+         if /\s3\}$/.match token
+
+           @stanza.elem['type'] = 'triplet'
+           token = token.sub /\s3\}$/, ''
+         end
+
+         # Transform pipes into @rend values
+         if /\|/.match token and @current_leaf === @elem
+
+           @current_leaf['rend'] = 'indent('+((token.split /\|/).size - 1).to_s+')'
+           token = token.sub /\|/, ''
+         end
+
+         # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+         NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+                   
+           token = token.gsub(nbCharTokenPattern, utf8Char)
+         end
+
+         @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
+       end
+
+       def pushToken(token)
+
+         # If this is the first line, or, if this tag must be closed...
+         if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+
+           # Does this seem to close the current leaf?
+           if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+
+             # One cannot resolve the tag name and attributes until both tags have been fully parsed
+             @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+             @current_leaf = @current_leaf.parent
+
+             @has_opened_tag = false
+           else
+
+             # Add a new child node to the current leaf
+             # Temporarily use the token itself as a tagname
+             @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
+             @has_opened_tag = true
+           end
+         else
+
+           # Add a new child node to the current leaf
+           # Temporarily use the token itself as a tagname
+           # @todo Refactor
+           @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
+         end
+
+         @tokens << token
+       end
+
+       def push(token)
+
+         if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+
+           pushToken token
+         else
+
+           pushText token
+         end
+       end
+     end
+
+     def initialize(workType, poemElem, index)
+
+       @workType = workType
+       
+       @poemElem = poemElem
+       @teiDocument = @poemElem.document
+       @document = @teiDocument
+       
+       # Depending upon whether or not this work is a poem, this shall alter the name of the element containing the stanza
+       @blockElemName = @workType == POEM ? 'lg' : 'div'
+       @elem = Nokogiri::XML::Node.new @blockElemName, @teiDocument
+       @elem['n'] = index.to_s
+
+       @poemElem.add_child(@elem)
+
+       lineElem = TeiLine.new @workType, self
+       @lines = [ lineElem ]
+     end
+
+     def pushLine
+
+       # lineElem = @lines.last
+       # lineElem['n'] = getLineIndex line
+
+       # Remove the line index from the beginning of the line
+       # line.sub!(/\d+  /, '')
+
+       newLine = TeiLine.new(@workType, self)
+
+       if @lines.last.has_opened_tag
+
+         puts @lines.last.elem
+         raise NotImplementedError
+
+         # Assumes a depth of 1 from <l> element
+         newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
+       end
+
+       @lines << newLine
+     end
+
+     def push(token)
+
+       if @lines.length == 1 and @lines.last.elem.content.empty?
+
+         token = token.sub POEM_ID_PATTERN, ''
+         @lines.last.push token
+       else
+
+         # Trigger a new line
+         if POEM_ID_PATTERN.match token
+
+           pushLine
+           token = token.sub POEM_ID_PATTERN, ''
+         end
+
+         token = token.sub /\r/, ''
+         @lines.last.push token
+       end
+     end
+   end
+
    def parsePoem
 
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
+
+     initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+
+     # puts initialTokens
+
+     poemTokens = []
+     stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
+
+     # Classify our tokens
+     initialTokens.each do |initialToken|
+
+       # Create a new stanza
+       if /\s{3}\d+\s{2}_/.match initialToken
+
+         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1)
+       end
+
+       stanzas.last.push initialToken
+     end
+   end
+
+   def parsePoem_deprecated
 
      # stanzas = @poem.split(/(?<!08|_)_/)
      stanzas = [@poem]
@@ -1656,64 +2202,8 @@ EOF
          line.sub!(POEM_ID_PATTERN, '')
          line.lstrip!
 
-         # Store the individual line index and store it into the @n attribute of the <p> element
-         # http://www.tei-c.org/release/doc/tei-p5-doc/en/html/ST.html#STGAid
-
-         lineIndex = 1.to_s
-
-         # Attempt to extract the line number from the index specified at the beginning of the line
-         m = /(\d+)  /.match(line)
-
-         if m
-
-           lineIndex = m[1]
-         elsif _lineIndex
-
-           lineIndex = _lineIndex
-         else
-
-           # Attempt to retrieve the line index by parsing the TEI Document
-           lastLineElems = @poemElem.xpath('tei:' + @blockElemName + '[last()]/tei:' + @lineElemName + '[last()]', TEI_NS)
-
-           if lastLineElems.size > 0
-
-             # If the index was specified for the last line appended to the poem/letter stanza body, increment it by 1
-             lineIndex = (lastLineElems.shift['n'].to_i + 1).to_s
-           else
-
-             # If the index was specified for the last line appended to the entire poem/letter body, increment it by 1
-             lastLineElems = @poemElem.xpath('tei:' + @lineElemName + '[last()]', TEI_NS)
-
-             if lastLineElems.size > 0
-
-               lineIndex = (lastLineElems.shift['n'].to_i + 1).to_s
-             elsif @lineElemName == 'p' # Refactor
-
-               lineIndex = @lineIndex.to_s
-               @lineIndex += 1
-             end
-           end
-         end
-
-         # Remove the line index from the beginning of the line
-         line.sub!(/\d+  /, '')
-
          # Only parse non-empty lines
          if line != ''
-
-           if /\|/.match line
-
-             lineElem['rend'] = 'indent('+((line.split /\|/).size - 1).to_s+')'
-             line.sub! /^\|+/, ''
-           end
-
-           # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-           NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-                   
-             line.gsub!(nbCharTokenPattern, utf8Char)
-           end
-
-           lineElem['n'] = lineIndex
 
            stanzaElem.add_child(lineElem)
 
@@ -2044,6 +2534,9 @@ EOF
                  raise NotImplementedError.new "Could not parse the following \"sic\" comment \"#{sicField}\""
                end
              
+               # For parsing <sic> markup
+
+=begin
                if /\[.+\]/.match(s)
                
                  sicLineNumber = parseSicRecord(s, sicLineNumber)
@@ -2063,6 +2556,7 @@ EOF
                    sicLineNumber = parseSicRecord(s, sicLineNumber)
                  end
                end
+=end
              }
            }
          else

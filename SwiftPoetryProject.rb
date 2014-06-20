@@ -534,7 +534,6 @@ EOF
 
           poem.push initialToken
         end
-        
       end
     end
 
@@ -652,7 +651,8 @@ EOF
         #'«MDNM»' => { 'hi' => { 'rend' => 'bold underline' } }
         # NOTE: This is not within the standard TEI (?)
         # (Formerly "special-state")
-        '«MDNM»' => { 'hi' => { 'rend' => 'blackletter' } }
+        '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } },
+        '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
       },
 
       '«MDDN»' => {
@@ -683,7 +683,7 @@ EOF
       # For footnotes
       '«FN1·' => {
         
-        '.»' => { 'note' => { 'place' => 'foot' } }
+        '»' => { 'note' => { 'place' => 'foot' } }
       },
 
       # Additional footnotes
@@ -2000,7 +2000,7 @@ EOF
          # Transform triplet indicators for the stanza
          if /\s3\}$/.match token
 
-           @stanza['type'] = 'triplet'
+           @stanza.elem['type'] = 'triplet'
            token = token.sub /\s3\}$/, ''
          end
 
@@ -2094,6 +2094,9 @@ EOF
 
        if @lines.last.has_opened_tag
 
+         puts @lines.last.elem
+         raise NotImplementedError
+
          # Assumes a depth of 1 from <l> element
          newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
        end
@@ -2127,7 +2130,7 @@ EOF
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
 
-     initialTokens = @poem.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+     initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
      # puts initialTokens
 
@@ -2527,6 +2530,9 @@ EOF
                  raise NotImplementedError.new "Could not parse the following \"sic\" comment \"#{sicField}\""
                end
              
+               # For parsing <sic> markup
+
+=begin
                if /\[.+\]/.match(s)
                
                  sicLineNumber = parseSicRecord(s, sicLineNumber)
@@ -2546,6 +2552,7 @@ EOF
                    sicLineNumber = parseSicRecord(s, sicLineNumber)
                  end
                end
+=end
              }
            }
          else

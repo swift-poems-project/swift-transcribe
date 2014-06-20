@@ -21,7 +21,7 @@ describe 'TeiParser' do
         Dir.glob("#{coll_path}/*").select { |path|
         # Dir.glob("/usr/share/spp/ruby-tools/spp/master/600B/*").select { |path|
 
-          not /'578\-MISC'/.match(path) and not /'TRANSCRI'/.match(path) and not /'FOXON'/.match(path) and not /PUMP/.match(path) and not /tocheck/.match(path)
+          not /578\-MISC/.match(path) and not /TRANSCRI/.match(path) and not /FOXON/.match(path) and not /PUMP/.match(path) and not /ANOTHER/ and not /tocheck/ and not /WILH/.match(path)
 
         }.each do |file_path|
 

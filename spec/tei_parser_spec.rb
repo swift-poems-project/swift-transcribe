@@ -19,9 +19,7 @@ describe 'TeiParser' do
         @nb_store_path = '/usr/share/spp/ruby-tools/spp/master'
 
         Dir.glob("#{coll_path}/*").select { |path|
-        # Dir.glob("/usr/share/spp/ruby-tools/spp/master/600B/*").select { |path|
-
-          not /578\-MISC/.match(path) and not /TRANSCRI/.match(path) and not /FOXON/.match(path) and not /PUMP/.match(path) and not /ANOTHER/ and not /tocheck/ and not /WILH/.match(path)
+          not path['578-MISC'] and not path['TRANSCRI'] and not path['FOXON'] and not path['PUMP'] and not path['ANOTHER'] and not path['tocheck'] and not path['WILH'] and not path['Smythe of Barbavilla.doc']
 
         }.each do |file_path|
 
@@ -30,8 +28,6 @@ describe 'TeiParser' do
             @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
             @parser.parse.to_xml
           }.to_not raise_error
-          
-          # puts file_path
         end
       end
     end

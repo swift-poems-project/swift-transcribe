@@ -407,6 +407,12 @@ EOF
       '«FR»' => {
         
         '«FL»' => { 'head' => {} }
+      },
+
+      # <gap>
+      'om' => {
+        
+        '.' => { 'gap' => {} }
       }
     }
 
@@ -1652,11 +1658,12 @@ EOF
 
      class TeiLine
 
-       attr_reader :elem
+       attr_reader :elem, :has_opened_tag
 
        def initialize(workType, stanza)
 
          @workType = workType
+         @stanza = stanza
 
          # @teiDocument = teiDocument
          @teiDocument = stanza.document
@@ -1675,14 +1682,18 @@ EOF
        def pushText(token)
 
          # Remove the 8 character identifier from the beginning of the line
-         # token = token.sub(POEM_ID_PATTERN, '')
-         # line.lstrip!
-
          indexMatch = /\s{3}(\d+)\s{2}/.match token
          if indexMatch
 
            @elem['n'] = indexMatch.to_s.strip
-           token = token.sub /\s{3}(\d+)\s{2}/, ''
+           token = token.sub /\s{3}(\d+)\s{2}_?/, ''
+         end
+
+         # Transform triplet indicators for the stanza
+         if /\s3\}$/.match token
+
+           @stanza['type'] = 'triplet'
+           token = token.sub /\s3\}$/, ''
          end
 
          # Transform pipes into @rend values
@@ -1712,11 +1723,14 @@ EOF
              # One cannot resolve the tag name and attributes until both tags have been fully parsed
              @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
              @current_leaf = @current_leaf.parent
+
+             @has_opened_tag = false
            else
 
              # Add a new child node to the current leaf
              # Temporarily use the token itself as a tagname
              @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
+             @has_opened_tag = true
            end
          else
 
@@ -1741,7 +1755,7 @@ EOF
        end
      end
 
-     def initialize(workType, poemElem)
+     def initialize(workType, poemElem, index)
 
        @workType = workType
        
@@ -1752,6 +1766,8 @@ EOF
        # Depending upon whether or not this work is a poem, this shall alter the name of the element containing the stanza
        @blockElemName = @workType == POEM ? 'lg' : 'div'
        @elem = Nokogiri::XML::Node.new @blockElemName, @teiDocument
+       @elem['n'] = index.to_s
+
        @poemElem.add_child(@elem)
 
        lineElem = TeiLine.new @workType, self
@@ -1766,7 +1782,15 @@ EOF
        # Remove the line index from the beginning of the line
        # line.sub!(/\d+  /, '')
 
-       @lines << TeiLine.new(@workType, self)
+       newLine = TeiLine.new(@workType, self)
+
+       if @lines.last.has_opened_tag
+
+         # Assumes a depth of 1 from <l> element
+         newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
+       end
+
+       @lines << newLine
      end
 
      def push(token)
@@ -1795,23 +1819,27 @@ EOF
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
 
-#     puts @poem.split /(?=«)|(?<=»)/
-     initialTokens = @poem.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\n/
+     initialTokens = @poem.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+
+     # puts initialTokens
 
      poemTokens = []
-     stanzas = [ TeiStanza.new(@workType, @poemElem) ]
+     stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
 
      # Classify our tokens
      initialTokens.each do |initialToken|
 
-#       if /\n/.match initialToken
-         
-         stanzas.last.push initialToken
-#       end
-     end
+       # Create a new stanza
+       if /\s{3}\d+\s{2}_/.match initialToken
 
-     puts @teiDocument.to_xml
-     exit 1
+         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1)
+       end
+
+       stanzas.last.push initialToken
+     end
+   end
+
+   def parsePoem_deprecated
 
      # stanzas = @poem.split(/(?<!08|_)_/)
      stanzas = [@poem]

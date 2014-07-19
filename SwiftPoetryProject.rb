@@ -985,7 +985,26 @@ EOF
             respStmtElem.add_child(nameElem)
           end
           
-          @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)     
+          @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
+        elsif /Scanned by & date\:/.match(line)
+
+          # «MDBO»Scanned by & date:«MDNM» AGendler 22JE04
+          respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
+
+          nameElem = Nokogiri::XML::Node.new('name', @teiDocument)
+
+          m = /Scanned by & date:«MDNM» (.+)/.match(line)
+
+          if m
+
+            name = m[1]
+            nameElem['key'] = name
+            respStmtElem.add_child(nameElem)
+          end
+
+          respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
+          respElem.content = 'scanning'
+          respStmtElem.add_child(respElem)
         else
 
           raise NotImplementedError, "Failed to parse the header value #{line}"

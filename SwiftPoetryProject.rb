@@ -2340,7 +2340,7 @@ EOF
          if m
 
            # For handling linking between Documents
-           documentMatch = / to ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
+           documentMatch = / (?:to|of) ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
 
            if documentMatch
 
@@ -2395,6 +2395,7 @@ EOF
                @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
              else
 
+               puts @teiDocument.to_xml
                raise NotImplementedError, "Could not resolve the author for #{authorText}"
              end
            end

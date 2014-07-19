@@ -861,9 +861,9 @@ EOF
 
       # Parse for the title and headnotes
 
-      if lines[0] and lines[0].match(/##\r?\n/)
+      if lines[0]
         
-        lines = lines[0].split(/##\r?\n/)
+        lines = lines[0].split(/##\r?\n/) if lines[0].match(/##\r?\n/)
 
         # Parsing the title and the headnotes
         @titleAndHeadnote = lines.shift
@@ -895,6 +895,10 @@ EOF
           
           @workType = POEM
         end
+
+      else
+
+        raise NotImplementedError, "Failed to parse Nota Bene title and headnotes #{lines[0]}"
       end
 
       if @workType == POEM
@@ -1123,15 +1127,13 @@ EOF
       # _«MDRV»«FN1«MDNM»·«MDUL»O navis, referent in marete_novi Fluctus«MDNM».«MDRV»»«MDNM»
       raise NotImplementedError.new "Parsing for Nota Bene footnote tokens between multiple lines not implemented"
 
-=begin      
       # ...inspect as to whether or not the line terminates this footnote block...
       # REFACTOR
-      if line.count '»' % 2 > 0
-        
-        node = lineElem.at_xpath('tei:note[last()]', TEI_NS)
-        node.add_child Nokogiri::XML::Text::new m[1], @teiDocument
-      end
-=end
+#      if line.count '»' % 2 > 0
+#        
+#        node = lineElem.at_xpath('tei:note[last()]', TEI_NS)
+#        node.add_child Nokogiri::XML::Text::new m[1], @teiDocument
+#      end
     end
 
     return lineElem

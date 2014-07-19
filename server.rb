@@ -77,7 +77,7 @@ get '/archive/:collId' do
     Dir.mkdir(tmpCollDirPath, 0755)
   end
 
-  Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
+  Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) not /tochk/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
 
     doc_id = File.basename(file_path)
     teiP5FilePath = "#{tmpCollDirPath}/#{doc_id}.xml"

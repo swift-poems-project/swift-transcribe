@@ -19,7 +19,7 @@ describe 'TeiParser' do
         @nb_store_path = '/usr/share/spp/ruby-tools/spp/master'
 
         Dir.glob("#{coll_path}/*").select { |path|
-          not path['578-MISC'] and not path['TRANSCRI'] and not path['FOXON'] and not path['PUMP'] and not path['ANOTHER'] and not path['tocheck'] and not path['WILH'] and not path['Smythe of Barbavilla.doc']
+          not path['578-MISC'] and not path['TRANSCRI'] and not path['FOXON'] and not path['PUMP'] and not path['ANOTHER'] and not path['tocheck'] and not path['WILH'] and not path['Smythe of Barbavilla.doc'] and not path['tochk']
 
         }.each do |file_path|
 

@@ -577,16 +577,13 @@ EOF
     end
   end
 
-=begin
-<p>The manuscript contains the following marginalia:
-  <list>
-<item>
-<ref target="l[@n='L3.284']"></ref>
-</item>
-  </list>
-</p>
-=end
-
+# <p>The manuscript contains the following marginalia:
+#   <list>
+# <item>
+# <ref target="l[@n='L3.284']"></ref>
+# </item>
+#   </list>
+# </p>
 
   class TeiParser
     
@@ -954,7 +951,7 @@ EOF
           respStmtElem.add_child(respElem)
 
           @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
-        elsif /Proofed by & dates:/.match(line)
+        elsif /Proofed by & dates?:/.match(line)
           
           respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
           
@@ -987,7 +984,7 @@ EOF
           @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)     
         else
 
-          raise NotImplementedError
+          raise NotImplementedError, "Failed to parse the header value #{line}"
         end
       end
     end

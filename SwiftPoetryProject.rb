@@ -779,131 +779,136 @@ EOF
       end
     end
 
-    def initialize(filePath, kwargs = {})
+    # Create a parser for a Nota Bene document
+    #
+    # @param [String] filePath
+    # @param [Hash] options
+    def initialize(filePath, options = {})
 
-    @filePath = filePath
+      @filePath = filePath
+      @objectPid = options[:objectPid]
     
-    @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
+      @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
 
-    # Should resolve issues related to the parsing of certain unicode characters
-    @teiDocument.encoding = 'utf-8'
+      # Should resolve issues related to the parsing of certain unicode characters
+      @teiDocument.encoding = 'utf-8'
 
-    @textElem = @teiDocument.at_xpath('tei:TEI/tei:text/tei:body', TEI_NS)
+      @textElem = @teiDocument.at_xpath('tei:TEI/tei:text/tei:body', TEI_NS)
 
-    if filePath
+      if filePath
     
-      # Read the file and convert the CP437 encoding into UTF-8
-      lines = File.read(@filePath, :encoding => 'cp437:utf-8')
-    else
+        # Read the file and convert the CP437 encoding into UTF-8
+        lines = File.read(@filePath, :encoding => 'cp437:utf-8')
+      else
       
-      lines = kwargs[:lines]
-
-      if not lines
-
-        # Raise an exception if lines and filePath are nil
-        raise Exception.new "Parser instantiated without providing Nota Bene text"
+        lines = options[:lines]
+        
+        if not lines
+          
+          # Raise an exception if lines and filePath are nil
+          raise Exception.new "Parser instantiated without providing Nota Bene text"
+        end
       end
-    end
 
-    # There are no poems which are isolated from an identified source
-    @bookElem = @textElem.at_xpath('tei:div', TEI_NS)
+      # There are no poems which are isolated from an identified source
+      @bookElem = @textElem.at_xpath('tei:div', TEI_NS)
 
-    @workType = POEM
+      @workType = POEM
 
-    # To each <div> shall be delegated a transcription file
-    # Extract and strip certain metadata values at the document level
-    # Extract the document ID
+      # To each <div> shall be delegated a transcription file
+      # Extract and strip certain metadata values at the document level
+      # Extract the document ID
       @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
 
       m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
 
-    # Searching for alternate patterns
-    # Y46B45L5
-    m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
+      # Searching for alternate patterns
+      # Y46B45L5
+      m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
 
-    if m
+      if m
 
-      @poemID = m[1]
+        @poemID = m[1]
 
-      # Remove the poem ID (and trailing whitespace)
-      # Now this is being used for newline detection
-      # lines.gsub!(/#{@poemID}   /, '')
+        # Remove the poem ID (and trailing whitespace)
+        # Now this is being used for newline detection
+        # lines.gsub!(/#{@poemID}   /, '')
 
-      @poemElem['n'] = @poemID
-    else
-
-      raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format"
-    end
-
-    # Retrieve the collection name from the NUMBERS index
-    updateCollectionName
-
-    # cp437 Encoding
-    # lines = lines.split("$$\r\n")
-    lines = lines.split(/\$\$\r?\n/)
-
-    @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
-    # Parsing the header
-    @heading = lines.shift
-
-    if not lines[0] and @filePath
-
-      raise NoteBeneFormatException.new "#{@filePath} is not a Nota Bene document."
-    end
-
-    # The tokens should be related to a single document
-    @documentTokens = []
-    @termToken = nil
-
-    # By default, all documents are poems
-    @workType = POEM
-
-    # Parse for the title and headnotes
-
-    if lines[0] and lines[0].match(/##\r?\n/)
-
-      lines = lines[0].split(/##\r?\n/)
-
-      # Parsing the title and the headnotes
-      @titleAndHeadnote = lines.shift
-
-      if @titleAndHeadnote.match(/letter/i)
-
-        @workType = LETTER
-      end
-
-      # There are documents which contain annotations only
-      if lines[0]
-        
-        lines = lines[0].split(/%%\r?\n/)
+        @poemElem['n'] = @poemID
       else
-
-        lines = @titleAndHeadnote
-      end
-
-      # Parsing the poem and generating the appropriate TEI elements
-      @poem = lines[0]
-
-      @stanzaIndex = 1
-      @noteIndex = 1
-      
-      # Parsing the footnotes, marginal notes, and other misc. notes
-      @footNotes = lines[1]
-
-      if @workType != LETTER and @footNotes.match(/poem/i)
         
-        @workType = POEM
+        raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format"
+      end
+
+      # Retrieve the collection name from the NUMBERS index
+      updateCollectionName
+
+      # cp437 Encoding
+      # lines = lines.split("$$\r\n")
+      lines = lines.split(/\$\$\r?\n/)
+
+      @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
+      # Parsing the header
+      @heading = lines.shift
+
+      if not lines[0] and @filePath
+
+        raise NoteBeneFormatException.new "#{@filePath} is not a Nota Bene document."
+      end
+
+      # The tokens should be related to a single document
+      @documentTokens = []
+      @termToken = nil
+
+      # By default, all documents are poems
+      @workType = POEM
+
+      # Parse for the title and headnotes
+
+      if lines[0] and lines[0].match(/##\r?\n/)
+        
+        lines = lines[0].split(/##\r?\n/)
+
+        # Parsing the title and the headnotes
+        @titleAndHeadnote = lines.shift
+
+        if @titleAndHeadnote.match(/letter/i)
+
+          @workType = LETTER
+        end
+
+        # There are documents which contain annotations only
+        if lines[0]
+        
+          lines = lines[0].split(/%%\r?\n/)
+        else
+
+          lines = @titleAndHeadnote
+        end
+
+        # Parsing the poem and generating the appropriate TEI elements
+        @poem = lines[0]
+
+        @stanzaIndex = 1
+        @noteIndex = 1
+      
+        # Parsing the footnotes, marginal notes, and other misc. notes
+        @footNotes = lines[1]
+        
+        if @workType != LETTER and @footNotes.match(/poem/i)
+          
+          @workType = POEM
+        end
+      end
+
+      if @workType == POEM
+        
+        @poemElem['type'] = 'poem'
+      elsif @workType == LETTER
+        
+        @poemElem['type'] = 'letter'
       end
     end
-
-    if @workType == POEM
-      
-      @poemElem['type'] = 'poem'
-    elsif @workType == LETTER
-      
-      @poemElem['type'] = 'letter'
-    end
-  end
 
   def parse
 
@@ -2334,21 +2339,67 @@ EOF
 
          if m
 
-           authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS).content
+           # For handling linking between Documents
+           documentMatch = / to ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
 
-           # In some cases, the author name is prepended with the string "By "; This should be removed
-           m = /By (.+)/.match(authorText)
+           if documentMatch
 
-           authorText = m[1] if m
+             # Construct the URI for the XPointer
+             linkedPoemId = "#{documentMatch[1]}"
+             ptrTargetUri = "info:fedora/#{@objectPid}/TEI#xpath1(//div[@n='#{linkedPoemId}'])"
+
+             ptrElem = Nokogiri::XML::Node.new('ptr', @teiDocument)
+             ptrElem['target'] = ptrTargetUri
+             
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
+
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
+
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
+             end
+
+             headElem.add_child ptrElem
+           else
+
+             # authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS).content
+             authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS)
+
+             if authorText
+
+               authorText = authorText.content
+
+               # In some cases, the author name is prepended with the string "By "; This should be removed
+               m = /By (.+)/.match(authorText)
+
+               authorText = m[1] if m
+               authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
+       
+               authorElem.content = authorText
+               authorElem = parseNotaBeneToken('', '', authorElem)
+       
+               @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
+             else
+
+               raise NotImplementedError, "Could not resolve the author for #{authorText}"
+             end
+           end
          end
        end
-
-       authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
-       
-       authorElem.content = authorText
-       authorElem = parseNotaBeneToken('', '', authorElem)
-       
-       @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
      end
    end
 
@@ -2377,7 +2428,9 @@ EOF
      str = ''
 
      text = stripNotaBeneTokens(searchStr)
-     containsSearchStr = true if targetElem.content.match(/#{text}/)
+     text = Regexp.escape(text)
+
+     containsSearchStr = true if targetElem.content.match(/#{ text }/)
 
      elems = Nokogiri::XML::NodeSet.new(@teiDocument)
      targetElem.children.each do |child|
@@ -2385,7 +2438,7 @@ EOF
        # If the child node is a text node...
        if child.text?
                      
-         m = child.content.match(/#{text}/)
+         m = child.content.match(/#{ text }/)
                     
          # If the text is found within the current text node...
          if m

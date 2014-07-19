@@ -2370,6 +2370,7 @@ EOF
              
              # Locate the <head> element to be linked
              # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
 
              headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
              if not headElem
@@ -2394,27 +2395,48 @@ EOF
            else
 
              # authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS).content
-             authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS)
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS)
 
-             if authorText
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
 
-               authorText = authorText.content
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
 
-               # In some cases, the author name is prepended with the string "By "; This should be removed
-               m = /By (.+)/.match(authorText)
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
 
-               authorText = m[1] if m
-               authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
-       
-               authorElem.content = authorText
-               authorElem = parseNotaBeneToken('', '', authorElem)
-       
-               @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
-             else
-
-               puts @teiDocument.to_xml
-               raise NotImplementedError, "Could not resolve the author for #{authorText}"
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
              end
+
+             authorText = headElem.content
+
+             # In some cases, the author name is prepended with the string "By "; This should be removed
+             m = /By (.+)/.match(authorText)
+
+             authorText = m[1] if m
+             authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
+       
+             authorElem.content = authorText
+             authorElem = parseNotaBeneToken('', '', authorElem)
+       
+             @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
+             # else
+
+             #  puts @teiDocument.to_xml
+             #  raise NotImplementedError, "Could not resolve the author for #{authorText}"
+             #end
            end
          end
        end

@@ -826,19 +826,18 @@ EOF
       # Y46B45L5
       m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
 
-      if m
+      # «MDBO»Filename:«MDNM» 920-0201
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{8})/.match(lines) if not m
 
-        @poemID = m[1]
+      raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
 
-        # Remove the poem ID (and trailing whitespace)
-        # Now this is being used for newline detection
-        # lines.gsub!(/#{@poemID}   /, '')
+      @poemID = m[1]
 
-        @poemElem['n'] = @poemID
-      else
-        
-        raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format"
-      end
+      # Remove the poem ID (and trailing whitespace)
+      # Now this is being used for newline detection
+      # lines.gsub!(/#{@poemID}   /, '')
+
+      @poemElem['n'] = @poemID
 
       # Retrieve the collection name from the NUMBERS index
       updateCollectionName

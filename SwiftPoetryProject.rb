@@ -26,6 +26,7 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
+        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>
@@ -67,6 +68,7 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
+        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>
@@ -2359,14 +2361,63 @@ EOF
 
        if m
 
-         authorText = stripNotaBeneTokens(@headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS).content)
+         titleElem = @headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS)
+
+         title = titleElem.content
+         authorText = stripNotaBeneTokens(title)
          
          # When handling the content of the editor's annotations, text can only be parsed to a certain complexity
-         m = /By (.+)/.match(authorText)
-         if m
+
+         if /By (.+)/.match(authorText)
+
+           m = /By (.+)/.match(authorText)
 
            # Remove the terminating period
            authorText = m[1].gsub!(/\.$/, '')
+
+         elsif /title of (.+)\)?/.match(authorText)
+
+           # @todo Refactor
+           # For handling linking between Documents
+           documentMatch = / (?:to|of) ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
+
+           if documentMatch
+
+             # Construct the URI for the XPointer
+             linkedPoemId = "#{documentMatch[1]}"
+             ptrTargetUri = "info:fedora/#{@objectPid}/TEI#xpath1(//div[@n='#{linkedPoemId}'])"
+
+             ptrElem = Nokogiri::XML::Node.new('ptr', @teiDocument)
+             ptrElem['target'] = ptrTargetUri
+             
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
+
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
+
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
+
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
+             end
+
+             headElem.add_child ptrElem
+           end           
+         else
+
+           nil
          end
        else
 

@@ -826,7 +826,7 @@ EOF
       m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
 
       # «MDBO»Filename:«MDNM» 920-0201
-      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{8})/.match(lines) if not m
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(lines) if not m
 
       raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
 

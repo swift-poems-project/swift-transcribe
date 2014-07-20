@@ -1005,6 +1005,25 @@ EOF
           respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
           respElem.content = 'scanning'
           respStmtElem.add_child(respElem)
+        elsif /File prepared by & date\:/.match(line)
+
+          # «MDBO»Scanned by & date:«MDNM» AGendler 22JE04
+          respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
+
+          nameElem = Nokogiri::XML::Node.new('name', @teiDocument)
+
+          m = /File prepared by & date:«MDNM» (.+)/.match(line)
+
+          if m
+
+            name = m[1]
+            nameElem['key'] = name
+            respStmtElem.add_child(nameElem)
+          end
+
+          respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
+          respElem.content = 'Filed prepared by'
+          respStmtElem.add_child(respElem)          
         else
 
           raise NotImplementedError, "Failed to parse the header value #{line}"

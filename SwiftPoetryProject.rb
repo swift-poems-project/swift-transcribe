@@ -2557,7 +2557,7 @@ EOF
            strs = child.content.split(/(?=#{text})|(?<=#{text})/)
 
            # ...if the phrase occurs more than once, attempt to further split the line
-           strs = child.content.split(/\w#{text}\w/) if strs.length > 3
+           strs = child.content.split(/\s#{text}\s/) if strs.length > 3
 
            # If the phrase occurs more than once
            if strs.length > 3

@@ -26,6 +26,7 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
+        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>
@@ -67,6 +68,7 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
+        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>
@@ -577,16 +579,13 @@ EOF
     end
   end
 
-=begin
-<p>The manuscript contains the following marginalia:
-  <list>
-<item>
-<ref target="l[@n='L3.284']"></ref>
-</item>
-  </list>
-</p>
-=end
-
+# <p>The manuscript contains the following marginalia:
+#   <list>
+# <item>
+# <ref target="l[@n='L3.284']"></ref>
+# </item>
+#   </list>
+# </p>
 
   class TeiParser
     
@@ -779,49 +778,57 @@ EOF
       end
     end
 
-    def initialize(filePath, kwargs = {})
+    # Create a parser for a Nota Bene document
+    #
+    # @param [String] filePath
+    # @param [Hash] options
+    def initialize(filePath, options = {})
 
-    @filePath = filePath
+      @filePath = filePath
+      @objectPid = options[:objectPid]
     
-    @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
+      @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
 
-    # Should resolve issues related to the parsing of certain unicode characters
-    @teiDocument.encoding = 'utf-8'
+      # Should resolve issues related to the parsing of certain unicode characters
+      @teiDocument.encoding = 'utf-8'
 
-    @textElem = @teiDocument.at_xpath('tei:TEI/tei:text/tei:body', TEI_NS)
+      @textElem = @teiDocument.at_xpath('tei:TEI/tei:text/tei:body', TEI_NS)
 
-    if filePath
+      if filePath
     
-      # Read the file and convert the CP437 encoding into UTF-8
-      lines = File.read(@filePath, :encoding => 'cp437:utf-8')
-    else
+        # Read the file and convert the CP437 encoding into UTF-8
+        lines = File.read(@filePath, :encoding => 'cp437:utf-8')
+      else
       
-      lines = kwargs[:lines]
-
-      if not lines
-
-        # Raise an exception if lines and filePath are nil
-        raise Exception.new "Parser instantiated without providing Nota Bene text"
+        lines = options[:lines]
+        
+        if not lines
+          
+          # Raise an exception if lines and filePath are nil
+          raise Exception.new "Parser instantiated without providing Nota Bene text"
+        end
       end
-    end
 
-    # There are no poems which are isolated from an identified source
-    @bookElem = @textElem.at_xpath('tei:div', TEI_NS)
+      # There are no poems which are isolated from an identified source
+      @bookElem = @textElem.at_xpath('tei:div', TEI_NS)
 
-    @workType = POEM
+      @workType = POEM
 
-    # To each <div> shall be delegated a transcription file
-    # Extract and strip certain metadata values at the document level
-    # Extract the document ID
+      # To each <div> shall be delegated a transcription file
+      # Extract and strip certain metadata values at the document level
+      # Extract the document ID
       @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
 
       m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(lines)
 
-    # Searching for alternate patterns
-    # Y46B45L5
-    m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
+      # Searching for alternate patterns
+      # Y46B45L5
+      m = /([0-9A-Z\!\-]{8})   /.match(lines) if not m
 
-    if m
+      # «MDBO»Filename:«MDNM» 920-0201
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(lines) if not m
+
+      raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
 
       @poemID = m[1]
 
@@ -830,80 +837,80 @@ EOF
       # lines.gsub!(/#{@poemID}   /, '')
 
       @poemElem['n'] = @poemID
-    else
 
-      raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format"
-    end
+      # Retrieve the collection name from the NUMBERS index
+      updateCollectionName
 
-    # Retrieve the collection name from the NUMBERS index
-    updateCollectionName
+      # cp437 Encoding
+      # lines = lines.split("$$\r\n")
+      lines = lines.split(/\$\$\r?\n/)
 
-    # cp437 Encoding
-    # lines = lines.split("$$\r\n")
-    lines = lines.split(/\$\$\r?\n/)
+      @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
+      # Parsing the header
+      @heading = lines.shift
 
-    @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
-    # Parsing the header
-    @heading = lines.shift
+      if not lines[0] and @filePath
 
-    if not lines[0] and @filePath
-
-      raise NoteBeneFormatException.new "#{@filePath} is not a Nota Bene document."
-    end
-
-    # The tokens should be related to a single document
-    @documentTokens = []
-    @termToken = nil
-
-    # By default, all documents are poems
-    @workType = POEM
-
-    # Parse for the title and headnotes
-
-    if lines[0] and lines[0].match(/##\r?\n/)
-
-      lines = lines[0].split(/##\r?\n/)
-
-      # Parsing the title and the headnotes
-      @titleAndHeadnote = lines.shift
-
-      if @titleAndHeadnote.match(/letter/i)
-
-        @workType = LETTER
+        raise NoteBeneFormatException.new "#{@filePath} is not a Nota Bene document."
       end
 
-      # There are documents which contain annotations only
+      # The tokens should be related to a single document
+      @documentTokens = []
+      @termToken = nil
+
+      # By default, all documents are poems
+      @workType = POEM
+
+      # Parse for the title and headnotes
+
       if lines[0]
         
-        lines = lines[0].split(/%%\r?\n/)
+        lines = lines[0].split(/##\r?\n/) if lines[0].match(/##\r?\n/)
+
+        # Parsing the title and the headnotes
+        @titleAndHeadnote = lines.shift
+
+        if @titleAndHeadnote.match(/letter/i)
+
+          @workType = LETTER
+        end
+
+        # There are documents which contain annotations only
+        if lines[0]
+        
+          lines = lines[0].split(/%%\r?\n/)
+        else
+
+          lines = @titleAndHeadnote
+        end
+
+        # Parsing the poem and generating the appropriate TEI elements
+        @poem = lines[0]
+
+        @stanzaIndex = 1
+        @noteIndex = 1
+      
+        # Parsing the footnotes, marginal notes, and other misc. notes
+        @footNotes = lines[1]
+        
+        if @workType != LETTER and @footNotes.match(/poem/i)
+          
+          @workType = POEM
+        end
+
       else
 
-        lines = @titleAndHeadnote
+        raise NotImplementedError, "Failed to parse Nota Bene title and headnotes #{lines[0]}"
       end
 
-      # Parsing the poem and generating the appropriate TEI elements
-      @poem = lines[0]
-
-      @stanzaIndex = 1
-      @noteIndex = 1
-      
-      # Parsing the footnotes, marginal notes, and other misc. notes
-      @footNotes = lines[1]
-
-      if @workType != LETTER and @footNotes.match(/poem/i)
+      if @workType == POEM
         
-        @workType = POEM
+        @poemElem['type'] = 'poem'
+      elsif @workType == LETTER
+        
+        @poemElem['type'] = 'letter'
       end
     end
-
-    if @workType == POEM
-      
-      @poemElem['type'] = 'poem'
-    elsif @workType == LETTER
-      
-      @poemElem['type'] = 'letter'
-    end
-  end
 
   def parse
 
@@ -954,7 +961,7 @@ EOF
           respStmtElem.add_child(respElem)
 
           @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
-        elsif /Proofed by & dates:/.match(line)
+        elsif /Proofed by & dates?:/.match(line)
           
           respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
           
@@ -984,10 +991,48 @@ EOF
             respStmtElem.add_child(nameElem)
           end
           
-          @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)     
+          @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
+        elsif /Scanned by & date\:/.match(line)
+
+          # «MDBO»Scanned by & date:«MDNM» AGendler 22JE04
+          respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
+
+          nameElem = Nokogiri::XML::Node.new('name', @teiDocument)
+
+          m = /Scanned by & date:«MDNM» (.+)/.match(line)
+
+          if m
+
+            name = m[1]
+            nameElem['key'] = name
+            respStmtElem.add_child(nameElem)
+          end
+
+          respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
+          respElem.content = 'scanning'
+          respStmtElem.add_child(respElem)
+        elsif /File prepared by & date\:/.match(line)
+
+          # «MDBO»Scanned by & date:«MDNM» AGendler 22JE04
+          respStmtElem = Nokogiri::XML::Node.new('respStmt', @teiDocument)
+
+          nameElem = Nokogiri::XML::Node.new('name', @teiDocument)
+
+          m = /File prepared by & date:«MDNM» (.+)/.match(line)
+
+          if m
+
+            name = m[1]
+            nameElem['key'] = name
+            respStmtElem.add_child(nameElem)
+          end
+
+          respElem = Nokogiri::XML::Node.new('resp', @teiDocument)
+          respElem.content = 'Filed prepared by'
+          respStmtElem.add_child(respElem)          
         else
 
-          raise NotImplementedError
+          raise NotImplementedError, "Failed to parse the header value #{line}"
         end
       end
     end
@@ -1126,15 +1171,13 @@ EOF
       # _«MDRV»«FN1«MDNM»·«MDUL»O navis, referent in marete_novi Fluctus«MDNM».«MDRV»»«MDNM»
       raise NotImplementedError.new "Parsing for Nota Bene footnote tokens between multiple lines not implemented"
 
-=begin      
       # ...inspect as to whether or not the line terminates this footnote block...
       # REFACTOR
-      if line.count '»' % 2 > 0
-        
-        node = lineElem.at_xpath('tei:note[last()]', TEI_NS)
-        node.add_child Nokogiri::XML::Text::new m[1], @teiDocument
-      end
-=end
+#      if line.count '»' % 2 > 0
+#        
+#        node = lineElem.at_xpath('tei:note[last()]', TEI_NS)
+#        node.add_child Nokogiri::XML::Text::new m[1], @teiDocument
+#      end
     end
 
     return lineElem
@@ -2322,14 +2365,63 @@ EOF
 
        if m
 
-         authorText = stripNotaBeneTokens(@headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS).content)
+         titleElem = @headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS)
+
+         title = titleElem.content
+         authorText = stripNotaBeneTokens(title)
          
          # When handling the content of the editor's annotations, text can only be parsed to a certain complexity
-         m = /By (.+)/.match(authorText)
-         if m
+
+         if /By (.+)/.match(authorText)
+
+           m = /By (.+)/.match(authorText)
 
            # Remove the terminating period
            authorText = m[1].gsub!(/\.$/, '')
+
+         elsif /title of (.+)\)?/.match(authorText)
+
+           # @todo Refactor
+           # For handling linking between Documents
+           documentMatch = / (?:to|of) ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
+
+           if documentMatch
+
+             # Construct the URI for the XPointer
+             linkedPoemId = "#{documentMatch[1]}"
+             ptrTargetUri = "info:fedora/#{@objectPid}/TEI#xpath1(//div[@n='#{linkedPoemId}'])"
+
+             ptrElem = Nokogiri::XML::Node.new('ptr', @teiDocument)
+             ptrElem['target'] = ptrTargetUri
+             
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
+
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
+
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
+
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
+             end
+
+             headElem.add_child ptrElem
+           end           
+         else
+
+           nil
          end
        else
 
@@ -2338,21 +2430,90 @@ EOF
 
          if m
 
-           authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS).content
+           # For handling linking between Documents
+           documentMatch = / (?:to|of) ([0-9A-Z]{3}\-?[0-9A-Z]{4})/.match authorText
 
-           # In some cases, the author name is prepended with the string "By "; This should be removed
-           m = /By (.+)/.match(authorText)
+           if documentMatch
 
-           authorText = m[1] if m
+             # Construct the URI for the XPointer
+             linkedPoemId = "#{documentMatch[1]}"
+             ptrTargetUri = "info:fedora/#{@objectPid}/TEI#xpath1(//div[@n='#{linkedPoemId}'])"
+
+             ptrElem = Nokogiri::XML::Node.new('ptr', @teiDocument)
+             ptrElem['target'] = ptrTargetUri
+             
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
+
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
+
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
+
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
+             end
+
+             headElem.add_child ptrElem
+           else
+
+             # authorText = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS).content
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']/text()", TEI_NS)
+
+             # Locate the <head> element to be linked
+             # (If this <head> element hasn't been appended, append it)
+             # @todo Refactor
+
+             headElem = @poemElem.at_xpath("tei:head[@n='#{m[1]}']", TEI_NS)
+             if not headElem
+
+               # @todo Refactor
+               # @textElem.at_xpath("tei:front", TEI_NS).add_child ptrElem
+               frontElem = @textElem.at_xpath("tei:front", TEI_NS)
+               if not frontElem
+
+                 # @todo Refactor
+                 frontElem = Nokogiri::XML::Node.new('front', @teiDocument)
+                 @textElem.add_previous_sibling(frontElem)
+               end
+               
+               # Add the new header elee
+               # @todo Refactor
+               headElem = Nokogiri::XML::Node.new('head', @teiDocument)
+               frontElem.add_child(headElem)
+             end
+
+             authorText = headElem.content
+
+             # In some cases, the author name is prepended with the string "By "; This should be removed
+             m = /By (.+)/.match(authorText)
+
+             authorText = m[1] if m
+             authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
+       
+             authorElem.content = authorText
+             authorElem = parseNotaBeneToken('', '', authorElem)
+       
+             @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
+             # else
+
+             #  puts @teiDocument.to_xml
+             #  raise NotImplementedError, "Could not resolve the author for #{authorText}"
+             #end
+           end
          end
        end
-
-       authorElem = Nokogiri::XML::Node.new('author', @teiDocument)
-       
-       authorElem.content = authorText
-       authorElem = parseNotaBeneToken('', '', authorElem)
-       
-       @headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(authorElem)
      end
    end
 
@@ -2381,7 +2542,9 @@ EOF
      str = ''
 
      text = stripNotaBeneTokens(searchStr)
-     containsSearchStr = true if targetElem.content.match(/#{text}/)
+     text = Regexp.escape(text)
+
+     containsSearchStr = true if targetElem.content.match(/#{ text }/)
 
      elems = Nokogiri::XML::NodeSet.new(@teiDocument)
      targetElem.children.each do |child|
@@ -2389,7 +2552,7 @@ EOF
        # If the child node is a text node...
        if child.text?
                      
-         m = child.content.match(/#{text}/)
+         m = child.content.match(/#{ text }/)
                     
          # If the text is found within the current text node...
          if m
@@ -2398,7 +2561,7 @@ EOF
            strs = child.content.split(/(?=#{text})|(?<=#{text})/)
 
            # ...if the phrase occurs more than once, attempt to further split the line
-           strs = child.content.split(/\w#{text}\w/) if strs.length > 3
+           strs = child.content.split(/\s#{text}\s/) if strs.length > 3
 
            # If the phrase occurs more than once
            if strs.length > 3

@@ -828,6 +828,8 @@ EOF
       # «MDBO»Filename:«MDNM» 920-0201
       m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(lines) if not m
 
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-#\$]{7,8}[#\$@]?)/.match(lines) if not m
+
       raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
 
       @poemID = m[1]
@@ -1123,7 +1125,6 @@ EOF
 
             footNoteContent = m[2]
 
-            # puts footNoteContent
             # Work-around for SPP-73
             # Refactor the tokens
             # @isNextLineFn = true
@@ -2003,108 +2004,114 @@ EOF
      return lineIndex
    end
 
-   class TeiStanza
+   class TeiLine
 
-     attr_reader :document, :elem
+     attr_reader :elem, :has_opened_tag
 
-     class TeiLine
+     def initialize(workType, stanza)
 
-       attr_reader :elem, :has_opened_tag
+       @workType = workType
+       @stanza = stanza
 
-       def initialize(workType, stanza)
+       # @teiDocument = teiDocument
+       @teiDocument = stanza.document
 
-         @workType = workType
-         @stanza = stanza
+       @lineElemName = @workType == POEM ? 'l' : 'p'
 
-         # @teiDocument = teiDocument
-         @teiDocument = stanza.document
+       # Set the current leaf of the tree being constructed to be the root node itself
+       @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
+       stanza.elem.add_child @elem
 
-         @lineElemName = @workType == POEM ? 'l' : 'p'
+       @current_leaf = @elem
+       @tokens = []
+     end
 
-         # Set the current leaf of the tree being constructed to be the root node itself
-         @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
-         stanza.elem.add_child @elem
+     # Add this as a text node for the current line element
+     def pushText(token)
 
-         @current_leaf = @elem
-         @tokens = []
+       # Remove the 8 character identifier from the beginning of the line
+       indexMatch = /\s{3}(\d+)\s{2}/.match token
+       if indexMatch
+
+         @elem['n'] = indexMatch.to_s.strip
+
+         # token = token.sub /[!#\$A-Z0-9]{8}\s{3}(\d+)\s{2}_?/, ''
+         token = token.sub /\s{3}(\d+)\s{2}_?/, ''
        end
 
-       # Add this as a text node for the current line element
-       def pushText(token)
+       # Transform triplet indicators for the stanza
+       if /\s3\}$/.match token
 
-         # Remove the 8 character identifier from the beginning of the line
-         indexMatch = /\s{3}(\d+)\s{2}/.match token
-         if indexMatch
+         @stanza.elem['type'] = 'triplet'
+         token = token.sub /\s3\}$/, ''
+       end
 
-           @elem['n'] = indexMatch.to_s.strip
-           token = token.sub /\s{3}(\d+)\s{2}_?/, ''
-         end
+       # Transform pipes into @rend values
+       if /\|/.match token and @current_leaf === @elem
 
-         # Transform triplet indicators for the stanza
-         if /\s3\}$/.match token
+         @current_leaf['rend'] = 'indent('+((token.split /\|/).size - 1).to_s+')'
+         token = token.sub /\|/, ''
+       end
 
-           @stanza.elem['type'] = 'triplet'
-           token = token.sub /\s3\}$/, ''
-         end
-
-         # Transform pipes into @rend values
-         if /\|/.match token and @current_leaf === @elem
-
-           @current_leaf['rend'] = 'indent('+((token.split /\|/).size - 1).to_s+')'
-           token = token.sub /\|/, ''
-         end
-
-         # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-         NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+       NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
                    
-           token = token.gsub(nbCharTokenPattern, utf8Char)
-         end
-
-         @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
+         token = token.gsub(nbCharTokenPattern, utf8Char)
        end
 
-       def pushToken(token)
+       @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
+     end
 
-         # If this is the first line, or, if this tag must be closed...
-         if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+     def pushToken(token)
 
-           # Does this seem to close the current leaf?
-           if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+       # If this is the first line, or, if this tag must be closed...
+       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+         
+         # Does this seem to close the current leaf?
+         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
 
-             # One cannot resolve the tag name and attributes until both tags have been fully parsed
-             @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-             @current_leaf = @current_leaf.parent
+           # Iterate through all of the markup and set the appropriate TEI attributes
+           attribMap = NB_MARKUP_TEI_MAP[@current_leaf.name][token].values[0]
+           @current_leaf[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
 
-             @has_opened_tag = false
-           else
+           # One cannot resolve the tag name and attributes until both tags have been fully parsed
+           @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+           @current_leaf = @current_leaf.parent
 
-             # Add a new child node to the current leaf
-             # Temporarily use the token itself as a tagname
-             @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
-             @has_opened_tag = true
-           end
+           @has_opened_tag = false
          else
 
            # Add a new child node to the current leaf
            # Temporarily use the token itself as a tagname
-           # @todo Refactor
            @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
+           @has_opened_tag = true
          end
+       else
 
-         @tokens << token
+         # Add a new child node to the current leaf
+         # Temporarily use the token itself as a tagname
+         # @todo Refactor
+         @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
        end
 
-       def push(token)
+       @tokens << token
+     end
 
-         if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+     def push(token)
 
-           pushToken token
-         else
-
-           pushText token
-         end
+       if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+         
+         pushToken token
+       else
+         
+         pushText token
        end
      end
+   end
+
+   class TeiStanza
+
+     attr_reader :document, :elem
 
      def initialize(workType, poemElem, index)
 
@@ -2137,8 +2144,7 @@ EOF
 
        if @lines.last.has_opened_tag
 
-         puts @lines.last.elem
-         raise NotImplementedError
+         raise NotImplementedError, "A Nota Bene tag was not properly closed: #{@lines.last.elem.to_xml}"
 
          # Assumes a depth of 1 from <l> element
          newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
@@ -2173,9 +2179,9 @@ EOF
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
 
-     initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
-
-     # puts initialTokens
+     # initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+     # initialTokens = @poem.split /(?=«)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
      poemTokens = []
      stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
@@ -2187,6 +2193,15 @@ EOF
        if /\s{3}\d+\s{2}_/.match initialToken
 
          stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1)
+       end
+
+       # Solution implemented for SPP-86
+       #
+       # @todo Refactor
+       # puts initialToken
+       if initialToken.match /^[^«].+?»$/
+
+         raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
        end
 
        stanzas.last.push initialToken

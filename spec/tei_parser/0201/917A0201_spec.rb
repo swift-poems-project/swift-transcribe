@@ -10,13 +10,12 @@ describe 'TeiParser' do
   @nb_store_path = '/usr/share/spp/ruby-tools/spp/master'
   file_path = "#{@nb_store_path}/0201/917A0201"
 
-    it "parses the Nota Bene document #{file_path}" do
+  it "parses the Nota Bene document #{file_path}" do
+    
+    expect {
 
-      expect {
-
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        @parser.parse.to_xml
-      }.to_not raise_error
-    end
-
+      @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+      puts @parser.parse.to_xml
+    }.to_not raise_error
+  end
 end

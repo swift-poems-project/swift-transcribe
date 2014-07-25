@@ -108,9 +108,16 @@ line text: «MDNM»
        @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
      end
 
+     def pushSingleToken(token)
+
+       singleTag = @current_leaf.add_child Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @teiDocument
+
+       # @todo Address attributes
+     end
+
      def pushInitialToken(token)
 
-       puts "Opening tag: #{token}"
+       # logger.debug "Opening tag: #{token}"
 
        @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
        @has_opened_tag = true
@@ -124,10 +131,10 @@ line text: «MDNM»
        @opened_tags.unshift @opened_tag
 
        debugOutput = @stanza.opened_tags.map { |tag| tag.name }
-       puts "Updated tags for the stanza: #{debugOutput}"
+       # logger.debug "Updated tags for the stanza: #{debugOutput}"
 
        debugOutput = @opened_tags.map { |tag| tag.name }
-       puts "Updated tags for the line: #{debugOutput}"
+       # logger.debug "Updated tags for the line: #{debugOutput}"
        
        # If the tag is not specified within the markup map, raise an exception
        #
@@ -167,8 +174,8 @@ line text: «MDNM»
          # opened_tag = @stanza.opened_tags.shift
 
        debugOutput = @stanza.opened_tags.map {|tag| tag.name }
-       puts "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
-       puts @stanza.elem.to_xml
+       # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
+       # logger.debug @stanza.elem.to_xml
 
        # For terminal tokens, ensure that both the current line and preceding lines are closed by it
        # Hence, iterate through all matching opened tags within the stanza
@@ -182,7 +189,7 @@ line text: «MDNM»
          # @todo refactor
          @opened_tags.shift
 
-         puts "Closing tag: #{closed_tag.name}..."
+         # logger.debug "Closing tag: #{closed_tag.name}..."
 
          # Iterate through all of the markup and set the appropriate TEI attributes
          attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
@@ -191,8 +198,8 @@ line text: «MDNM»
          # One cannot resolve the tag name and attributes until both tags have been fully parsed
          closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
          
-         puts "Closed tag: #{closed_tag.name}"
-         puts "Updated element: #{closed_tag.to_xml}"
+         # logger.debug "Closed tag: #{closed_tag.name}"
+         # logger.debug "Updated element: #{closed_tag.to_xml}"
 
          # @current_leaf = opened_tag.parent
          # @opened_tag = @stanza.opened_tags.first
@@ -223,8 +230,8 @@ line text: «MDNM»
        # Check to see if this is a terminal token
        if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
-         puts "Does this line have an opened tag? #{!opened_tag.nil?}"
-         puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
+         # logger.debug "Does this line have an opened tag? #{!opened_tag.nil?}"
+         # logger.debug "Name of the opened tag: #{opened_tag.name}" if opened_tag
 
          pushTerminalToken token, opened_tag
          #
@@ -240,6 +247,10 @@ line text: «MDNM»
        elsif NB_MARKUP_TEI_MAP.has_key? token
 
          pushInitialToken token
+
+       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
+
+         pushSingleToken token
        else
 
 =begin
@@ -277,7 +288,7 @@ line text: «MDNM»
 
          raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
 
-         puts "Appending text to the line: #{token}"
+         # logger.debug "Appending text to the line: #{token}"
          
          pushText token
        end

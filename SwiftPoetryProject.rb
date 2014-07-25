@@ -3,16 +3,18 @@
 
 require 'nokogiri'
 require 'open-uri'
+require 'logger'
 
 require_relative 'TeiStanza'
 require_relative 'TeiLine'
-
-
 
 module SwiftPoetryProject
 
   POEM = 0
   LETTER = 1
+
+  # logger = Logger.new(STDOUT)
+  # logger.level = Logger::DEBUG
 
   class TeiParserException < Exception
     
@@ -2018,7 +2020,7 @@ EOF
 
    def parsePoem
 
-     puts "\n\nParsing #{@poemID}...\n\n"
+     # logger.debug "\n\nParsing #{@poemID}...\n\n"
 
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
@@ -2037,18 +2039,18 @@ EOF
      # Classify our tokens
      initialTokens.each do |initialToken|
 
-       puts "Parsing the following into a stanza: #{initialToken}"
+       # logger.debug "Parsing the following into a stanza: #{initialToken}"
 
        # Create a new stanza
        if /\s{3}\d+\s{2}_/.match initialToken
 
-         puts "Appending a new stanza: #{initialToken}"
-         puts "The last stanza: #{stanzas.last.elem.to_xml}"
-         puts "Does the last stanza have opened tags? #{!stanzas.last.opened_tags.empty?}"
-         puts "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
+         # logger.debug "Appending a new stanza: #{initialToken}"
+         # logger.debug "The last stanza: #{stanzas.last.elem.to_xml}"
+         # logger.debug "Does the last stanza have opened tags? #{!stanzas.last.opened_tags.empty?}"
+         # logger.debug "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
 
          # Append the new stanza to the poem body
-         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) })
+         stanzas << TeiStanza.new @workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) }
        end
 
        # Solution implemented for SPP-86
@@ -3370,11 +3372,11 @@ EOF
 
      #begin
 
-     puts "Parsing #{filePath}" if @verbose
+     # logger.debug "Parsing #{filePath}" if @verbose
      parser = TeiParser.new filePath
      parser.parse
      
-     puts parser.teiDocument if @verbose > 1
+     # logger.debug parser.teiDocument if @verbose > 1
      #rescue Exception => ex
        
        #puts"Warning: #{ex.message}"

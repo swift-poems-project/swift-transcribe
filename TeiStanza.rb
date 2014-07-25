@@ -106,6 +106,22 @@ module SwiftPoemsProject
     }
   }
 
+  # This hash is for Nota Bene tokens which encompass a single line (i. e. they are terminated by a newline character rather than another token)
+  NB_SINGLE_TOKEN_TEI_MAP = {
+
+    # The flush right (LD) delta
+    '«LD »' => {
+      
+      'head' => {}
+    },
+    
+    # Footnotes encompassing an entire line
+    '«FN1·»' => {
+      
+      'note' => { 'place' => 'foot' }
+    }
+  }
+
   NB_CHAR_TOKEN_MAP = {
       
     /\\ae\\/ => 'æ',
@@ -165,8 +181,8 @@ module SwiftPoemsProject
       # Remove the line index from the beginning of the line
       # line.sub!(/\d+  /, '')
 
-      puts "New line - previous line: #{@lines.last.elem.to_xml}"
-      puts "does the previous line have an opened tag? #{@lines.last.has_opened_tag}"
+      # logger.debug "New line - previous line: #{@lines.last.elem.to_xml}"
+      # logger.debug "does the previous line have an opened tag? #{@lines.last.has_opened_tag}"
 
       if @lines.last.has_opened_tag
 
@@ -188,7 +204,7 @@ module SwiftPoemsProject
 
       # newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
 
-      puts "Adding the following for a new line: #{@opened_tags}"
+      # logger.debug "Adding the following for a new line: #{@opened_tags}"
 
       newLine = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
 
@@ -212,7 +228,7 @@ module SwiftPoemsProject
 
          token = token.sub /\r/, ''
 
-         puts "new line token: #{token}"
+         # logger.debug "new line token: #{token}"
 
          @lines.last.push token
        end

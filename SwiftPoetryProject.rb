@@ -4,7 +4,15 @@
 require 'nokogiri'
 require 'open-uri'
 
+require_relative 'TeiStanza'
+require_relative 'TeiLine'
+
+
+
 module SwiftPoetryProject
+
+  POEM = 0
+  LETTER = 1
 
   class TeiParserException < Exception
     
@@ -587,7 +595,11 @@ EOF
 #   </list>
 # </p>
 
+
+
   class TeiParser
+
+    include SwiftPoemsProject
     
     attr_reader :teiDocument, :headerElement, :poemElem, :textElem
     attr_accessor :poem, :heading, :titleAndHeadnote, :footNotes, :documentTokens
@@ -682,7 +694,8 @@ EOF
       # For footnotes
       '«FN1·' => {
         
-        '»' => { 'note' => { 'place' => 'foot' } }
+        '»' => { 'note' => { 'place' => 'foot' } },
+        '.»' => { 'note' => { 'place' => 'foot' } }
       },
 
       # Additional footnotes
@@ -762,8 +775,7 @@ EOF
                                 ]
 
     POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
-    POEM = 0
-    LETTER = 1
+
 
     NB_STORE_PATH = "#{File.dirname(__FILE__)}/master"
 
@@ -2004,176 +2016,6 @@ EOF
      return lineIndex
    end
 
-   class TeiLine
-
-     attr_reader :elem, :has_opened_tag
-
-     def initialize(workType, stanza)
-
-       @workType = workType
-       @stanza = stanza
-
-       # @teiDocument = teiDocument
-       @teiDocument = stanza.document
-
-       @lineElemName = @workType == POEM ? 'l' : 'p'
-
-       # Set the current leaf of the tree being constructed to be the root node itself
-       @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
-       stanza.elem.add_child @elem
-
-       @current_leaf = @elem
-       @tokens = []
-     end
-
-     # Add this as a text node for the current line element
-     def pushText(token)
-
-       # Remove the 8 character identifier from the beginning of the line
-       indexMatch = /\s{3}(\d+)\s{2}/.match token
-       if indexMatch
-
-         @elem['n'] = indexMatch.to_s.strip
-
-         # token = token.sub /[!#\$A-Z0-9]{8}\s{3}(\d+)\s{2}_?/, ''
-         token = token.sub /\s{3}(\d+)\s{2}_?/, ''
-       end
-
-       # Transform triplet indicators for the stanza
-       if /\s3\}$/.match token
-
-         @stanza.elem['type'] = 'triplet'
-         token = token.sub /\s3\}$/, ''
-       end
-
-       # Transform pipes into @rend values
-       if /\|/.match token and @current_leaf === @elem
-
-         @current_leaf['rend'] = 'indent('+((token.split /\|/).size - 1).to_s+')'
-         token = token.sub /\|/, ''
-       end
-
-       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-       NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-                   
-         token = token.gsub(nbCharTokenPattern, utf8Char)
-       end
-
-       @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
-     end
-
-     def pushToken(token)
-
-       # If this is the first line, or, if this tag must be closed...
-       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
-         
-         # Does this seem to close the current leaf?
-         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-
-           # Iterate through all of the markup and set the appropriate TEI attributes
-           attribMap = NB_MARKUP_TEI_MAP[@current_leaf.name][token].values[0]
-           @current_leaf[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-
-           # One cannot resolve the tag name and attributes until both tags have been fully parsed
-           @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-           @current_leaf = @current_leaf.parent
-
-           @has_opened_tag = false
-         else
-
-           # Add a new child node to the current leaf
-           # Temporarily use the token itself as a tagname
-           @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
-           @has_opened_tag = true
-         end
-       else
-
-         # Add a new child node to the current leaf
-         # Temporarily use the token itself as a tagname
-         # @todo Refactor
-         @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
-       end
-
-       @tokens << token
-     end
-
-     def push(token)
-
-       if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
-         
-         pushToken token
-       else
-         
-         pushText token
-       end
-     end
-   end
-
-   class TeiStanza
-
-     attr_reader :document, :elem
-
-     def initialize(workType, poemElem, index)
-
-       @workType = workType
-       
-       @poemElem = poemElem
-       @teiDocument = @poemElem.document
-       @document = @teiDocument
-       
-       # Depending upon whether or not this work is a poem, this shall alter the name of the element containing the stanza
-       @blockElemName = @workType == POEM ? 'lg' : 'div'
-       @elem = Nokogiri::XML::Node.new @blockElemName, @teiDocument
-       @elem['n'] = index.to_s
-
-       @poemElem.add_child(@elem)
-
-       lineElem = TeiLine.new @workType, self
-       @lines = [ lineElem ]
-     end
-
-     def pushLine
-
-       # lineElem = @lines.last
-       # lineElem['n'] = getLineIndex line
-
-       # Remove the line index from the beginning of the line
-       # line.sub!(/\d+  /, '')
-
-       newLine = TeiLine.new(@workType, self)
-
-       if @lines.last.has_opened_tag
-
-         raise NotImplementedError, "A Nota Bene tag was not properly closed: #{@lines.last.elem.to_xml}"
-
-         # Assumes a depth of 1 from <l> element
-         newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
-       end
-
-       @lines << newLine
-     end
-
-     def push(token)
-
-       if @lines.length == 1 and @lines.last.elem.content.empty?
-
-         token = token.sub POEM_ID_PATTERN, ''
-         @lines.last.push token
-       else
-
-         # Trigger a new line
-         if POEM_ID_PATTERN.match token
-
-           pushLine
-           token = token.sub POEM_ID_PATTERN, ''
-         end
-
-         token = token.sub /\r/, ''
-         @lines.last.push token
-       end
-     end
-   end
-
    def parsePoem
 
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
@@ -2183,16 +2025,28 @@ EOF
      # initialTokens = @poem.split /(?=«)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
      initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
+     # puts initialTokens.to_s + "\n"
+
      poemTokens = []
+
+     # Initialize the poem
      stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
 
      # Classify our tokens
      initialTokens.each do |initialToken|
 
+       puts "Parsing the following into a stanza: #{initialToken}"
+
        # Create a new stanza
        if /\s{3}\d+\s{2}_/.match initialToken
 
-         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1)
+         puts "Appending a new stanza: #{initialToken}"
+         puts "The last stanza: #{stanzas.last.elem.to_xml}"
+         puts "Does the last stanza have opened tags? #{!stanzas.last.opened_tags.empty?}"
+         puts "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
+
+         # Append the new stanza to the poem body
+         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => stanzas.last.opened_tags })
        end
 
        # Solution implemented for SPP-86

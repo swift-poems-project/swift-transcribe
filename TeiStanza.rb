@@ -141,10 +141,14 @@ module SwiftPoemsProject
 
       @poemElem.add_child(@elem)
 
-      # If there is an open tag...
-      if @line_has_opened_tag
+#      # If there is an open tag...
+#      if @line_has_opened_tag
 
-        lineElem = TeiLine.new @workType, self, { :has_opened_tag => @line_has_opened_tag, :opened_tag => @opened_tags.last }
+      # If there is an open tag...
+      if not @opened_tags.empty?
+
+        # lineElem = TeiLine.new @workType, self, { :has_opened_tag => @line_has_opened_tag, :opened_tag => @opened_tags.last }
+        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
       else
 
         lineElem = TeiLine.new @workType, self
@@ -175,7 +179,15 @@ module SwiftPoemsProject
         nil
       end
 
-      newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
+=begin
+      opened_tags = []
+      opened_tags = [ @lines.last.opened_tag ] if @lines.last.opened_tag
+
+      newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tags => opened_tags })
+=end
+
+      # newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
+      newLine = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
 
       @lines << newLine
     end

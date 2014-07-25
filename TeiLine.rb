@@ -3,7 +3,7 @@
 module SwiftPoemsProject
    class TeiLine
 
-     attr_reader :elem, :has_opened_tag, :opened_tag
+     attr_reader :elem, :has_opened_tag, :opened_tag, :opened_tags
 
      def initialize(workType, stanza, options = {})
 
@@ -192,14 +192,11 @@ line text: «MDNM»
        @current_leaf = closed_tag.parent
        # @opened_tag = @stanza.opened_tags.first
 
-       @has_opened_tag = false
-       # @has_opened_tag = !@stanza.opened_tags.empty?
+       # @has_opened_tag = false
+       @has_opened_tag = !@opened_tags.empty?
      end
 
      def push(token)
-
-       puts "Does this line have an opened tag? #{@has_opened_tag}"
-       puts "Name of the opened tag: #{@opened_tag.name}" if @opened_tag
 
        # If there is an opened tag...
 
@@ -207,6 +204,9 @@ line text: «MDNM»
        # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
        #
        opened_tag = @opened_tags.first
+
+       puts "Does this line have an opened tag? #{!opened_tag.nil?}"
+       puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
 
        # Check to see if this is a terminal token
        if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
@@ -259,6 +259,8 @@ line text: «MDNM»
          # MDNM was not identified as a token
 
          # @current_leaf needs to be updated
+
+         raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
 
          puts "Appending text to the line: #{token}"
          

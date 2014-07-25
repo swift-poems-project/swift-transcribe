@@ -9,7 +9,7 @@ describe 'TeiParser' do
 
     parser = SwiftPoetryProject::TeiParser.new file_path
     tei_xml = parser.parse
-    expect(tei_xml).not_to match /«MDUL»/
+    expect(tei_xml.to_xml).not_to match(/MDUL/)
   end
 
   it "parses multiple stanzas with overlapping «MDUL» tokens " do
@@ -18,7 +18,7 @@ describe 'TeiParser' do
 
     parser = SwiftPoetryProject::TeiParser.new file_path
     tei_xml = parser.parse
-    expect(tei_xml).not_to match /«MDUL»/
+    expect(tei_xml.to_xml).not_to match(/MDUL/)
   end
 
 =begin

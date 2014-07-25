@@ -2018,6 +2018,8 @@ EOF
 
    def parsePoem
 
+     puts "\n\nParsing #{@poemID}...\n\n"
+
      # @poem = @poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
      # @poem = @poem.gsub(/(?<!08|_)_/, '<lb />')
 
@@ -2046,7 +2048,7 @@ EOF
          puts "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
 
          # Append the new stanza to the poem body
-         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => stanzas.last.opened_tags })
+         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) })
        end
 
        # Solution implemented for SPP-86

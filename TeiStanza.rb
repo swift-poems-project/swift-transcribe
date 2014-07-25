@@ -148,7 +148,7 @@ module SwiftPoemsProject
       if not @opened_tags.empty?
 
         # lineElem = TeiLine.new @workType, self, { :has_opened_tag => @line_has_opened_tag, :opened_tag => @opened_tags.last }
-        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
+        lineElem = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
       else
 
         lineElem = TeiLine.new @workType, self
@@ -187,7 +187,10 @@ module SwiftPoemsProject
 =end
 
       # newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
-      newLine = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
+
+      puts "Adding the following for a new line: #{@opened_tags}"
+
+      newLine = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
 
       @lines << newLine
     end

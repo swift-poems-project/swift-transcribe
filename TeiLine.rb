@@ -43,6 +43,11 @@ module SwiftPoemsProject
            # Update the stanza
            @stanza.opened_tags.unshift opened_tag
 
+           # @stanza.opened_tags.unshift elem.add_child(opened_tag)
+           # puts "print the following #{@stanza.opened_tags}"
+
+           puts "print the following #{opened_tag.parent.to_xml}"
+
            @current_leaf = opened_tag
          end
        else
@@ -117,6 +122,12 @@ line text: «MDNM»
        # @todo refactor
        @stanza.opened_tags.unshift @opened_tag
        @opened_tags.unshift @opened_tag
+
+       debugOutput = @stanza.opened_tags.map { |tag| tag.name }
+       puts "Updated tags for the stanza: #{debugOutput}"
+
+       debugOutput = @opened_tags.map { |tag| tag.name }
+       puts "Updated tags for the line: #{debugOutput}"
        
        # If the tag is not specified within the markup map, raise an exception
        #
@@ -128,7 +139,7 @@ line text: «MDNM»
        # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
        #
 
-       puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
+       # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
 
          # @stanza.opened_tags << @opened_tag
 =begin
@@ -154,6 +165,10 @@ line text: «MDNM»
          # More iterative approach
 
          # opened_tag = @stanza.opened_tags.shift
+
+       debugOutput = @stanza.opened_tags.map {|tag| tag.name }
+       puts "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
+       puts @stanza.elem.to_xml
 
        # For terminal tokens, ensure that both the current line and preceding lines are closed by it
        # Hence, iterate through all matching opened tags within the stanza
@@ -205,11 +220,11 @@ line text: «MDNM»
        #
        opened_tag = @opened_tags.first
 
-       puts "Does this line have an opened tag? #{!opened_tag.nil?}"
-       puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
-
        # Check to see if this is a terminal token
        if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+
+         puts "Does this line have an opened tag? #{!opened_tag.nil?}"
+         puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
 
          pushTerminalToken token, opened_tag
          #

@@ -17,6 +17,28 @@ module SwiftPoemsProject
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } }
         
       }
+    },
+
+    '«MDBU»' => {
+
+      :secondary => { '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
+
+      },
+
+      :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
+        
+      }
+    },
+
+    '«MDUL»' => {
+
+      :secondary => { '«FC»' => { 'hi' => { 'rend' => 'underline' } }
+
+      },
+
+      :terminal => { '«MDNM»' => { 'head' => { } }
+        
+      }
     }
   }
 
@@ -95,25 +117,26 @@ module SwiftPoemsProject
         '»' => { 'note' => { 'place' => 'foot' } }
       },
 
-      # For deltas
-      # The begin-center (FC, FL) delta
-      '«FC»' => {
+    # For deltas
+    # The begin-center (FC, FL) delta
+    '«FC»' => {
       
-        '«FL»' => { 'head' => {} }
-      },
-
-      # The end-of-center (FL, FL) delta
-      '«FL»' => {
-      
-        '«FL»' => { 'head' => {} }
-      },
-
-      # The flush right (FR, FL) delta
-      '«FR»' => {
-        
-        '«FL»' => { 'head' => {} }
+      '«FL»' => { 'note' => { 'rend' => "small type flush left" } },
+      '«MDNM»' => { 'head' => {} }
     },
 
+    # The end-of-center (FL, FL) delta
+    '«FL»' => {
+      
+      '«FL»' => { 'head' => {} },
+    },
+    
+    # The flush right (FR, FL) delta
+    '«FR»' => {
+      
+      '«FL»' => { 'head' => {} }
+    },
+    
     # <gap>
     'om' => {
 

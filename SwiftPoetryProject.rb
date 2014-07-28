@@ -2118,13 +2118,38 @@ EOF
      # initialTokens = @poem.split /(?=«)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
      # Substitutions for names: 18th century convention
-     @poem = @poem.sub /──────»/, '.»'
+     @poem = @poem.sub /(\─)+»/, '\\1.»'
 
      @poem = @poem.sub /«FN1«MDUL»·/, '«FN1·«MDUL»'
      # @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·«MDNM»'
      @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·'
      @poem = @poem.sub /«FN1 /, '«FN1·'
-     @poem = @poem.sub /([\:a-z])»/, '\\1.»'
+     @poem = @poem.sub /«FN1([0-9A-Z])/, '«FN1·\\1'
+
+     @poem = @poem.sub /([\?\:a-z0-9])»/, '\\1.»'
+     @poem = @poem.sub /«MDRV»»/, '.»'
+     @poem = @poem.sub /«MDUL»»/, '.»'
+     @poem = @poem.sub /.\s+»/, '.»'
+     @poem = @poem.sub /·»/, '.»'
+
+     @poem = @poem.sub /553E06E2   524  ``But── not one sermon«MDNM», you may «MDUL»swear«MDNM».────/, "553E06E2   524  ``But── not one sermon, you may «MDUL»swear«MDNM».────"
+     @poem = @poem.sub /284-0204   34  Form'd like the Triple-Tree near «FN1Where the «MDUL»Dublin«MDBO» «MDNM»Gallows stands·» «MDUL»Stephen's Green«MDNM»,/, "284-0204   34  Form'd like the Triple-Tree near «FN1Where the «MDUL»Dublin«MDNM» Gallows stands·» «MDUL»Stephen's Green«MDNM»,"
+     @poem = @poem.sub /098-0204   16  «MDNM»Howe'er our earthly Motion varies;/, "098-0204   16  Howe'er our earthly Motion varies;"
+     @poem = @poem.sub /098-0204   18  «MDNM»As if there had been no such Matter./, "098-0204   18  As if there had been no such Matter."
+     @poem = @poem.sub /098-0204   21  «MDNM»/, "098-0204   21  "
+     @poem = @poem.sub /098-0204   29  «MDNM»Which clearly shews the near Alliance/, "098-0204   29  Which clearly shews the near Alliance"
+     @poem = @poem.sub /098-0204   30  'Twixt «MDUL»Cobling«MDNM»,«MDNM» and the «MDUL»Planets Science«MDNM»./, "098-0204   30  'Twixt «MDUL»Cobling«MDNM», and the «MDUL»Planets Science«MDNM»."
+     @poem = @poem.sub /098-0204   32  «MDNM»As 'tis miscall'd, we know not who 'tis:/, "098-0204   32  As 'tis miscall'd, we know not who 'tis:"
+     @poem = @poem.sub /098-0204   35  _\|The «MDUL»horned Moon«MDNM»,«MDNM» which heretofore/, "098-0204   35  _\|The «MDUL»horned Moon«MDNM», which heretofore"
+     @poem = @poem.sub /098-0204   42  «MDNM»\(A great Refinement in «MDUL»Barometry«MDNM»\)/, "098-0204   42  (A great Refinement in «MDUL»Barometry«MDNM»)"
+     @poem = @poem.sub /098-0204   45  «MDNM»Which an Astrologer might use,/, "098-0204   45  Which an Astrologer might use,"
+     @poem = @poem.sub /098-0204   47  _\|Thus «MDUL»Partrige«MDNM»,«MDNM» by his Wit and Parts,/, "098-0204   47  _|Thus «MDUL»Partrige«MDNM», by his Wit and Parts,"
+     @poem = @poem.sub /098-0204   51  «MDNM»/, "098-0204   51  "
+     @poem = @poem.sub /098-0204   85  «MDNM»/, "098-0204   85  "
+     @poem = @poem.sub /098-0204   87  «MDNM»/, "098-0204   87  "
+     @poem = @poem.sub /098-0204   91  «MDNM»/, "098-0204   91  "
+
+     puts @poem
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 

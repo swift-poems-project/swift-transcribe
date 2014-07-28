@@ -25,10 +25,12 @@ describe 'TeiParser' do
 
           expect {
 
+            puts file_path
+
             @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
             @parser.parse.to_xml
 
-            puts @parser.parse.to_xml
+            # puts @parser.parse.to_xml
           }.to_not raise_error
         end
       end

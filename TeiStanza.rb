@@ -4,9 +4,23 @@ module SwiftPoemsProject
 
   POEM = 0
   LETTER = 1
-  POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
+  POEM_ID_PATTERN = /\d\d\d\-?[0-9A-Z\!\-]{4,5}/
 
-    NB_MARKUP_TEI_MAP = {
+  NB_TERNARY_TOKEN_TEI_MAP = {
+
+    '«MDRV»' => {
+
+      :secondary => { '«MDUL»' => { 'hi' => { 'rend' => 'underline' } }
+
+      },
+
+      :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } }
+        
+      }
+    }
+  }
+
+  NB_MARKUP_TEI_MAP = {
       
       '«MDUL»' => {
         
@@ -41,11 +55,11 @@ module SwiftPoemsProject
         '«MDNM»' => { 'hi' => { 'rend' => 'strikethrough' } }
       },
       
-      '«MDRV»' => {
+    '«MDRV»' => {
 
-        '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } },
-        '«MDUL»' => { 'hi' => { 'rend' => 'italic-display-initial' } }
-      },
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italic-display-initial' } }
+    },
 
       '«MDSD»' => {
 
@@ -53,20 +67,21 @@ module SwiftPoemsProject
         '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
       },
 
-      # Source: 
+    # Source: 
       
-      '«MDSU»' => {
+    '«MDSU»' => {
         
         '«MDNM»' => { 'hi' => { 'rend' => 'sup' } },
         '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
       },
 
       # For footnotes
-      '«FN1·' => {
-        
-        '»' => { 'note' => { 'place' => 'foot' } },
-        '.»' => { 'note' => { 'place' => 'foot' } }
-      },
+    '«FN1·' => {
+      
+      '»' => { 'note' => { 'place' => 'foot' } },
+      '.»' => { 'note' => { 'place' => 'foot' } },
+      '──────»' => { 'note' => { 'place' => 'foot' } }
+    },
 
       # Additional footnotes
       '«FN1' => {

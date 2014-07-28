@@ -149,114 +149,156 @@ EOF
   # One Nota Bene title field value for one TEI <title/> element  
   class NotaBeneTitleParser < NotaBeneHeadFieldParser
 
-    class TeiHeader
+    class TeiTitle
 
-      attr_reader :sponsor, :elem
+      attr_reader :elem
+      attr_accessor :has_opened_tag, :current_leaf
 
-      class TeiTitle
+      def initialize(document, header)
 
-        attr_reader :elem
+        @document = document
+        @header = header
+        @headerElement = header.elem
 
-        def initialize(document, header)
+        @elem = Nokogiri::XML::Node.new('title', @document)
+        
+        @current_leaf = @elem
+        @tokens = []
 
-          @document = document
-          @headerElement = header.elem
+        # Add <title> elements directly underneath the <sponsor> element
+        # @headerElement.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS).add_previous_sibling(@elem)
+      end
 
-          @elem = Nokogiri::XML::Node.new('title', @document)
-
-          @current_leaf = @elem
-          @tokens = []
-
-          # Add <title> elements directly underneath the <sponsor> element
-          # @headerElement.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS).add_previous_sibling(@elem)
-        end
-
-        def pushToken(token)
-
-          # If this is the first line, or, if this tag must be closed...
-          if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
-
-            # Does this seem to close the current leaf?
-            if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-
-              # One cannot resolve the tag name and attributes until both tags have been fully parsed
-              @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-              @current_leaf = @current_leaf.parent
-
-              @has_opened_tag = false
-            else
-
-              # Add a new child node to the current leaf
-              # Temporarily use the token itself as a tagname
-              newLeaf = Nokogiri::XML::Node.new token, @document
-              @current_leaf.add_child newLeaf
-              @current_leaf = newLeaf
-              @has_opened_tag = true
+      def pushToken(token)
+        
+        # If this is the first line, or, if this tag must be closed...
+        if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+          
+          # Does this seem to close the current leaf?
+          if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+            
+            # One cannot resolve the tag name and attributes until both tags have been fully parsed
+            @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+            @current_leaf = @current_leaf.parent
+            
+            @has_opened_tag = false
+            
+            # Recurse through previously opened tags
+            # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
+            
+            opened_tag = @header.opened_tags.first
+            while opened_tag and TeiParser::NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+              
+              closed_tag = @header.opened_tags.shift
+              closed_tag.name = TeiParser::NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+              
+              opened_tag = @header.opened_tags.first
             end
           else
 
             # Add a new child node to the current leaf
             # Temporarily use the token itself as a tagname
-            # @todo Refactor
             newLeaf = Nokogiri::XML::Node.new token, @document
             @current_leaf.add_child newLeaf
             @current_leaf = newLeaf
-          end
+            @has_opened_tag = true
+            end
+        else
 
-          @tokens << token
+          # Add a new child node to the current leaf
+          # Temporarily use the token itself as a tagname
+          # @todo Refactor
+          newLeaf = Nokogiri::XML::Node.new token, @document
+          @current_leaf.add_child newLeaf
+          @current_leaf = newLeaf
+          @has_opened_tag = true
         end
 
-        # Add this as a text node for the current line element
-        def pushText(token)
+        @tokens << token
+      end
 
-          # Remove the 8 character identifier from the beginning of the line
-          indexMatch = /\s{3}(\d+)\s{2}/.match token
-          if indexMatch
-
-            @elem['n'] = indexMatch.to_s.strip
-            token = token.sub /\s{3}(\d+)\s{2}/, ''
-          end
-
-          # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-          NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-                   
-            token = token.gsub(nbCharTokenPattern, utf8Char)
-          end
-
-          if token == '_|'
-
-            @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
-          else
-
-            @current_leaf.add_child Nokogiri::XML::Text.new token, @document
-          end
+      # Add this as a text node for the current line element
+      def pushText(token)
+        
+        # Remove the 8 character identifier from the beginning of the line
+        indexMatch = /\s{3}(\d+)\s{2}/.match token
+        if indexMatch
+          
+          @elem['n'] = indexMatch.to_s.strip
+          token = token.sub /\s{3}(\d+)\s{2}/, ''
         end
 
-        def push(token)
-
-          if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
-
-            pushToken token
-          else
-
-            pushText token
-          end
+        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+        NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+          
+          token = token.gsub(nbCharTokenPattern, utf8Char)
+        end
+        
+        if token == '_|'
+          
+          @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+        else
+          
+          @current_leaf.add_child Nokogiri::XML::Text.new token, @document
         end
       end
+      
+      def push(token)
+        
+        if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+          
+          pushToken token
+        else
+          
+          pushText token
+        end
+      end
+    end
+    
+    class TeiHeader
+
+      attr_reader :sponsor, :elem, :opened_tags
 
       def initialize(elem)
 
         @elem = elem
         @document = elem.document
         @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
+        @opened_tags = []
         
         @titles = [ TeiTitle.new(@document, self) ]
       end
 
       def pushTitle
+        
+        last_title = @titles.last
 
+        # Add additional tokens
         @sponsor.add_previous_sibling @titles.last.elem
         @titles << TeiTitle.new(@document, self)
+
+        @titles.last.has_opened_tag = last_title.has_opened_tag
+
+        if @titles.last.has_opened_tag
+
+          @opened_tags.unshift last_title.current_leaf
+          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
+        end
+
+=begin
+        # Close the opened tags
+        # Does this seem to close the current leaf?
+        # if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+        if @titles.last.elem.has_opened_tag
+
+          # One cannot resolve the tag name and attributes until both tags have been fully parsed
+          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+          @current_leaf = @current_leaf.parent
+
+          @has_opened_tag = false
+        end
+=end
+
       end
 
       def push(token)
@@ -391,10 +433,12 @@ EOF
   class TeiPoemHeads
 
     attr_reader :elem
+    attr_accessor :opened_tags
 
     class TeiHead
 
       attr_reader :elem
+      attr_accessor :has_opened_tag, :current_leaf
       
       def initialize(document, poem, index)
 
@@ -423,6 +467,15 @@ EOF
             @current_leaf = @current_leaf.parent
             
             @has_opened_tag = false
+
+            opened_tag = @poem.opened_tags.first
+            while opened_tag and TeiParser::NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+              
+              closed_tag = @poem.opened_tags.shift
+              closed_tag.name = TeiParser::NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+              
+              opened_tag = @poem.opened_tags.first
+            end
           else
 
             # Add a new child node to the current leaf
@@ -440,6 +493,7 @@ EOF
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
+          @has_opened_tag = true
         end
 
         @tokens << token
@@ -487,13 +541,43 @@ EOF
 
       @elem = elem
       @document = elem.document
+      @opened_tags = []
       
       @heads = [ TeiHead.new(@document, self, index) ]
     end
     
     def pushHead
 
+      last_head = @heads.last
+
       @heads << TeiHead.new(@document, self, @heads.last.elem['n'].to_i + 1)
+      @heads.last.has_opened_tag = last_head.has_opened_tag
+
+      # @todo Refactor with pushTitle
+      if @heads.last.has_opened_tag
+
+        @opened_tags.unshift last_head.current_leaf
+        @heads.last.current_leaf = @heads.last.elem.add_child Nokogiri::XML::Node.new last_head.elem.children.last.name, @document
+      end
+
+=begin
+      def pushTitle
+        
+        last_title = @titles.last
+
+        # Add additional tokens
+        @sponsor.add_previous_sibling @titles.last.elem
+        @titles << TeiTitle.new(@document, self)
+
+        @titles.last.has_opened_tag = last_title.has_opened_tag
+
+        if @titles.last.has_opened_tag
+
+          @opened_tags.unshift last_title.current_leaf
+          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
+        end
+=end
+      
     end
 
     def push(token)
@@ -2027,9 +2111,12 @@ EOF
 
      # initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
      # initialTokens = @poem.split /(?=«)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
-     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
-     # puts initialTokens.to_s + "\n"
+     # Substitutions for names: 18th century convention
+     @poem = @poem.sub /──────»/, '.»'
+
+     @poem = @poem.sub /«FN1«MDUL»·/, '«FN1·«MDUL»'
+     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
      poemTokens = []
 
@@ -2041,6 +2128,8 @@ EOF
 
        # logger.debug "Parsing the following into a stanza: #{initialToken}"
 
+       raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
+
        # Create a new stanza
        if /\s{3}\d+\s{2}_/.match initialToken
 
@@ -2050,7 +2139,7 @@ EOF
          # logger.debug "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
 
          # Append the new stanza to the poem body
-         stanzas << TeiStanza.new @workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) }
+         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) })
        end
 
        # Solution implemented for SPP-86

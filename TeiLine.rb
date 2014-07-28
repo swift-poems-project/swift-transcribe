@@ -46,7 +46,7 @@ module SwiftPoemsProject
            # @stanza.opened_tags.unshift elem.add_child(opened_tag)
            # puts "print the following #{@stanza.opened_tags}"
 
-           puts "print the following #{opened_tag.parent.to_xml}"
+           # puts "print the following #{opened_tag.parent.to_xml}"
 
            @current_leaf = opened_tag
          end
@@ -113,6 +113,72 @@ line text: «MDNM»
        singleTag = @current_leaf.add_child Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @teiDocument
 
        # @todo Address attributes
+     end
+
+     def pushTermTernaryToken(token, opened_tag)
+
+       # raise NotImplementedError
+
+       # «MDRV»P«MDUL»ALLAS«MDNM», observing «MDUL»Stella«MDNM»
+
+       # The initial tag for the ternary sequence
+       opened_init_tag = @stanza.opened_tags[1]
+
+       # while not @stanza.opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+       while not @stanza.opened_tags.empty? and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_init_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:secondary].has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:terminal].has_key? token
+
+         raise NotImplementedError, "Terminal ternary token for #{token}"
+
+         # This reduces the total number of opened tags within the stanza
+         closed_tag = @stanza.opened_tags.shift
+
+         # Also, reduce the number of opened tags for this line
+         # @todo refactor
+         @opened_tags.shift
+
+         # logger.debug "Closing tag: #{closed_tag.name}..."
+
+         # Iterate through all of the markup and set the appropriate TEI attributes
+         attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
+         closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
+
+         # One cannot resolve the tag name and attributes until both tags have been fully parsed
+         closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+         
+         # Continue iterating throught the opened tags for the stanza
+         opened_tag = @stanza.opened_tags.first
+       end
+
+       # Once all of the stanza elements have been closed, retrieve the last closed tag for the line
+       @current_leaf = closed_tag.parent
+
+       @has_opened_tag = !@opened_tags.empty?
+     end
+
+     def pushSecondTernaryToken(token, opened_tag)
+       
+       closed_tag = @stanza.opened_tags.shift
+       # closed_tag = @stanza.opened_tags.first
+
+       # Also, reduce the number of opened tags for this line
+       # @todo refactor
+       @opened_tags.shift
+
+       # attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
+       # closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
+       attribMap = NB_TERNARY_TOKEN_TEI_MAP[closed_tag.name][:secondary][token].values[0]
+       closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
+
+       # One cannot resolve the tag name and attributes until both tags have been fully parsed
+       # closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+       closed_tag.name = NB_TERNARY_TOKEN_TEI_MAP[closed_tag.name][:secondary][token].keys[0]
+
+       @current_leaf = @current_leaf.next = Nokogiri::XML::Node.new token, @teiDocument
+       @has_opened_tag = true
+       @opened_tag = @current_leaf
+
+       @stanza.opened_tags.unshift @opened_tag
+       @opened_tags.unshift @opened_tag
      end
 
      def pushInitialToken(token)
@@ -220,6 +286,8 @@ line text: «MDNM»
 
      def push(token)
 
+       puts "Appending the following token to the line: #{token}"
+
        # If there is an opened tag...
 
        # First, retrieve last opened tag for the line
@@ -227,11 +295,22 @@ line text: «MDNM»
        #
        opened_tag = @opened_tags.first
 
-       # Check to see if this is a terminal token
-       if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+       # puts "Does this line have an opened tag? #{!opened_tag.nil?}"
+       # puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
 
-         # logger.debug "Does this line have an opened tag? #{!opened_tag.nil?}"
-         # logger.debug "Name of the opened tag: #{opened_tag.name}" if opened_tag
+       # Check to see if this is a terminal token for a ternary sequence
+       # if opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:terminal].has_key? token
+
+         # pushTermTernaryToken token, opened_tag
+
+       # Check to see if this is a secondary token for a ternary sequence
+       # elsif opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:secondary].has_key? token
+       if opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:secondary].has_key? token
+
+         pushSecondTernaryToken token, opened_tag
+
+       # Check to see if this is a terminal token
+       elsif opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
          pushTerminalToken token, opened_tag
          #
@@ -291,6 +370,9 @@ line text: «MDNM»
          # logger.debug "Appending text to the line: #{token}"
          
          pushText token
+
+         debugOutput = @opened_tags.map { |tag| tag.name }
+         puts "Updated tags for the line: #{debugOutput}"
        end
      end
    end

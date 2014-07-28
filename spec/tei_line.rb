@@ -21,6 +21,24 @@ describe 'TeiParser' do
     expect(tei_xml.to_xml).not_to match(/MDUL/)
   end
 
+  it "parses footnote tokens" do
+
+    file_path = 'spec/fixtures/tei_line_2.nb.txt'
+
+    parser = SwiftPoetryProject::TeiParser.new file_path
+    tei_xml = parser.parse
+    expect(tei_xml.to_xml).not_to match(/MDUL/)
+  end
+
+  it "parses complex footnote tokens" do
+
+    file_path = 'spec/fixtures/tei_line_3.nb.txt'
+
+    parser = SwiftPoetryProject::TeiParser.new file_path
+    tei_xml = parser.parse
+    expect(tei_xml.to_xml).not_to match(/MDUL/)
+  end
+
 =begin
   it "parses the Nota Bene document #{file_path}" do
     

@@ -10,7 +10,7 @@
   %ul
   - Dir.foreach("#{appPath}/#{collId}") do |docId|
 
-    - unless docId == '.' or docId == '..'
+    - if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}"
       %li
         %a(title=docId){:href => "/spp/#{collId}/#{docId}"} #{docId} (TEI P5)
       %li

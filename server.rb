@@ -10,6 +10,7 @@ require 'parseconfig'
 config = ParseConfig.new(File.join(File.dirname(__FILE__), 'config/server.conf').chomp)
 set :bind, config['host']
 set :port, config['port']
+set :fileStorePath, config['file_store_path']
 
 NB_STORE_PATH = config['nb_store_path']
 
@@ -77,7 +78,7 @@ get '/archive/:collId' do
     Dir.mkdir(tmpCollDirPath, 0755)
   end
 
-  Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) not /tochk/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
+  Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select { |path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) and not /tochk/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
 
     doc_id = File.basename(file_path)
     teiP5FilePath = "#{tmpCollDirPath}/#{doc_id}.xml"
@@ -117,6 +118,41 @@ get '/:collId/:docId' do
 
   @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
   @parser.parse.to_xml
+end
+
+get '/file-store' do
+
+  # appPath = "#{settings.root}/master"
+  appPath = "#{NB_STORE_PATH}"
+
+  Dir.foreach(appPath) do |collId|
+
+    # Make the directory
+    Dir.mkdir "#{settings.fileStorePath}/#{collId}" unless Dir.exists? "#{settings.fileStorePath}/#{collId}"
+
+    Dir.foreach("#{appPath}/#{collId}") do |docId|
+
+      if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}"
+
+        witnessPath = "#{appPath}/#{collId}/#{docId}"
+        transformedPath = "#{settings.fileStorePath}/#{collId}/#{docId}.tei.xml"
+        begin
+
+          @parser = SwiftPoetryProject::TeiParser.new witnessPath
+          tei_xml = @parser.parse.to_xml
+
+          logger.info "Writing to #{transformedPath}"
+          File.open("#{transformedPath}", 'wb') do |file|
+
+            file.write(tei_xml)
+          end
+        rescue Exception => e
+
+          logger.warn "Failed to transform #{witnessPath}: #{e.message}"
+        end
+      end
+    end
+  end
 end
 
 get '/archive' do

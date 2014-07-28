@@ -13,6 +13,11 @@ describe 'TeiParser' do
   Dir.glob("#{@nb_store_path}/0201/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
   # Dir.glob("#{@nb_store_path}/0201/349A0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
   # Dir.glob("#{@nb_store_path}/0201/749-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/0201/408-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/0201/866-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/0201/887-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/0201/263-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/0201/811-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
 
     it "parses the Nota Bene document #{file_path}" do
 

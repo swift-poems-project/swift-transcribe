@@ -75,7 +75,7 @@ module SwiftPoemsProject
         '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
       },
 
-      # For footnotes
+    # For footnotes
     '«FN1·' => {
       
       '»' => { 'note' => { 'place' => 'foot' } },
@@ -134,6 +134,11 @@ module SwiftPoemsProject
     '«FN1·»' => {
       
       'note' => { 'place' => 'foot' }
+    },
+
+    '«UNCLEAR»' => {
+
+      'unclear' => { 'reason' => 'illegible' }
     }
   }
 

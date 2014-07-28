@@ -853,11 +853,16 @@ EOF
 
     NB_UNPARSED_TOKENS = ['«MDNM»']
 
+=begin
     NB_BLOCK_LITERAL_PATTERNS = [
                                  '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*_«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*',
                                  '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
                                  '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
                                  '«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+                                ]
+=end
+    NB_BLOCK_LITERAL_PATTERNS = [
+                                 /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/
                                 ]
 
     POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
@@ -2116,7 +2121,18 @@ EOF
      @poem = @poem.sub /──────»/, '.»'
 
      @poem = @poem.sub /«FN1«MDUL»·/, '«FN1·«MDUL»'
-     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+     # @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·«MDNM»'
+     @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·'
+     @poem = @poem.sub /«FN1 /, '«FN1·'
+     @poem = @poem.sub /([\:a-z])»/, '\\1.»'
+
+     NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
+
+       # @poem = @poem.sub Regexp.new(Regexp.escape pattern), '«UNCLEAR»'
+       @poem = @poem.sub pattern, '«UNCLEAR»'
+     end
+
+     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
 
      poemTokens = []
 

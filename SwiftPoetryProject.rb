@@ -2130,7 +2130,7 @@ EOF
      @poem = @poem.sub /«FN1 /, '«FN1·'
      @poem = @poem.sub /«FN1([0-9A-Z])/, '«FN1·\\1'
 
-     @poem = @poem.sub /([\?\:a-z0-9])»/, '\\1.»'
+     @poem = @poem.sub /([\]\?\:a-z0-9])»/, '\\1.»'
      @poem = @poem.sub /«MDRV»»/, '.»'
      @poem = @poem.sub /«MDUL»»/, '.»'
      @poem = @poem.sub /.\s+»/, '.»'

@@ -117,7 +117,9 @@ get '/:collId/:docId' do
   content_type :tei
 
   @parser = SwiftPoetryProject::TeiParser.new "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
-  @parser.parse.to_xml
+
+  doc = @parser.parse
+  doc.to_xml
 end
 
 get '/file-store' do

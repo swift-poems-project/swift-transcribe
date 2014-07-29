@@ -1029,7 +1029,11 @@ EOF
 
     rescue => ex
       
-      raise Exception.new "#{@filePath} could not be parsed: #{ex.message}: #{ex.backtrace.join("\n")}"
+      # @todo Restructure for proper logging within Sinatra
+      # raise Exception.new "#{@filePath} could not be parsed: #{ex.message}: #{ex.backtrace.join("\n")}"
+      $stderr.puts "#{@filePath} could not be parsed: #{ex.message}: #{ex.backtrace.join("\n")}"
+
+      @teiDocument
     end
   end
 

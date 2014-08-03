@@ -44,50 +44,51 @@ module SwiftPoemsProject
 
   NB_MARKUP_TEI_MAP = {
       
-      '«MDUL»' => {
+    '«MDUL»' => {
         
-        '«MDNM»' => { 'hi' => { 'rend' => 'underline' } }
-      },
-      
-      '«MDBO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'underline' } },
+      '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
+    },
+    
+    '«MDBO»' => {
         
-        #'«MDNM»' => { 'hi' => { 'rend' => 'bold' } }
-        '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
-      },
-      
-      # "These Guidelines make no binding recommendations for the values of the rend attribute; the characteristics of visual presentation vary too much from text to text and the decision to record or ignore individual characteristics varies too much from project to project. Some potentially useful conventions are noted from time to time at appropriate points in the Guidelines. The values of the rend attribute are a set of sequence-indeterminate individual tokens separated by whitespace."
+      #'«MDNM»' => { 'hi' => { 'rend' => 'bold' } }
+      '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
+    },
+    
+    # "These Guidelines make no binding recommendations for the values of the rend attribute; the characteristics of visual presentation vary too much from text to text and the decision to record or ignore individual characteristics varies too much from project to project. Some potentially useful conventions are noted from time to time at appropriate points in the Guidelines. The values of the rend attribute are a set of sequence-indeterminate individual tokens separated by whitespace."
     # http://www.tei-c.org/release/doc/tei-p5-doc/en/html/ref-att.global.html#tei_att.rend
 
-      '«MDBR»' => {
+    '«MDBR»' => {
 
-        '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS-ITALICS' } }
-      },
+      '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS-ITALICS' } }
+    },
 
-      '«MDBU»' => {
+    '«MDBU»' => {
 
         #'«MDNM»' => { 'hi' => { 'rend' => 'bold underline' } }
         # NOTE: This is not within the standard TEI (?)
         # (Formerly "special-state")
-        '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } },
-        '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
-      },
+      '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
+    },
 
-      '«MDDN»' => {
+    '«MDDN»' => {
         
-        '«MDNM»' => { 'hi' => { 'rend' => 'strikethrough' } }
-      },
-      
+      '«MDNM»' => { 'hi' => { 'rend' => 'strikethrough' } }
+    },
+    
     '«MDRV»' => {
-
+      
       '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } },
       '«MDUL»' => { 'hi' => { 'rend' => 'italic-display-initial' } }
     },
 
-      '«MDSD»' => {
+    '«MDSD»' => {
 
-        #'«MDNM»' => { 'hi' => { 'rend' => 'subscript' } }
-        '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
-      },
+      #'«MDNM»' => { 'hi' => { 'rend' => 'subscript' } }
+      '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+    },
 
     # Source: 
       

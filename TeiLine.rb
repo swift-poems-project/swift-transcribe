@@ -372,7 +372,9 @@ line text: «MDNM»
          pushText token
 
          debugOutput = @opened_tags.map { |tag| tag.name }
-         puts "Updated tags for the line: #{debugOutput}"
+         # puts "Updated tags for the line: #{debugOutput}"
+
+         raise NotImplementedError, "Failure to close a tag likely detected: #{@debugOutput}" if @opened_tags.length > 10
        end
      end
    end

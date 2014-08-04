@@ -859,8 +859,11 @@ EOF
                                  '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
                                  '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
                                  '«MDSU»*«MDSD»*«MDSU»*«MDNM»'
-                                ]
+                               ]
+
 =end
+
+
     NB_BLOCK_LITERAL_PATTERNS = [
                                  /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/
                                 ]
@@ -2128,6 +2131,8 @@ EOF
      @poem = @poem.gsub /\)»/, ').»'
      @poem = @poem.gsub /\*»/, '*.»'
      @poem = @poem.gsub /\?»/, '?.»'
+     @poem = @poem.gsub /`»/, '`.»'
+     @poem = @poem.gsub /'»/, "'.»"
 
      @poem = @poem.gsub /«FN1«MDUL»·/, '«FN1·«MDUL»'
      # @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·«MDNM»'

@@ -2167,6 +2167,7 @@ EOF
      @poem = @poem.gsub /098-0204   85  «MDNM»/, "098-0204   85  "
      @poem = @poem.gsub /098-0204   87  «MDNM»/, "098-0204   87  "
      @poem = @poem.gsub /098-0204   91  «MDNM»/, "098-0204   91  "
+     @poem = @poem.gsub /«FN1·«MDNM»C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»/, "«FN1·C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»"
 
      # puts @poem
      # exit

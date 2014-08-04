@@ -203,6 +203,7 @@ module SwiftPoemsProject
       @elem['n'] = index.to_s
 
       @opened_tags = options[:opened_tags] || []
+
       @line_has_opened_tag = options[:line_has_opened_tag] || !@opened_tags.empty?
 
       @poemElem.add_child(@elem)
@@ -252,11 +253,10 @@ module SwiftPoemsProject
       newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tags => opened_tags })
 =end
 
+      # puts "Adding the following tags for a new line: #{Array.new(@opened_tags)}"
       # newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
-
-      # logger.debug "Adding the following for a new line: #{@opened_tags}"
-
-      newLine = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
+      # newLine = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
+      newLine = TeiLine.new @workType, self
 
       @lines << newLine
     end

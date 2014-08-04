@@ -12,7 +12,13 @@ describe 'TeiParser' do
 
   # Dir.glob("#{@nb_store_path}/06E2/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) }.each do |file_path|
   # Dir.glob("#{@nb_store_path}/06E2/553E06E2").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) }.each do |file_path|
-  Dir.glob("#{@nb_store_path}/06E2/132-06E2").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/06E2/132-06E2").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) }.each do |file_path|
+  Dir.glob("#{@nb_store_path}/06E2/770-06E2").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) }.each do |file_path|
+
+# rspec ./spec/tei_parser/06E2_spec.rb:17 # TeiParser parses the Nota Bene document /usr/share/spp/ruby-tools/spp/master/06E2/770-06E2
+# rspec ./spec/tei_parser/06E2_spec.rb:17 # TeiParser parses the Nota Bene document /usr/share/spp/ruby-tools/spp/master/06E2/795-06E2
+# rspec ./spec/tei_parser/06E2_spec.rb:17 # TeiParser parses the Nota Bene document /usr/share/spp/ruby-tools/spp/master/06E2/949A06E2
+# rspec ./spec/tei_parser/06E2_spec.rb:17 # TeiParser parses the Nota Bene document /usr/share/spp/ruby-tools/spp/master/06E2/098-06E2
 
     it "parses the Nota Bene document #{file_path}" do
 

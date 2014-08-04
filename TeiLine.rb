@@ -32,6 +32,9 @@ module SwiftPoemsProject
 
        elem = @elem
 
+       debugOutput = @opened_tags.map { |tag| tag.name }
+       puts "Line added with the following opened tags: #{debugOutput}"
+
        if not @opened_tags.empty?
 
          @opened_tags.each do |opened_tag|
@@ -41,13 +44,13 @@ module SwiftPoemsProject
            elem = elem.add_child opened_tag
 
            # Update the stanza
+           # This duplicates tokens between lines, but does ensure that tags are passed between stanzas
            @stanza.opened_tags.unshift opened_tag
 
+           # Append the opened tag 
+           # @stanza.opened_tags.unshift opened_tag
+
            # @stanza.opened_tags.unshift elem.add_child(opened_tag)
-           # puts "print the following #{@stanza.opened_tags}"
-
-           # puts "print the following #{opened_tag.parent.to_xml}"
-
            @current_leaf = opened_tag
          end
        else
@@ -183,8 +186,6 @@ line text: «MDNM»
 
      def pushInitialToken(token)
 
-       # logger.debug "Opening tag: #{token}"
-
        @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
        @has_opened_tag = true
        @opened_tag = @current_leaf
@@ -194,7 +195,7 @@ line text: «MDNM»
        # Add the opened tag for the stanza and line
        # @todo refactor
        @stanza.opened_tags.unshift @opened_tag
-       @opened_tags.unshift @opened_tag
+       # @opened_tags.unshift @opened_tag
 
        debugOutput = @stanza.opened_tags.map { |tag| tag.name }
        # logger.debug "Updated tags for the stanza: #{debugOutput}"
@@ -206,56 +207,22 @@ line text: «MDNM»
        #
      end
 
-     def pushTerminalToken(token, opened_tag)
-
-       # First, retrieve last opened tag for the line
-       # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
-       #
-
-       # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
-
-         # @stanza.opened_tags << @opened_tag
-=begin
-         @stanza.opened_tags.each do |opened_tag|
-
-           puts "Iterating for #{opened_tag.name}"
-
-           # Iterate through all of the markup and set the appropriate TEI attributes
-           attribMap = NB_MARKUP_TEI_MAP[opened_tag.name][token].values[0]
-           opened_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-
-           # One cannot resolve the tag name and attributes until both tags have been fully parsed
-           opened_tag.name = NB_MARKUP_TEI_MAP[opened_tag.name][token].keys[0]
-
-           puts "Closed tag: #{opened_tag.name}"
-         end
-=end
-
-         # @stanza.opened_tags = []
-         # @has_opened_tag = false
-         # @current_leaf = @stanza.opened_tags.last.parent
-
-         # More iterative approach
-
-         # opened_tag = @stanza.opened_tags.shift
-
-       debugOutput = @stanza.opened_tags.map {|tag| tag.name }
-       # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
-       # logger.debug @stanza.elem.to_xml
-
-       # For terminal tokens, ensure that both the current line and preceding lines are closed by it
-       # Hence, iterate through all matching opened tags within the stanza
-       #
+     def close(token, opened_tag)
+       
        while not @stanza.opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+       # while not @opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
          # This reduces the total number of opened tags within the stanza
          closed_tag = @stanza.opened_tags.shift
 
          # Also, reduce the number of opened tags for this line
          # @todo refactor
-         @opened_tags.shift
+         # @opened_tags.shift
 
-         # logger.debug "Closing tag: #{closed_tag.name}..."
+         # closed_tag = @opened_tags.shift
+         # @stanza.opened_tags.shift
+
+         puts "Closing tag for line: #{closed_tag.name}..."
 
          # Iterate through all of the markup and set the appropriate TEI attributes
          attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
@@ -275,6 +242,90 @@ line text: «MDNM»
          opened_tag = @stanza.opened_tags.first
        end
 
+       return closed_tag
+     end
+
+     def closeStanza(token, opened_tag, closed_tag = nil)
+
+       debugOutput = @stanza.opened_tags.map {|tag| tag.name }
+       puts "Terminating a sequence #{debugOutput}"
+
+       # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
+       # logger.debug @stanza.elem.to_xml
+
+       # For terminal tokens, ensure that both the current line and preceding lines are closed by it
+       # Hence, iterate through all matching opened tags within the stanza
+       #
+       while not @stanza.opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+
+         # This reduces the total number of opened tags within the stanza
+         closed_tag = @stanza.opened_tags.shift
+
+         # Also, reduce the number of opened tags for this line
+         # @todo refactor
+         @opened_tags.shift
+
+         puts "Closing tag for stanza: #{closed_tag.name}..."
+         puts "Closing tag for stanza: #{closed_tag.parent.to_xml}..."
+
+         # Iterate through all of the markup and set the appropriate TEI attributes
+         attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
+         closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
+
+         # One cannot resolve the tag name and attributes until both tags have been fully parsed
+         closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+         
+         # logger.debug "Closed tag: #{closed_tag.name}"
+         # logger.debug "Updated element: #{closed_tag.to_xml}"
+
+         # @current_leaf = opened_tag.parent
+         # @opened_tag = @stanza.opened_tags.first
+         # @has_opened_tag = false
+             
+         # Continue iterating throught the opened tags for the stanza
+         opened_tag = @stanza.opened_tags.first
+       end
+
+       return closed_tag
+     end
+
+     def pushTerminalToken(token, opened_tag)
+
+       # First, retrieve last opened tag for the line
+       # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
+       #
+
+       # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
+
+       # @stanza.opened_tags << @opened_tag
+=begin
+         @stanza.opened_tags.each do |opened_tag|
+
+           puts "Iterating for #{opened_tag.name}"
+
+           # Iterate through all of the markup and set the appropriate TEI attributes
+           attribMap = NB_MARKUP_TEI_MAP[opened_tag.name][token].values[0]
+           opened_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
+
+           # One cannot resolve the tag name and attributes until both tags have been fully parsed
+           opened_tag.name = NB_MARKUP_TEI_MAP[opened_tag.name][token].keys[0]
+
+           puts "Closed tag: #{opened_tag.name}"
+         end
+=end
+
+       # @stanza.opened_tags = []
+       # @has_opened_tag = false
+       # @current_leaf = @stanza.opened_tags.last.parent
+
+       # More iterative approach
+
+       # opened_tag = @stanza.opened_tags.shift
+
+       # closed_tag = close(token, opened_tag)
+       # closeStanza(token, opened_tag, closed_tag)
+       closed_tag = closeStanza(token, opened_tag)
+
        # Once all of the stanza elements have been closed, retrieve the last closed tag for the line
 
        @current_leaf = closed_tag.parent
@@ -293,7 +344,8 @@ line text: «MDNM»
        # First, retrieve last opened tag for the line
        # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
        #
-       opened_tag = @opened_tags.first
+       # opened_tag = @opened_tags.first
+       opened_tag = @stanza.opened_tags.first
 
        # puts "Does this line have an opened tag? #{!opened_tag.nil?}"
        # puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
@@ -374,7 +426,7 @@ line text: «MDNM»
          debugOutput = @opened_tags.map { |tag| tag.name }
          # puts "Updated tags for the line: #{debugOutput}"
 
-         raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 10
+         raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 12
        end
      end
    end

@@ -2124,6 +2124,8 @@ EOF
      # Substitutions for names: 18th century convention
      @poem = @poem.gsub /(\─)+»/, '\\1.»'
 
+     @poem = @poem.gsub /\.»/, '..»'
+
      @poem = @poem.gsub /«FN1«MDUL»·/, '«FN1·«MDUL»'
      # @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·«MDNM»'
      @poem = @poem.gsub /«FN1«MDNM»·/, '«FN1·'

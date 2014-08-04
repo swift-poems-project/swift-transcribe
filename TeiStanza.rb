@@ -39,6 +39,17 @@ module SwiftPoemsProject
       :terminal => { '«MDNM»' => { 'head' => { } }
         
       }
+    },
+
+    '«MDUL»' => {
+
+      :secondary => { '«MDBO»' => { 'hi' => { 'rend' => 'underline' } }
+
+      },
+
+      :terminal => { '«MDNM»' => { 'head' => { } }
+        
+      }
     }
   }
 

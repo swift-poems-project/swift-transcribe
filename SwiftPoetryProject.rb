@@ -2172,8 +2172,10 @@ EOF
      @poem = @poem.gsub /098-0204   87  «MDNM»/, "098-0204   87  "
      @poem = @poem.gsub /098-0204   91  «MDNM»/, "098-0204   91  "
      @poem = @poem.gsub /«FN1·«MDNM»C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»/, "«FN1·C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»"
+     @poem = @poem.gsub /«MDUL»«FN1·Ridiculum/, "«FN1·«MDUL»Ridiculum"
+     @poem = @poem.gsub /«MDNM», &c..» Horace«MDNM»,/, "«MDNM», &c..» «MDUL»Horace«MDNM»,"
 
-     # puts @poem
+     puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

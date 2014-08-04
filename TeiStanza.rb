@@ -127,10 +127,10 @@ module SwiftPoemsProject
     },
 
     # The end-of-center (FL, FL) delta
-    '«FL»' => {
-      
-      '«FL»' => { 'head' => {} },
-    },
+#    '«FL»' => {
+#      
+#      '«FL»' => { 'head' => {} },
+#    },
     
     # The flush right (FR, FL) delta
     '«FR»' => {
@@ -164,6 +164,11 @@ module SwiftPoemsProject
     '«UNCLEAR»' => {
 
       'unclear' => { 'reason' => 'illegible' }
+    },
+
+    '«FL»' => {
+
+      'head' => {}
     }
   }
 

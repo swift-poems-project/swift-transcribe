@@ -9,7 +9,8 @@ describe 'TeiParser' do
 
   @nb_store_path = '/usr/share/spp/ruby-tools/spp/master'
 
-  Dir.glob("#{@nb_store_path}/281L/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  # Dir.glob("#{@nb_store_path}/281L/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  Dir.glob("#{@nb_store_path}/281L/540-281L").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
 
     it "parses the Nota Bene document #{file_path}" do
 

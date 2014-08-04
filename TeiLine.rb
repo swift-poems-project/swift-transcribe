@@ -374,7 +374,7 @@ line text: «MDNM»
          debugOutput = @opened_tags.map { |tag| tag.name }
          # puts "Updated tags for the line: #{debugOutput}"
 
-         raise NotImplementedError, "Failure to close a tag likely detected: #{@debugOutput}" if @opened_tags.length > 10
+         raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 10
        end
      end
    end

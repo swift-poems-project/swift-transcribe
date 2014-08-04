@@ -149,7 +149,8 @@ module SwiftPoemsProject
   NB_SINGLE_TOKEN_TEI_MAP = {
 
     # The flush right (LD) delta
-    '«LD »' => {
+#    '«LD »' => {
+    '«LD»' => {
       
       'head' => {}
     },

@@ -2133,7 +2133,10 @@ EOF
      @poem = @poem.gsub /([\]\?\:a-z0-9])»/, '\\1.»'
      @poem = @poem.gsub /«MDRV»»/, '.»'
      @poem = @poem.gsub /«MDUL»»/, '.»'
+
+     @poem = @poem.gsub /LD\s»/, 'LD»'
      @poem = @poem.gsub /.\s+»/, '.»'
+
      @poem = @poem.gsub /·»/, '.»'
 
      @poem = @poem.gsub /([[:lower:]])»/, '\\1.»'
@@ -2155,7 +2158,7 @@ EOF
      @poem = @poem.gsub /098-0204   87  «MDNM»/, "098-0204   87  "
      @poem = @poem.gsub /098-0204   91  «MDNM»/, "098-0204   91  "
 
-     # puts @poem
+     puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
@@ -2166,6 +2169,8 @@ EOF
 
      initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
      # initialTokens = @poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
+
+     # initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?=om\.)|(?<=om\.)|\n/
 
      poemTokens = []
 

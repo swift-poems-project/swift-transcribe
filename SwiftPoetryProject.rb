@@ -2146,6 +2146,10 @@ EOF
      @poem = @poem.gsub /«FN1 /, '«FN1·'
      @poem = @poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
 
+     @poem = @poem.gsub /«FN1|·/, "«FN1·"
+     @poem = @poem.gsub /Hor.|» midnight Dream/, "Hor.» midnight Dream"
+     @poem = @poem.gsub /\}«MDNM»3/, "}3"
+
      @poem = @poem.gsub /([\]\?\:a-z0-9])»/, '\\1.»'
      @poem = @poem.gsub /«MDRV»»/, '.»'
      @poem = @poem.gsub /«MDUL»»/, '.»'

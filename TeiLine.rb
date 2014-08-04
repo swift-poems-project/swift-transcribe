@@ -33,7 +33,7 @@ module SwiftPoemsProject
        elem = @elem
 
        debugOutput = @opened_tags.map { |tag| tag.name }
-       puts "Line added with the following opened tags: #{debugOutput}"
+       # puts "Line added with the following opened tags: #{debugOutput}"
 
        if not @opened_tags.empty?
 
@@ -107,6 +107,10 @@ line text: «MDNM»
                    
          token = token.gsub(nbCharTokenPattern, utf8Char)
        end
+
+       # Implement handling for complex textual content
+       # e. g. underdot vs. non-underdot and @rend attribute values
+       #
 
        @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
      end
@@ -222,7 +226,7 @@ line text: «MDNM»
          # closed_tag = @opened_tags.shift
          # @stanza.opened_tags.shift
 
-         puts "Closing tag for line: #{closed_tag.name}..."
+         # puts "Closing tag for line: #{closed_tag.name}..."
 
          # Iterate through all of the markup and set the appropriate TEI attributes
          attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
@@ -248,7 +252,7 @@ line text: «MDNM»
      def closeStanza(token, opened_tag, closed_tag = nil)
 
        debugOutput = @stanza.opened_tags.map {|tag| tag.name }
-       puts "Terminating a sequence #{debugOutput}"
+       # puts "Terminating a sequence #{debugOutput}"
 
        # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
        # logger.debug @stanza.elem.to_xml
@@ -265,8 +269,8 @@ line text: «MDNM»
          # @todo refactor
          @opened_tags.shift
 
-         puts "Closing tag for stanza: #{closed_tag.name}..."
-         puts "Closing tag for stanza: #{closed_tag.parent.to_xml}..."
+         # puts "Closing tag for stanza: #{closed_tag.name}..."
+         # puts "Closing tag for stanza: #{closed_tag.parent.to_xml}..."
 
          # Iterate through all of the markup and set the appropriate TEI attributes
          attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
@@ -337,7 +341,7 @@ line text: «MDNM»
 
      def push(token)
 
-       puts "Appending the following token to the line: #{token}"
+       # puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 

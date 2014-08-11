@@ -2216,6 +2216,7 @@ EOF
      @poem = @poem.gsub /136-21D-   61  «MDNM»Sweepings/, "136-21D-   61  Sweepings"
      @poem = @poem.gsub /734\-03P4   15  _\|N«MDSD»OW«MDNM», «MDNM»this is «MDUL»Stella«MDNM»'s Case in Fact,/, "734-03P4   15  _|N«MDSD»OW«MDNM», "
      @poem = @poem.gsub /082\-03P4   47  _\|«MDNM»F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,/, "082-03P4   47  _|F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,"
+     @poem = @poem.gsub /947B907A   4  And that you adore «MDUL»him«MDNM», because he adores«MDNM» «MDUL»you«MDNM»\./, "947B907A   4  And that you adore «MDUL»him«MDNM», because he adores «MDUL»you«MDNM»."
 
      puts @poem
      # exit

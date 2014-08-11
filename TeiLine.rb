@@ -32,26 +32,41 @@ module SwiftPoemsProject
 
        elem = @elem
 
-       debugOutput = @opened_tags.map { |tag| tag.name }
-       # puts "Line added with the following opened tags: #{debugOutput}"
+       debugOutput = @opened_tags.map { |tag| tag.to_xml }
+       # puts "Line added with the following opened tags: #{debugOutput}\n\n"
 
        if not @opened_tags.empty?
 
+         # Work-around
+         last_tag_name = @lineElemName
+
          @opened_tags.each do |opened_tag|
 
-           # ...append the child tag and add an element
-           opened_tag = Nokogiri::XML::Node.new(opened_tag.name, @teiDocument)
-           elem = elem.add_child opened_tag
+           # puts "Appending opened tag: #{opened_tag}"
 
-           # Update the stanza
-           # This duplicates tokens between lines, but does ensure that tags are passed between stanzas
-           @stanza.opened_tags.unshift opened_tag
+           # @todo Refactor
+           if last_tag_name == opened_tag.name
 
-           # Append the opened tag 
-           # @stanza.opened_tags.unshift opened_tag
+             puts "TRACE: #{opened_tag.children}"
+             elem.add_child opened_tag.children
+           else
 
-           # @stanza.opened_tags.unshift elem.add_child(opened_tag)
-           @current_leaf = opened_tag
+             # ...append the child tag and add an element
+             opened_tag = Nokogiri::XML::Node.new(opened_tag.name, @teiDocument)
+             elem = elem.add_child opened_tag
+
+             # Update the stanza
+             # This duplicates tokens between lines, but does ensure that tags are passed between stanzas
+             @stanza.opened_tags.unshift opened_tag
+
+             # Append the opened tag 
+             # @stanza.opened_tags.unshift opened_tag
+
+             # @stanza.opened_tags.unshift elem.add_child(opened_tag)
+             @current_leaf = opened_tag
+           end
+
+           last_tag_name = opened_tag.name
          end
        else
 
@@ -124,10 +139,6 @@ line text: «MDNM»
 
      def pushTermTernaryToken(token, opened_tag)
 
-       # raise NotImplementedError
-
-       # «MDRV»P«MDUL»ALLAS«MDNM», observing «MDUL»Stella«MDNM»
-
        # The initial tag for the ternary sequence
        opened_init_tag = @stanza.opened_tags[1]
 
@@ -194,6 +205,8 @@ line text: «MDNM»
        @has_opened_tag = true
        @opened_tag = @current_leaf
 
+       # puts "Opening a tag: #{@opened_tag.parent}"
+
        # @stanza.opened_tags << @opened_tag
        
        # Add the opened tag for the stanza and line
@@ -201,12 +214,6 @@ line text: «MDNM»
        @stanza.opened_tags.unshift @opened_tag
        # @opened_tags.unshift @opened_tag
 
-       debugOutput = @stanza.opened_tags.map { |tag| tag.name }
-       # logger.debug "Updated tags for the stanza: #{debugOutput}"
-
-       debugOutput = @opened_tags.map { |tag| tag.name }
-       # logger.debug "Updated tags for the line: #{debugOutput}"
-       
        # If the tag is not specified within the markup map, raise an exception
        #
      end
@@ -302,21 +309,6 @@ line text: «MDNM»
        # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
 
        # @stanza.opened_tags << @opened_tag
-=begin
-         @stanza.opened_tags.each do |opened_tag|
-
-           puts "Iterating for #{opened_tag.name}"
-
-           # Iterate through all of the markup and set the appropriate TEI attributes
-           attribMap = NB_MARKUP_TEI_MAP[opened_tag.name][token].values[0]
-           opened_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-
-           # One cannot resolve the tag name and attributes until both tags have been fully parsed
-           opened_tag.name = NB_MARKUP_TEI_MAP[opened_tag.name][token].keys[0]
-
-           puts "Closed tag: #{opened_tag.name}"
-         end
-=end
 
        # @stanza.opened_tags = []
        # @has_opened_tag = false
@@ -388,32 +380,9 @@ line text: «MDNM»
          pushSingleToken token
        else
 
-=begin
-         raise NotImplementedError, "Failed to open the tag #{token}"
-
-         # Add a new child node to the current leaf
-         # Temporarily use the token itself as a tagname
-         # @todo Refactor
-         @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
-=end
-
        # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag
        # puts NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token.strip if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
        # puts NB_MARKUP_TEI_MAP[@opened_tag.name].keys if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
-
-=begin
-       if @has_opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name and (NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token or NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token.strip)
-
-         puts "Closing the tag with the terminal token: #{token}"
-
-         pushToken token
-       elsif NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
-
-         puts "Appending an initial Nota Bene token: #{token}"
-
-         pushToken token
-       else
-=end
 
          # Terminal tokens are not being properly parsed
          # e. g. previous line had a token MDUL, terminal token MDNM present in the following
@@ -430,7 +399,7 @@ line text: «MDNM»
          debugOutput = @opened_tags.map { |tag| tag.name }
          # puts "Updated tags for the line: #{debugOutput}"
 
-         raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 12
+         raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 16
        end
      end
    end

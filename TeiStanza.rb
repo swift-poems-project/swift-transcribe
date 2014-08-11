@@ -4,7 +4,7 @@ module SwiftPoemsProject
 
   POEM = 0
   LETTER = 1
-  POEM_ID_PATTERN = /\d\d\d\-?[0-9A-Z\!\-]{4,5}/
+  POEM_ID_PATTERN = /[M\d]\d\d\-?[0-9A-Z\!\-]{4,5}/
 
   NB_TERNARY_TOKEN_TEI_MAP = {
 
@@ -50,7 +50,18 @@ module SwiftPoemsProject
       :terminal => { '«MDNM»' => { 'head' => { } }
         
       }
-    }
+    },
+
+    '«MDSU»' => {
+
+      :secondary => { '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
+
+      },
+
+      :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
+        
+      }
+    },
   }
 
   NB_MARKUP_TEI_MAP = {
@@ -219,8 +230,8 @@ module SwiftPoemsProject
 
       @poemElem.add_child(@elem)
 
-#      # If there is an open tag...
-#      if @line_has_opened_tag
+      debugOutput = @opened_tags.map {|tag| tag.to_xml }
+      # puts "Appending the following line tags: #{debugOutput}\n\n"
 
       # If there is an open tag...
       if not @opened_tags.empty?
@@ -283,6 +294,7 @@ module SwiftPoemsProject
          # Trigger a new line
          if POEM_ID_PATTERN.match token
 
+           # puts "Appending a new line: #{token}\n"
            pushLine
            token = token.sub POEM_ID_PATTERN, ''
          end

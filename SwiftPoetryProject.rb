@@ -285,19 +285,18 @@ EOF
           @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
         end
 
-=begin
+#
         # Close the opened tags
         # Does this seem to close the current leaf?
         # if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-        if @titles.last.elem.has_opened_tag
+#        if @titles.last.elem.has_opened_tag
 
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
-          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-          @current_leaf = @current_leaf.parent
+#          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+#          @current_leaf = @current_leaf.parent
 
-          @has_opened_tag = false
-        end
-=end
+#          @has_opened_tag = false
+#        end
 
       end
 
@@ -560,24 +559,23 @@ EOF
         @heads.last.current_leaf = @heads.last.elem.add_child Nokogiri::XML::Node.new last_head.elem.children.last.name, @document
       end
 
-=begin
-      def pushTitle
+
+#      def pushTitle
         
-        last_title = @titles.last
+#        last_title = @titles.last
 
         # Add additional tokens
-        @sponsor.add_previous_sibling @titles.last.elem
-        @titles << TeiTitle.new(@document, self)
+#        @sponsor.add_previous_sibling @titles.last.elem
+#        @titles << TeiTitle.new(@document, self)
 
-        @titles.last.has_opened_tag = last_title.has_opened_tag
+#        @titles.last.has_opened_tag = last_title.has_opened_tag
 
-        if @titles.last.has_opened_tag
+#        if @titles.last.has_opened_tag
 
-          @opened_tags.unshift last_title.current_leaf
-          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
-        end
-=end
-      
+#          @opened_tags.unshift last_title.current_leaf
+#          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
+#        end
+
     end
 
     def push(token)
@@ -680,7 +678,6 @@ EOF
 # </item>
 #   </list>
 # </p>
-
 
 
   class TeiParser
@@ -853,16 +850,13 @@ EOF
 
     NB_UNPARSED_TOKENS = ['«MDNM»']
 
-=begin
-    NB_BLOCK_LITERAL_PATTERNS = [
-                                 '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*_«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*',
-                                 '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
-                                 '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
-                                 '«MDSU»*«MDSD»*«MDSU»*«MDNM»'
-                               ]
 
-=end
-
+#    NB_BLOCK_LITERAL_PATTERNS = [
+#                                 '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*_«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*',
+#                                 '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+#                                 '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+#                                 '«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+#                               ]
 
     NB_BLOCK_LITERAL_PATTERNS = [
                                  /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/
@@ -2135,6 +2129,7 @@ EOF
      @poem = @poem.gsub /'»/, "'.»"
      @poem = @poem.gsub /!»/, "!.»"
      @poem = @poem.gsub /;»/, ";.»"
+     @poem = @poem.gsub /H»/, "H.»"
 
      @poem = @poem.gsub /«MDbu»/, "«MDBU»"
      @poem = @poem.gsub /«MDUL»«FN1·/, "«FN1·«MDUL»"
@@ -2142,13 +2137,12 @@ EOF
      @poem = @poem.gsub /«MDNM»country Parsons«MDNM»/, "country Parsons«MDNM»"
 
      @poem = @poem.gsub /«FN1«MDUL»·/, '«FN1·«MDUL»'
-     # @poem = @poem.sub /«FN1«MDNM»·/, '«FN1·«MDNM»'
      @poem = @poem.gsub /«FN1«MDNM»·/, '«FN1·'
      @poem = @poem.gsub /«FN1 /, '«FN1·'
      @poem = @poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
 
-     @poem = @poem.gsub /«FN1|·/, "«FN1·"
-     @poem = @poem.gsub /Hor.|» midnight Dream/, "Hor.» midnight Dream"
+     @poem = @poem.gsub /«FN1\|·/, "«FN1·"
+     @poem = @poem.gsub /Hor\.\|» midnight Dream/, "Hor.» midnight Dream"
      @poem = @poem.gsub /\}«MDNM»3/, "}3"
 
      @poem = @poem.gsub /([\]\?\:a-z0-9])»/, '\\1.»'
@@ -2187,7 +2181,12 @@ EOF
      @poem = @poem.gsub /«FN1·«MDNM»The duchy/, "«FN1·The duchy"
      @poem = @poem.gsub /» Hanoni/, "» «MDUL»Hanoni"
 
-     puts @poem
+#     @poem = @poem.gsub /«MDRV»B«MDNM»Y an «MDBU»old red·pate murdring hag «/, "«MDRV»B«MDNM»Y an «MDBU»old red·pate murdring hag «MDNM»«"
+#     @poem = @poem.gsub /Coningsmark«MDNM»» «MDNM»pursu'd,/, "Coningsmark«MDNM»» pursu'd,"
+
+     @poem = @poem.gsub /531-02U1   8  For thee, than make a «MDNM»«FN1·/, "531-02U1   8  For thee, than make a «FN1·"
+
+     # puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
@@ -2216,10 +2215,13 @@ EOF
        # Create a new stanza
        if /\s{3}\d+\s{2}_/.match initialToken
 
-         # logger.debug "Appending a new stanza: #{initialToken}"
-         # logger.debug "The last stanza: #{stanzas.last.elem.to_xml}"
+         # puts "Appending a new stanza: #{initialToken}"
+         # puts "The last stanza: #{stanzas.last.elem.to_xml}"
          # logger.debug "Does the last stanza have opened tags? #{!stanzas.last.opened_tags.empty?}"
          # logger.debug "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
+
+         debugOutput = stanzas.last.opened_tags.map {|tag| tag.to_xml }
+         # puts "Opened stanza tags: #{debugOutput}\n\n"
 
          # Append the new stanza to the poem body
          stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) })

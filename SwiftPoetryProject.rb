@@ -2197,6 +2197,7 @@ EOF
      @poem = @poem.gsub /531-02U1   8  For thee, than make a «MDNM»«FN1·/, "531-02U1   8  For thee, than make a «FN1·"
      @poem = @poem.gsub /763B36L\-   2  Shall still«MDNM» be kept with Joy by me/, "763B36L-   2  Shall still be kept with Joy by me"
      @poem = @poem.gsub /740C422R   53  First, \\«MDUL»add«MDNM»·«FN1·She«MDNM»/, "740C422R   53  First, \«MDUL»add«MDNM»·«FN1·She"
+     @poem = @poem.gsub /069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM»\. Harris\.«MDNM»/, "069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM». Harris."
 
      puts @poem
      # exit

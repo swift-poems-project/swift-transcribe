@@ -2132,6 +2132,8 @@ EOF
      @poem = @poem.gsub /!»/, "!.»"
      @poem = @poem.gsub /;»/, ";.»"
      @poem = @poem.gsub /,»/, ",.»"
+     @poem = @poem.gsub /»\s»/, '» .»'
+
      @poem = @poem.gsub /H»/, "H.»"
 
 

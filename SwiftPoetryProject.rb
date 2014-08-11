@@ -2225,9 +2225,22 @@ EOF
      @poem = @poem.gsub /357-176Y   17  Rejocing y«MDSU»t«MDNM» 08«MDNM»\. in Better Times/, "357-176Y   17  Rejocing y«MDSU»t«MDNM» 08. in Better Times"
      @poem = @poem.gsub /082\-WILH   46  \|Sure that must be a«MDNM» Salamander«MDNM»!/, "082-WILH   46  |Sure that must be a«MDNM» Salamander!"
      @poem = @poem.gsub /829\-1151   193  _\|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»!«MDNM» Art thou there, Man\?/, "829-1151   193  _|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»! Art thou there, Man?"
+     
+     @poem = @poem.gsub /480-S877   186  From «MDUL»Hell«MDNM» a «MDUL»V«MDNM»-------«MDNM» DEV'L ascends,/, "480-S877   186  From «MDUL»Hell«MDNM» a «MDUL»V«MDNM»------- DEV'L ascends,"
+     @poem = @poem.gsub /102\-S849   63  because, I believe, it is pretty scarce\.«MDNM»/, "102-S849   63  because, I believe, it is pretty scarce."
+     @poem = @poem.gsub /239\-S900   7  Breaking «MDNM»the «MDUL»Bankers«MDNM» and the «MDUL»Banks«MDNM»,/, "239-S900   7  Breaking the «MDUL»Bankers«MDNM» and the «MDUL»Banks«MDNM»,"
+     @poem = @poem.gsub /239\-S900   14  Quakers«MDNM», and «MDUL»Aldermen«MDNM», in State,/, "239-S900   14  Quakers, and «MDUL»Aldermen«MDNM», in State,"
+     @poem = @poem.gsub /239\-S900   22  Make Pinions for themselves to fly«MDNM»,/, "239-S900   22  Make Pinions for themselves to fly,"
+     @poem = @poem.gsub /239\-S900   26  Bills«MDNM» turn the Lenders into Debters,/, "239-S900   26  Bills turn the Lenders into Debters,"
+     @poem = @poem.gsub /239\-S900   64  «MDUL»Weigh'd in the Ballance, and found Light«MDNM»\.«MDNM»/, "239-S900   64  «MDUL»Weigh'd in the Ballance, and found Light«MDNM»."
 
+     @poem = @poem.gsub /383\-S818   1  «MDRV»O«MDNM»NCE«MDNM» on a Time, a righteous Sage,/, "383-S818   1  «MDRV»O«MDNM»NCE on a Time, a righteous Sage,"
 
-     puts @poem
+     @poem = @poem.gsub /098\-S833   92  She'll strain a Point, and sit «FN1·«MDUL»Tibi brachia contrahet ingens Scorpius«MDNM», &c.«MDNM»» astride/, "098-S833   92  She'll strain a Point, and sit «FN1·«MDUL»Tibi brachia contrahet ingens Scorpius, &c.«MDNM»» astride"
+     
+     @poem = @poem.gsub /098\-S833   101  \|«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe«MDNM», &c.«MDNM»»But do not shed thy Influence down/, "098-S833   101  |«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe, &c.«MDNM».»But do not shed thy Influence down"
+
+     # puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

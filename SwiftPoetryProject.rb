@@ -2193,6 +2193,7 @@ EOF
 #     @poem = @poem.gsub /Coningsmark«MDNM»» «MDNM»pursu'd,/, "Coningsmark«MDNM»» pursu'd,"
 
      @poem = @poem.gsub /531-02U1   8  For thee, than make a «MDNM»«FN1·/, "531-02U1   8  For thee, than make a «FN1·"
+     @poem = @poem.gsub /763B36L\-   2  Shall still«MDNM» be kept with Joy by me/, "763B36L-   2  Shall still be kept with Joy by me"
 
      puts @poem
      # exit

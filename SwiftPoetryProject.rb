@@ -859,7 +859,8 @@ EOF
 #                               ]
 
     NB_BLOCK_LITERAL_PATTERNS = [
-                                 /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/
+                                 /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/,
+                                 
                                 ]
 
     POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
@@ -2001,11 +2002,23 @@ EOF
    def parseForNbBlocks(lineNode)
 
      nBBlocksPresent = false
+
      lineElem = lineNode.parent
 
      raise NotImplementedError.new "TEI element is not appended to a Document: #{lineNode.content}" if not lineElem
 
      line = lineNode.content
+
+     # @todo Refactor
+     if line.index '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»'
+
+       line = line.sub '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»', ''
+
+       blockLiteralElem = Nokogiri::XML::Node.new 'unclear', @teiDocument
+       blockLiteralElem['reason'] = 'illegible'
+       lineElem.add_child blockLiteralElem
+     end
+
 
      # Iterate through the patterns for Nota Bene block literals...
      NB_BLOCK_LITERAL_PATTERNS.each do |patternStr|
@@ -2061,6 +2074,8 @@ EOF
          end
        end
      end
+
+
 
      return lineElem
    end
@@ -2199,6 +2214,8 @@ EOF
      @poem = @poem.gsub /740C422R   53  First, \\«MDUL»add«MDNM»·«FN1·She«MDNM»/, "740C422R   53  First, \«MDUL»add«MDNM»·«FN1·She"
      @poem = @poem.gsub /069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM»\. Harris\.«MDNM»/, "069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM». Harris."
      @poem = @poem.gsub /136-21D-   61  «MDNM»Sweepings/, "136-21D-   61  Sweepings"
+     @poem = @poem.gsub /734\-03P4   15  _\|N«MDSD»OW«MDNM», «MDNM»this is «MDUL»Stella«MDNM»'s Case in Fact,/, "734-03P4   15  _|N«MDSD»OW«MDNM», "
+     @poem = @poem.gsub /082\-03P4   47  _\|«MDNM»F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,/, "082-03P4   47  _|F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,"
 
      puts @poem
      # exit

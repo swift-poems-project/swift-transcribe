@@ -2121,6 +2121,8 @@ EOF
      # Substitutions for names: 18th century convention
      @poem = @poem.gsub /(\─)+»/, '\\1.»'
 
+     @poem = @poem.gsub /«LD─\.?»/, "«LD »"
+
      @poem = @poem.gsub /\.»/, '..»'
      @poem = @poem.gsub /\)»/, ').»'
      @poem = @poem.gsub /\*»/, '*.»'
@@ -2129,7 +2131,10 @@ EOF
      @poem = @poem.gsub /'»/, "'.»"
      @poem = @poem.gsub /!»/, "!.»"
      @poem = @poem.gsub /;»/, ";.»"
+     @poem = @poem.gsub /,»/, ",.»"
      @poem = @poem.gsub /H»/, "H.»"
+
+
 
      @poem = @poem.gsub /«MDbu»/, "«MDBU»"
      @poem = @poem.gsub /«MDUL»«FN1·/, "«FN1·«MDUL»"
@@ -2142,6 +2147,9 @@ EOF
      @poem = @poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
 
      @poem = @poem.gsub /«FN1\|·/, "«FN1·"
+     @poem = @poem.gsub /«FN1\\/, "«FN1·\\"
+     @poem = @poem.gsub /\\»/, "\\.»"
+
      @poem = @poem.gsub /Hor\.\|» midnight Dream/, "Hor.» midnight Dream"
      @poem = @poem.gsub /\}«MDNM»3/, "}3"
 
@@ -2186,7 +2194,7 @@ EOF
 
      @poem = @poem.gsub /531-02U1   8  For thee, than make a «MDNM»«FN1·/, "531-02U1   8  For thee, than make a «FN1·"
 
-     # puts @poem
+     puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

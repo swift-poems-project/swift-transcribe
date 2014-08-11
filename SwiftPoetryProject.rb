@@ -2224,6 +2224,7 @@ EOF
      @poem = @poem.gsub /866\-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\\«MDUL» «FN1·«MDNM»Nick\-names for my Lady\.\.?» Skinny and Lean«MDNM»\?/, "866-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\ «FN1·Nick-names for my Lady.» «MDUL»Skinny and Lean«MDNM»?"
      @poem = @poem.gsub /357-176Y   17  Rejocing y«MDSU»t«MDNM» 08«MDNM»\. in Better Times/, "357-176Y   17  Rejocing y«MDSU»t«MDNM» 08. in Better Times"
      @poem = @poem.gsub /082\-WILH   46  \|Sure that must be a«MDNM» Salamander«MDNM»!/, "082-WILH   46  |Sure that must be a«MDNM» Salamander!"
+     @poem = @poem.gsub /829\-1151   193  _\|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»!«MDNM» Art thou there, Man\?/, "829-1151   193  _|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»! Art thou there, Man?"
 
 
      puts @poem

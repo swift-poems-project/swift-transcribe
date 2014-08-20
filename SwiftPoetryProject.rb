@@ -2275,9 +2275,7 @@ EOF
 #     @poem = @poem.gsub(/#{Regexp.escape("186B1451   5  ||Of «MDUL»arma virumque,")}/, "186B1451   5  ||Of «MDUL»arma virumque,«MDNM»")
      @poem = @poem.gsub(/186B1451   6  «MDNM»«FN1·The duchy of «MDUL»Hainault«MDNM»\.\.»«MDUL»Hanoni\\ae\\ qui primus ab oris«MDNM»\./, "186B1451   6  «FN1·The duchy of «MDUL»Hainault«MDNM»..»«MDUL»Hanoni\ae\ qui primus ab oris«MDNM».")
 
-
-
-
+     @poem = @poem.gsub(/#{Regexp.escape("553-54B-   70  But this with envy makes me burst«MDNM».")}/, "553-54B-   70  But this with envy makes me burst.")
 
      puts @poem
      # exit

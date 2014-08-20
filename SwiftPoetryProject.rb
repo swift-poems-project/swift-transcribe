@@ -2260,6 +2260,7 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("X00-07H1   1  T«MDNM»")}/, "X00-07H1   1  T")
      @poem = @poem.gsub(/#{Regexp.escape("584-07H1   1  «MDRV»O«MDNM»F Chloe«MDNM»")}/, "584-07H1   1  «MDRV»O«MDNM»F Chloe")
      @poem = @poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
+     @poem = @poem.gsub(/#{Regexp.escape("949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO«MDNM»")}/, "949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO")
 
      # puts @poem
      # exit

@@ -333,7 +333,7 @@ line text: «MDNM»
 
      def push(token)
 
-       puts "Appending the following token to the line: #{token}"
+       # puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 

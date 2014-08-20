@@ -2215,7 +2215,8 @@ EOF
      @poem = @poem.gsub /«MDNM», &c..» Horace«MDNM»,/, "«MDNM», &c..» «MDUL»Horace«MDNM»,"
      @poem = @poem.gsub /«MDUL»Bread«MDNM»;«MDNM»/, "«MDUL»Bread«MDNM»;"
 
-     @poem = @poem.gsub /\|\|Of «MDUL»arma virumque,/, "||Of «MDUL»arma virumque,«MDNM»"
+     # This was resolved manually on 08/11/14
+     # @poem = @poem.gsub /\|\|Of «MDUL»arma virumque,/, "||Of «MDUL»arma virumque,«MDNM»"
      @poem = @poem.gsub /«FN1·«MDNM»The duchy/, "«FN1·The duchy"
      @poem = @poem.gsub /» Hanoni/, "» «MDUL»Hanoni"
 
@@ -2277,7 +2278,7 @@ EOF
 
      @poem = @poem.gsub(/#{Regexp.escape("553-54B-   70  But this with envy makes me burst«MDNM».")}/, "553-54B-   70  But this with envy makes me burst.")
 
-     puts @poem
+     # puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

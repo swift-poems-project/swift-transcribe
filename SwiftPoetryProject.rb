@@ -935,6 +935,11 @@ EOF
 
       @poemID = m[1]
 
+      # Ensures that tokens contained on the footer-delimiting line are shifted to the previous line
+      # Resolves SPP-118
+      # lines.gsub(/#{Regexp.escape("M442090A   20  ────── Who does no know Sir Isaac and the Dean?")}/, "M442090A   20  ────── Who does no know Sir Isaac and the Dean?«MDUL» «MDNM»")
+      lines = lines.gsub(/#{Regexp.escape("M442090A   %%                                                  «MDUL» «MDNM»")}/, "M442090A   %%\r")
+
       # Remove the poem ID (and trailing whitespace)
       # Now this is being used for newline detection
       # lines.gsub!(/#{@poemID}   /, '')
@@ -981,7 +986,7 @@ EOF
         # There are documents which contain annotations only
         if lines[0]
         
-          lines = lines[0].split(/%%\r?\n/)
+          lines = lines[0].split(/%%\r?\n?/)
         else
 
           lines = @titleAndHeadnote
@@ -992,10 +997,10 @@ EOF
 
         @stanzaIndex = 1
         @noteIndex = 1
-      
+
         # Parsing the footnotes, marginal notes, and other misc. notes
         @footNotes = lines[1]
-        
+
         if @workType != LETTER and @footNotes.match(/poem/i)
           
           @workType = POEM

@@ -2249,7 +2249,13 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("098-S832   1  «MDRV»W«MDNM»ELL«MDNM»")}/, "098-S832   1  «MDRV»W«MDNM»ELL")
      @poem = @poem.gsub(/#{Regexp.escape("098-S832   104  «MDNM»")}/, "098-S832   104  ")
      @poem = @poem.gsub(/#{Regexp.escape("553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». «MDNM»P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")}/, "553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM».»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")
-     
+
+     @poem = @poem.gsub(/#{Regexp.escape("537-07H1   1  «MDRV»S«MDNM»IR Robert«MDNM»")}/, "537-07H1   1  «MDRV»S«MDNM»IR Robert")
+     @poem = @poem.gsub(/#{Regexp.escape("749-07H1   1  «MDRV»D«MDNM»ON Carlos«MDNM»")}/, "749-07H1   1  «MDRV»D«MDNM»ON Carlos")
+     @poem = @poem.gsub(/#{Regexp.escape("X00-07H1   1  T«MDNM»")}/, "X00-07H1   1  T")
+     @poem = @poem.gsub(/#{Regexp.escape("584-07H1   1  «MDRV»O«MDNM»F Chloe«MDNM»")}/, "584-07H1   1  «MDRV»O«MDNM»F Chloe")
+     @poem = @poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
+
      # puts @poem
      # exit
 

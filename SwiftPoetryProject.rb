@@ -2165,9 +2165,11 @@ EOF
      @poem = @poem.gsub /«FN1«MDNM»·/, '«FN1·'
      @poem = @poem.gsub /«FN1 /, '«FN1·'
      @poem = @poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
-
      @poem = @poem.gsub /«FN1\|·/, "«FN1·"
      @poem = @poem.gsub /«FN1\\/, "«FN1·\\"
+     @poem = @poem.gsub(/#{Regexp.escape("«FN1──────")}/, "«FN1·──────")
+     
+
      @poem = @poem.gsub /\\»/, "\\.»"
 
      @poem = @poem.gsub /Hor\.\|» midnight Dream/, "Hor.» midnight Dream"
@@ -2240,6 +2242,14 @@ EOF
      
      @poem = @poem.gsub /098\-S833   101  \|«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe«MDNM», &c.«MDNM»»But do not shed thy Influence down/, "098-S833   101  |«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe, &c.«MDNM».»But do not shed thy Influence down"
 
+     @poem = @poem.gsub(/#{Regexp.escape("Importunity of«MDNM» *·*·|*·*«MDNM»»Provided «MDUL»Bolingbroke«MDNM» were dead.")}/, "Importunity of«MDNM» *·*·|*·*.»Provided «MDUL»Bolingbroke«MDNM» were dead.")
+     @poem = @poem.gsub(/#{Regexp.escape("«MDNM», &c._──────· ────·· ───────·· ────·· ──────· ──────·  ──·· ──────·· ──· ────· ────·· ──«MDNM»")}/, "«MDNM», &c._──────· ────·· ───────·· ────·· ──────· ──────·  ──·· ──────·· ──· ────· ────·· ──")
+     @poem = @poem.gsub(/#{Regexp.escape("Act«MDNM», *····· *······ *······ *······ *······ *······ *······ *······ *······ *······ *«MDNM»»")}/, "Act«MDNM», *····· *······ *······ *······ *······ *······ *······ *······ *······ *······ *.»")
+     @poem = @poem.gsub(/#{Regexp.escape("553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?«MDNM»")}/, "553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?")
+     @poem = @poem.gsub(/#{Regexp.escape("098-S832   1  «MDRV»W«MDNM»ELL«MDNM»")}/, "098-S832   1  «MDRV»W«MDNM»ELL")
+     @poem = @poem.gsub(/#{Regexp.escape("098-S832   104  «MDNM»")}/, "098-S832   104  ")
+     @poem = @poem.gsub(/#{Regexp.escape("553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». «MDNM»P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")}/, "553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM».»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")
+     
      # puts @poem
      # exit
 

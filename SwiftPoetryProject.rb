@@ -2228,7 +2228,10 @@ EOF
      @poem = @poem.gsub /082\-03P4   47  _\|«MDNM»F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,/, "082-03P4   47  _|F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,"
      @poem = @poem.gsub /947B907A   4  And that you adore «MDUL»him«MDNM», because he adores«MDNM» «MDUL»you«MDNM»\./, "947B907A   4  And that you adore «MDUL»him«MDNM», because he adores «MDUL»you«MDNM»."
      @poem = @poem.gsub /08\. Thomas asserted that the Book deserved the Censure of the House; & some days afterwards acquainted them in an explanation of his former Oration that he would have punish'd the Author, «MDUL»if he could «MDNM»\\«MDNM»add/, "08. Thomas asserted that the Book deserved the Censure of the House; & some days afterwards acquainted them in an explanation of his former Oration that he would have punish'd the Author, «MDUL»if he could «MDNM»\add"
-     @poem = @poem.gsub /866\-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\\«MDUL» «FN1·«MDNM»Nick\-names for my Lady\.\.?» Skinny and Lean«MDNM»\?/, "866-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\ «FN1·Nick-names for my Lady.» «MDUL»Skinny and Lean«MDNM»?"
+
+     # Duplicated
+     # @poem = @poem.gsub /866\-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\\«MDUL» «FN1·«MDNM»Nick\-names for my Lady\.\.?» Skinny and Lean«MDNM»\?/, "866-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\ «FN1·Nick-names for my Lady.» «MDUL»Skinny and Lean«MDNM»?"
+
      @poem = @poem.gsub /357-176Y   17  Rejocing y«MDSU»t«MDNM» 08«MDNM»\. in Better Times/, "357-176Y   17  Rejocing y«MDSU»t«MDNM» 08. in Better Times"
      @poem = @poem.gsub /082\-WILH   46  \|Sure that must be a«MDNM» Salamander«MDNM»!/, "082-WILH   46  |Sure that must be a«MDNM» Salamander!"
      @poem = @poem.gsub /829\-1151   193  _\|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»!«MDNM» Art thou there, Man\?/, "829-1151   193  _|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»! Art thou there, Man?"
@@ -2253,7 +2256,7 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?«MDNM»")}/, "553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?")
      @poem = @poem.gsub(/#{Regexp.escape("098-S832   1  «MDRV»W«MDNM»ELL«MDNM»")}/, "098-S832   1  «MDRV»W«MDNM»ELL")
      @poem = @poem.gsub(/#{Regexp.escape("098-S832   104  «MDNM»")}/, "098-S832   104  ")
-     @poem = @poem.gsub(/#{Regexp.escape("553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». «MDNM»P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")}/, "553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM».»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")
+     @poem = @poem.gsub(/#{Regexp.escape("553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». «MDNM»P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")}/, "553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")
 
      @poem = @poem.gsub(/#{Regexp.escape("537-07H1   1  «MDRV»S«MDNM»IR Robert«MDNM»")}/, "537-07H1   1  «MDRV»S«MDNM»IR Robert")
      @poem = @poem.gsub(/#{Regexp.escape("749-07H1   1  «MDRV»D«MDNM»ON Carlos«MDNM»")}/, "749-07H1   1  «MDRV»D«MDNM»ON Carlos")
@@ -2261,8 +2264,12 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("584-07H1   1  «MDRV»O«MDNM»F Chloe«MDNM»")}/, "584-07H1   1  «MDRV»O«MDNM»F Chloe")
      @poem = @poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
      @poem = @poem.gsub(/#{Regexp.escape("949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO«MDNM»")}/, "949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO")
+     @poem = @poem.gsub(/#{Regexp.escape("866-0204   180  As, who shou'd say, «MDUL»Now, am I «FN1·«MDNM»Nick-names for my Lady..» Skinny and Lean«MDNM»?")}/, "866-0204   180  As, who shou'd say, «MDUL»Now, am I«MDNM»«FN1·Nick-names for my Lady..»«MDUL»Skinny and Lean?«MDNM»")
 
-     # puts @poem
+     
+
+
+     puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

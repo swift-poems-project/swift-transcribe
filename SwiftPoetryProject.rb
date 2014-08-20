@@ -2156,11 +2156,14 @@ EOF
      @poem = @poem.gsub /;»/, ";.»"
      @poem = @poem.gsub /,»/, ",.»"
      @poem = @poem.gsub /»\s»/, '» .»'
+     @poem = @poem.gsub /\-»/, '-.»'
 
      @poem = @poem.gsub /H»/, "H.»"
 
      @poem = @poem.gsub /«MDbu»/, "«MDBU»"
+
      @poem = @poem.gsub /«ld »/, "«LD »"
+     @poem = @poem.gsub /«LS»/, "«LD »"
 
      @poem = @poem.gsub /«MDUL»«FN1·/, "«FN1·«MDUL»"
      @poem = @poem.gsub /«MDUL»»«MDNM»/, "»"
@@ -2265,8 +2268,10 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
      @poem = @poem.gsub(/#{Regexp.escape("949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO«MDNM»")}/, "949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO")
      @poem = @poem.gsub(/#{Regexp.escape("866-0204   180  As, who shou'd say, «MDUL»Now, am I «FN1·«MDNM»Nick-names for my Lady..» Skinny and Lean«MDNM»?")}/, "866-0204   180  As, who shou'd say, «MDUL»Now, am I«MDNM»«FN1·Nick-names for my Lady..»«MDUL»Skinny and Lean?«MDNM»")
+     @poem = @poem.gsub(/X44\-612B   6  A back\-sword, poker, with\\«MDUL»ins«MDNM»·out«MDNM»/, "X44-612B   6  A back-sword, poker, with\«MDUL»ins«MDNM»·out")
+     @poem = @poem.gsub(/#{Regexp.escape("P0030603   2  ``As often as they change their Cloaths«MDNM»")}/, "P0030603   2  ``As often as they change their Cloaths")
 
-     
+
 
 
      puts @poem

@@ -2271,6 +2271,11 @@ EOF
      @poem = @poem.gsub(/X44\-612B   6  A back\-sword, poker, with\\«MDUL»ins«MDNM»·out«MDNM»/, "X44-612B   6  A back-sword, poker, with\«MDUL»ins«MDNM»·out")
      @poem = @poem.gsub(/#{Regexp.escape("P0030603   2  ``As often as they change their Cloaths«MDNM»")}/, "P0030603   2  ``As often as they change their Cloaths")
 
+     # Duplicate
+#     @poem = @poem.gsub(/#{Regexp.escape("186B1451   5  ||Of «MDUL»arma virumque,")}/, "186B1451   5  ||Of «MDUL»arma virumque,«MDNM»")
+     @poem = @poem.gsub(/186B1451   6  «MDNM»«FN1·The duchy of «MDUL»Hainault«MDNM»\.\.»«MDUL»Hanoni\\ae\\ qui primus ab oris«MDNM»\./, "186B1451   6  «FN1·The duchy of «MDUL»Hainault«MDNM»..»«MDUL»Hanoni\ae\ qui primus ab oris«MDNM».")
+
+
 
 
 

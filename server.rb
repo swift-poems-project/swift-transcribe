@@ -127,14 +127,14 @@ get '/file-store' do
   # appPath = "#{settings.root}/master"
   appPath = "#{NB_STORE_PATH}"
 
-  Dir.foreach(appPath) do |collId|
+  Dir.foreach(appPath).select { |path| not /SIC/.match path and not /UNDERDOT/.match path and File.directory? path }.each do |collId|
 
     # Make the directory
     Dir.mkdir "#{settings.fileStorePath}/#{collId}" unless Dir.exists? "#{settings.fileStorePath}/#{collId}"
 
-    Dir.foreach("#{appPath}/#{collId}") do |docId|
+    Dir.foreach("#{appPath}/#{collId}").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path) and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) and not /ANOTHER/.match(path) and not /Z725740L/.match(path) and not /Smythe of Barbavilla\.doc/.match(path) and not /Y08B002H/.match(path) }.each do |docId|
 
-      if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}"
+      if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}" and not /^\./.match(docId)
 
         witnessPath = "#{appPath}/#{collId}/#{docId}"
         transformedPath = "#{settings.fileStorePath}/#{collId}/#{docId}.tei.xml"

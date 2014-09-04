@@ -429,112 +429,112 @@ EOF
     end
   end
 
-  class TeiPoemHeads
-
+  class TeiHead
+    
     attr_reader :elem
-    attr_accessor :opened_tags
-
-    class TeiHead
-
-      attr_reader :elem
-      attr_accessor :has_opened_tag, :current_leaf
+    attr_accessor :has_opened_tag, :current_leaf
+    
+    def initialize(document, poem, index)
       
-      def initialize(document, poem, index)
-
-        @document = document
-        @poem = poem
-
-        @elem = Nokogiri::XML::Node.new('head', @document)
-        @elem['n'] = index
-
-        @poem.elem.add_child @elem
-
-        @current_leaf = @elem
-        @tokens = []
-      end
-
-      def pushToken(token)
-
-        # If this is the first line, or, if this tag must be closed...
-        if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
-
-          # Does this seem to close the current leaf?
-          if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+      @document = document
+      @poem = poem
+      
+      @elem = Nokogiri::XML::Node.new('head', @document)
+      @elem['n'] = index
+      
+      @poem.elem.add_child @elem
+      
+      @current_leaf = @elem
+      @tokens = []
+    end
+    
+    def pushToken(token)
+      
+      # If this is the first line, or, if this tag must be closed...
+      if TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+        
+        # Does this seem to close the current leaf?
+        if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+          
+          # One cannot resolve the tag name and attributes until both tags have been fully parsed
+          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+          @current_leaf = @current_leaf.parent
+          
+          @has_opened_tag = false
+          
+          opened_tag = @poem.opened_tags.first
+          while opened_tag and TeiParser::NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
             
-            # One cannot resolve the tag name and attributes until both tags have been fully parsed
-            @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-            @current_leaf = @current_leaf.parent
+            closed_tag = @poem.opened_tags.shift
+            closed_tag.name = TeiParser::NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
             
-            @has_opened_tag = false
-
             opened_tag = @poem.opened_tags.first
-            while opened_tag and TeiParser::NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
-              
-              closed_tag = @poem.opened_tags.shift
-              closed_tag.name = TeiParser::NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
-              
-              opened_tag = @poem.opened_tags.first
-            end
-          else
-
-            # Add a new child node to the current leaf
-            # Temporarily use the token itself as a tagname
-            newLeaf = Nokogiri::XML::Node.new token, @document
-            @current_leaf.add_child newLeaf
-            @current_leaf = newLeaf
-            @has_opened_tag = true
           end
         else
-
+          
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
-          # @todo Refactor
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
           @has_opened_tag = true
         end
-
-        @tokens << token
-      end
-
-      # Add this as a text node for the current line element
-      def pushText(token)
-
-        # Remove the 8 character identifier from the beginning of the line
-        indexMatch = /\s{3}(\d+)\s{2}/.match token
-        if indexMatch
-          
-          @elem['n'] = indexMatch.to_s.strip
-          token = token.sub /\s{3}(\d+)\s{2}/, ''
-        end
+      else
         
-        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-        NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-          
-          token = token.gsub(nbCharTokenPattern, utf8Char)
-        end
-        
-        if token == '_|'
-            
-          @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
-        else
-          
-          @current_leaf.add_child Nokogiri::XML::Text.new token, @document
-        end
+        # Add a new child node to the current leaf
+        # Temporarily use the token itself as a tagname
+        # @todo Refactor
+        newLeaf = Nokogiri::XML::Node.new token, @document
+        @current_leaf.add_child newLeaf
+        @current_leaf = newLeaf
+        @has_opened_tag = true
       end
       
-      def push(token)
-
-        if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
-          
-          pushToken token
-        else
-          
-          pushText token
-        end
+      @tokens << token
+    end
+    
+    # Add this as a text node for the current line element
+    def pushText(token)
+      
+      # Remove the 8 character identifier from the beginning of the line
+      indexMatch = /\s{3}(\d+)\s{2}/.match token
+      if indexMatch
+        
+        @elem['n'] = indexMatch.to_s.strip
+        token = token.sub /\s{3}(\d+)\s{2}/, ''
+      end
+      
+      # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
+      NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
+        
+        token = token.gsub(nbCharTokenPattern, utf8Char)
+      end
+      
+      if token == '_|'
+        
+        @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+      else
+        
+        @current_leaf.add_child Nokogiri::XML::Text.new token, @document
       end
     end
+    
+    def push(token)
+      
+      if TeiParser::NB_MARKUP_TEI_MAP.has_key? token or (TeiParser::NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
+        
+        pushToken token
+      else
+        
+        pushText token
+      end
+    end
+  end
+  
+  class TeiPoemHeads
+
+    attr_reader :elem
+    attr_accessor :opened_tags
 
     def initialize(elem, index)
 
@@ -558,24 +558,6 @@ EOF
         @opened_tags.unshift last_head.current_leaf
         @heads.last.current_leaf = @heads.last.elem.add_child Nokogiri::XML::Node.new last_head.elem.children.last.name, @document
       end
-
-
-#      def pushTitle
-        
-#        last_title = @titles.last
-
-        # Add additional tokens
-#        @sponsor.add_previous_sibling @titles.last.elem
-#        @titles << TeiTitle.new(@document, self)
-
-#        @titles.last.has_opened_tag = last_title.has_opened_tag
-
-#        if @titles.last.has_opened_tag
-
-#          @opened_tags.unshift last_title.current_leaf
-#          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
-#        end
-
     end
 
     def push(token)
@@ -608,84 +590,69 @@ EOF
     end
   end
 
+  # <head n="12"><head>The <hi>Latin</hi> is Word for Word as follows:</head></head>
+  # <head n="12">|<«MDUL»>Aut agiter res in scenis, aut acta refertur.</«MDUL»></head>
+  # <head n="12">Segnius irritant animos demissa per aurem,</head>
+  # <head n="12">Quam quæ sunt oculis subjecta fidelibus, &amp; quæ</head>
+  # <head n="12">Ipse sibi tradit spectator. Non tamen intus</head>
+  # <head n="12">Digna geri promes in scenam: Multaq; tolles</head><head n="12">Ex oculis, quæ mox narret facundia præsens.</head><head n="12">Nec pueros coram populo «MDNM»Medea<«MDUL»> trucidet;</«MDUL»></head><head n="12">Aut humana palam coquat exta nefarius «MDNM»Atreus<«MDUL»>.</«MDUL»></head><head n="12">Aut in avem «MDNM»Progne<hi> vertetur, </hi>Cadmus<«MDUL»> in anguem.</«MDUL»></head><head n="12">Quodcunq; ostendis mihi sic, incredulus odi«MDNM».</head><head n="12"><head>The literal Translation whereof is thus:</head></head>
+
   class NotaBeneHeadnoteParser < NotaBeneHeadFieldParser
 
+    def initialize(teiParser, text, docTokens = nil)
+
+      super(teiParser, text, docTokens)
+
+      # Note: This assumes that HN fields consistently begin with an index of 1 and increment solely by a value of 1
+      @heads = TeiPoemHeads.new @teiParser.poemElem, '1'
+    end
+
     # Refactor
-    def parse
+    def parse(line)
 
-      m = /HN(\d) ?(.*)/.match(@text)
+      m = /HN(\d\d?) ?(.*)/.match(line)
 
-      headIndex = m[1]
-      headContent = m[2]
+      if not m
 
+        if @teiParser.headnote_open
+
+          headIndex = @teiParser.headnote_opened_index
+          headContent = line
+        else
+
+          raise NotImplementedError.new "Failed to parse the following line as a headnote: #{line}"
+        end
+      else
+
+        # headIndex = m[1]
+        @teiParser.headnote_opened_index = m[1]
+        headIndex = @teiParser.headnote_opened_index
+
+        headContent = m[2]
+      end
+
+      # This needs to be refactored for tokens which encoded content beyond that of 1 line
       if headContent != ''
 
         initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
 
-        poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
+        # poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
 
         initialTokens.each do |initialToken|
 
-          poem.push initialToken
+          # poem.push initialToken
+          @heads.push initialToken
         end
       end
-    end
-
-    def parse_deprecated
-
-      if headContent != ''
-      
-        headElem = Nokogiri::XML::Node.new('head', @document)
-        @teiParser.poemElem.add_child(headElem)
-        headElem['n'] = headIndex
-
-        headText = Nokogiri::XML::Text.new headContent, @document
-        headElem.add_child headText
-
-        s = Nokogiri::XML::NodeSet.new @document
-
-        e = @teiParser.parseForNbBlocks headText
-        e.children.each do |c|
-
-          # Do not further parse elements
-          if not c.is_a? Nokogiri::XML::Text
-
-            s = s | (Nokogiri::XML::NodeSet.new @document, [c])
-          elsif c.content != ''
-
-            # Parse all non-empty text nodes
-            _text = @teiParser.parseXMLTextNode c
-            
-            _text.children.each do |child|
-
-              s = s | (Nokogiri::XML::NodeSet.new @document, [child])
-            end
-          end
-        end
-
-        headElem.content = ''
-        headElem.add_child s
-      end
-      
-      return headElem
     end
   end
-
-# <p>The manuscript contains the following marginalia:
-#   <list>
-# <item>
-# <ref target="l[@n='L3.284']"></ref>
-# </item>
-#   </list>
-# </p>
-
 
   class TeiParser
 
     include SwiftPoemsProject
     
-    attr_reader :teiDocument, :headerElement, :poemElem, :textElem
-    attr_accessor :poem, :heading, :titleAndHeadnote, :footNotes, :documentTokens
+    attr_reader :teiDocument, :headerElement, :poemElem, :textElem, :headnote_open
+    attr_accessor :poem, :heading, :titleAndHeadnote, :footNotes, :documentTokens, :headnote_opened_index
     
     # Constants
     # The SPP collection index specified in NUMBERS
@@ -863,8 +830,7 @@ EOF
                                  
                                 ]
 
-    POEM_ID_PATTERN = /\d\d\d\-[0-9A-Z\!\-]{4}/
-
+    POEM_ID_PATTERN = /[\dA-Z]\d{2}[\-\d][\dA-Z\!\-]{4}/
 
     NB_STORE_PATH = "#{File.dirname(__FILE__)}/master"
 
@@ -1018,6 +984,8 @@ EOF
         
         @poemElem['type'] = 'letter'
       end
+
+      @headnote_open = false
     end
 
   def parse
@@ -1753,6 +1721,10 @@ EOF
 
   def parseTitleAndHeadnote
 
+    # Single parser instance must be utilized for multiple lines
+    # @todo Refactor and restructure the parsing process
+    headnote_parser = NotaBeneHeadnoteParser.new self, @titleAndHeadnote
+
     # For each line containing the title and head-note fields...
     @titleAndHeadnote.each_line do |line|
 
@@ -1769,13 +1741,21 @@ EOF
 
       # Omit lines containing HN and -- for Headnote values
       # (These values do not map to any Element within a given TEI schema
-      if not /HN\d/.match(line)
 
+      # This needs to be extended for header content which spans multiple lines
+
+      if not @headnote_open and not /HN\d+/.match(line)
+
+        # @todo Refactor
         NotaBeneTitleParser.new(self, line).parse
+      else
 
-      else /HN\d/.match(line) # Create the header element
+        # Work-around
+        # @todo Refactor
+        @headnote_open = true
 
-        NotaBeneHeadnoteParser.new(self, line).parse
+        #  /HN\d/.match(line) # Create the header element
+        headnote_parser.parse line
       end
     end
 
@@ -2176,7 +2156,6 @@ EOF
      @poem = @poem.gsub /«FN1\|·/, "«FN1·"
      @poem = @poem.gsub /«FN1\\/, "«FN1·\\"
      @poem = @poem.gsub(/#{Regexp.escape("«FN1──────")}/, "«FN1·──────")
-     
 
      @poem = @poem.gsub /\\»/, "\\.»"
 

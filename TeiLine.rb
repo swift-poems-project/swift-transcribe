@@ -142,7 +142,6 @@ line text: «MDNM»
        # The initial tag for the ternary sequence
        opened_init_tag = @stanza.opened_tags[1]
 
-       # while not @stanza.opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
        while not @stanza.opened_tags.empty? and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_init_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:secondary].has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:terminal].has_key? token
 
          raise NotImplementedError, "Terminal ternary token for #{token}"

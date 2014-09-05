@@ -128,17 +128,17 @@ module SwiftPoemsProject
       '──────»' => { 'note' => { 'place' => 'foot' } }
     },
 
-      # Additional footnotes
-      '«FN1' => {
-        
-        '»' => { 'note' => { 'place' => 'foot' } }
-      },
+    # Additional footnotes
+    '«FN1' => {
+      
+      '»' => { 'note' => { 'place' => 'foot' } }
+    },
 
-      # Additional footnotes
-      '«FN1«MDNM»' => {
+    # Additional footnotes
+    '«FN1«MDNM»' => {
         
-        '»' => { 'note' => { 'place' => 'foot' } }
-      },
+      '»' => { 'note' => { 'place' => 'foot' } }
+    },
 
     # For deltas
     # The begin-center (FC, FL) delta

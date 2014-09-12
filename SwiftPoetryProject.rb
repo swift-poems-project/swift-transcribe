@@ -379,8 +379,9 @@ EOF
       # @todo Refactor
       line = line.gsub /#{Regexp.escape("HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, 'HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.'
       line = line.gsub /«MDNM»   HN11/, 'HN11'
+      line = line.gsub /#{Regexp.escape("HN1 «MDUL»By Honest «FN1«MDNM»·")}/, 'HN1 «MDUL»By Honest «FN1·'
       
-      # puts line
+        puts line
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

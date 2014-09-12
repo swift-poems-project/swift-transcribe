@@ -30,28 +30,29 @@ module SwiftPoemsProject
       }
     },
 
-    '«MDUL»' => {
+    '«MDSD»' => {
 
-      :secondary => { '«FC»' => { 'hi' => { 'rend' => 'underline' } }
+      :secondary => {
 
+        '«MDUL»' => { 'hi' => { 'rend' => 'underline'  } }
       },
+      :terminal => {
 
-      :terminal => { '«MDNM»' => { 'head' => { } }
-        
-      }
+        '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+      },
     },
 
     '«MDUL»' => {
 
-      :secondary => { '«MDBO»' => { 'hi' => { 'rend' => 'underline' } }
-
+      :secondary => {
+        '«FC»' => { 'hi' => { 'rend' => 'underline' } },
+        '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
       },
 
-      :terminal => { '«MDNM»' => { 'head' => { } }
-        
-      }
+      :terminal => { '«MDNM»' => { 'head' => { } } }
     },
 
+    
     '«MDSU»' => {
 
       :secondary => { '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }

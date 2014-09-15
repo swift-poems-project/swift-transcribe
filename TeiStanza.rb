@@ -298,6 +298,12 @@ module SwiftPoemsProject
            # puts "Appending a new line: #{token}\n"
            pushLine
            token = token.sub POEM_ID_PATTERN, ''
+
+         elsif /([0-9A-Z]{8})   /.match token
+
+           # indexMatch = /([0-9A-Z]{8})   /.match(token) if not indexMatch
+           pushLine
+           token = token.sub /([0-9A-Z]{8})   /, ''
          end
 
          token = token.sub /\r/, ''

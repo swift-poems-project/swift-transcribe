@@ -81,6 +81,11 @@ module SwiftPoemsProject
 
        # Remove the 8 character identifier from the beginning of the line
        indexMatch = /\s{3}(\d+)\s{2}/.match token
+       indexMatch = /([0-9A-Z\!\-]{8})   /.match(token) if not indexMatch
+       indexMatch = /([0-9A-Z]{8})   /.match(token) if not indexMatch
+
+       # puts token
+
        if indexMatch
 
          @elem['n'] = indexMatch.to_s.strip

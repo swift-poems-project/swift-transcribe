@@ -177,6 +177,10 @@ module SwiftPoemsProject
       
       'head' => {}
     },
+    '«LD »' => {
+      
+      'head' => {}
+    },
     
     # Footnotes encompassing an entire line
     '«FN1·»' => {

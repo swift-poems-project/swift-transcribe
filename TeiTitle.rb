@@ -9,8 +9,6 @@ module SwiftPoemsProject
 
     def initialize(document, header)
 
-      # raise NotImplementedError.new 'trace7'
-
       @document = document
       @header = header
       @headerElement = header.elem
@@ -24,12 +22,9 @@ module SwiftPoemsProject
       # @headerElement.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS).add_previous_sibling(@elem)
 
       # The opened tags from the previous title need to be modified
-      # puts "trace4: #{last_title.elem.to_xml}"
-      # puts "trace5: #{last_title.has_opened_tag}"
 =begin
       if last_title.has_opened_tag
 
-        puts "trace3: #{@opened_tags.last.name}"
         @opened_tags.last.name = last_title.tokens.last
       end
 =end
@@ -41,7 +36,15 @@ module SwiftPoemsProject
 
         # One cannot resolve the tag name and attributes until both tags have been fully parsed
         @current_leaf.name = NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary][token].keys[0]
-        # @current_leaf = @current_leaf.parent
+        @current_leaf = @current_leaf.parent
+
+        # Add a new child node to the current leaf
+        # Temporarily use the token itself as a tagname
+        newLeaf = Nokogiri::XML::Node.new token, @document
+        @current_leaf.add_child newLeaf
+        @current_leaf = newLeaf
+        @has_opened_tag = true
+        @header.opened_tags << @current_leaf
 
       # If this is the first line, or, if this tag must be closed...
       elsif NB_MARKUP_TEI_MAP.has_key? @current_leaf.name

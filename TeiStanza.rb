@@ -10,8 +10,10 @@ module SwiftPoemsProject
 
     '«MDRV»' => {
 
-      :secondary => { '«MDUL»' => { 'hi' => { 'rend' => 'underline' } }
+      :secondary => {
 
+        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
+        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
       },
 
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } }

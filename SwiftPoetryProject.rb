@@ -286,10 +286,7 @@ EOF
       line = line.gsub /#{Regexp.escape("HN1 «MDUL»By Honest «FN1«MDNM»·")}/, 'HN1 «MDUL»By Honest «FN1·'
       line = line.gsub /#{Regexp.escape("HN2 «MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, 'HN2 W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.'
 
-      # line = line.gsub /#{Regexp.escape("«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*/
-        
-      
-#        puts line
+      line = line.gsub /#{Regexp.escape("HN1 «MDNM»To Y«MDSU»e«MDNM» Tune of the Cutpurse.")}/, 'HN1 To Y«MDSU»e«MDNM» Tune of the Cutpurse.'
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

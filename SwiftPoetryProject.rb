@@ -296,6 +296,15 @@ EOF
       line = line.gsub /#{Regexp.escape("supplements; which answering my expectation, the perusal has produced what you find inclosed.")}/, "supplements; which answering my expectation, the perusal has produced what you find inclosed.«MDNM»"
       line = line.gsub /#{Regexp.escape("«MDNM»HN4 «MDUL»As I have been somewhat inclined to this folly")}/, "HN4 «MDUL»As I have been somewhat inclined to this folly"
 
+      line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago")}/, 'HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago«MDNM»'
+      line = line.gsub /#{Regexp.escape("«MDNM»HN3")}\s+#{Regexp.escape("«MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.")}/, 'HN3    «MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.«MDNM»'
+      line = line.gsub /#{Regexp.escape("«MDNM»HN4")}\s+#{Regexp.escape("«MDUL»Some Expressions being peculiar to «MDNM»Ireland«MDUL», I have prevailed on a Gentleman of that Kingdom to explain them, and I have put the several Explainations i,n their proper Places.«MDNM»")}/, 'HN4    «MDUL»Some Expressions being peculiar to «MDNM»Ireland«MDUL», I have prevailed on a Gentleman of that Kingdom to explain them, and I have put the several Explainations i,n their proper Places.«MDNM»'
+      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Y«MDSD»EAR«MDNM» 1712.")}/, 'HN2 Written in the Y«MDSD»EAR«MDNM» 1712.'
+      line = line.gsub /#{Regexp.escape("HN«MDNM»1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")}/, 'HN1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».'
+      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Year 1730.")}/, 'HN2 Written in the Year 1730.'
+
+      # puts line
+
       m = /HN(\d\d?) ?(.*)/.match(line)
 
       if not m
@@ -320,7 +329,8 @@ EOF
       # This needs to be refactored for tokens which encoded content beyond that of 1 line
       if headContent != ''
 
-        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+        # initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\s(?=om\.)|(?<=om\.)|\n/
 
         # poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
 
@@ -597,9 +607,10 @@ EOF
 
       # Decorator literal handling
       #
-      ['«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
+      ['«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',       
        '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
-       '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+       '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»_«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',
       ].each do |decorative_literal|
         
         if lines.index decorative_literal

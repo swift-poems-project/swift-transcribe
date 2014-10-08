@@ -293,6 +293,8 @@ EOF
       line = line.gsub /#{Regexp.escape("«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails")}/, "«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·Wigs with long black Tails"
       line = line.gsub /#{Regexp.escape("HN1 «MDNM»Upon lending")}/, "HN1 Upon lending"
       line = line.gsub /#{Regexp.escape("HN1 «MDNM»In L«MDSD»ILLIPUTIAN«MDNM» VERSE.")}/, "HN1 In L«MDSD»ILLIPUTIAN«MDNM» VERSE."
+      line = line.gsub /#{Regexp.escape("supplements; which answering my expectation, the perusal has produced what you find inclosed.")}/, "supplements; which answering my expectation, the perusal has produced what you find inclosed.«MDNM»"
+      line = line.gsub /#{Regexp.escape("«MDNM»HN4 «MDUL»As I have been somewhat inclined to this folly")}/, "HN4 «MDUL»As I have been somewhat inclined to this folly"
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

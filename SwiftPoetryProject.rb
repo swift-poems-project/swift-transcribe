@@ -291,6 +291,8 @@ EOF
       line = line.gsub /#{Regexp.escape("HN9 I «MDSD»SHOULD«MDNM» be very sorry to offend the D«MDSD»EAN«MDNM», although I am a perfect Stranger to His «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to send it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit a few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, "HN9 I «MDSD»SHOULD«MDNM» be very sorry to offend the D«MDSD»EAN«MDNM», although I am a perfect Stranger to His «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to send it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit a few «MDUL»Errors«MDNM» as possible."
 
       line = line.gsub /#{Regexp.escape("«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails")}/, "«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·Wigs with long black Tails"
+      line = line.gsub /#{Regexp.escape("HN1 «MDNM»Upon lending")}/, "HN1 Upon lending"
+      line = line.gsub /#{Regexp.escape("HN1 «MDNM»In L«MDSD»ILLIPUTIAN«MDNM» VERSE.")}/, "HN1 In L«MDSD»ILLIPUTIAN«MDNM» VERSE."
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

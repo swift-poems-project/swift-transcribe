@@ -284,6 +284,10 @@ EOF
       line = line.gsub /#{Regexp.escape("HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, 'HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.'
       line = line.gsub /«MDNM»   HN11/, 'HN11'
       line = line.gsub /#{Regexp.escape("HN1 «MDUL»By Honest «FN1«MDNM»·")}/, 'HN1 «MDUL»By Honest «FN1·'
+      line = line.gsub /#{Regexp.escape("HN2 «MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, 'HN2 W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.'
+
+      # line = line.gsub /#{Regexp.escape("«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*/
+        
       
 #        puts line
 
@@ -504,6 +508,8 @@ EOF
 
     NB_BLOCK_LITERAL_PATTERNS = [
                                  /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/,
+                                 /#{Regexp.escape("«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*")}/,
+                                 # //
                                  
                                 ]
 
@@ -584,6 +590,24 @@ EOF
       # lines.gsub(/#{Regexp.escape("M442090A   20  ────── Who does no know Sir Isaac and the Dean?")}/, "M442090A   20  ────── Who does no know Sir Isaac and the Dean?«MDUL» «MDNM»")
       lines = lines.gsub(/#{Regexp.escape("M442090A   %%                                                  «MDUL» «MDNM»")}/, "M442090A   %%\r")
 
+      # Decorator literal handling
+      #
+      ['«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
+       '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+      ].each do |decorative_literal|
+        
+        if lines.index decorative_literal
+          
+          # line = line.sub '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»', ''
+          lines = lines.sub decorative_literal, '«DECORATOR»«/DECORATOR»'
+
+          # blockLiteralElem = Nokogiri::XML::Node.new 'unclear', @teiDocument
+          # blockLiteralElem['reason'] = 'illegible'
+          # lineElem.add_child blockLiteralElem
+        end
+      end
+
       # Remove the poem ID (and trailing whitespace)
       # Now this is being used for newline detection
       # lines.gsub!(/#{@poemID}   /, '')
@@ -662,9 +686,10 @@ EOF
         
         @poemElem['type'] = 'letter'
       end
-
+      
       @headnote_open = false
-    end
+#    end
+  end
 
   def parse
 
@@ -1675,15 +1700,24 @@ EOF
      line = lineNode.content
 
      # @todo Refactor
-     if line.index '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»'
+     # '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»'
+     # '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*'
+     # '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+     ['«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
+      '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
+      '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»'
+     ].each do |decorative_literal|
 
-       line = line.sub '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»', ''
+       if line.index decorative_literal
 
-       blockLiteralElem = Nokogiri::XML::Node.new 'unclear', @teiDocument
-       blockLiteralElem['reason'] = 'illegible'
-       lineElem.add_child blockLiteralElem
+         # line = line.sub '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»', ''
+         line = line.sub decorative_literal
+
+         blockLiteralElem = Nokogiri::XML::Node.new 'unclear', @teiDocument
+         blockLiteralElem['reason'] = 'illegible'
+         lineElem.add_child blockLiteralElem
+       end
      end
-
 
      # Iterate through the patterns for Nota Bene block literals...
      NB_BLOCK_LITERAL_PATTERNS.each do |patternStr|

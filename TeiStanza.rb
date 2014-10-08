@@ -66,6 +66,11 @@ module SwiftPoemsProject
   }
 
   NB_MARKUP_TEI_MAP = {
+
+    '«DECORATOR»' => {
+        
+      '«/DECORATOR»' => { 'unclear' => { 'reason' => 'illegible' } }
+    },
       
     '«MDUL»' => {
         

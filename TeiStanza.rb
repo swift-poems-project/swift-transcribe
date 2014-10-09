@@ -49,6 +49,7 @@ module SwiftPoemsProject
       :secondary => {
         '«FC»' => { 'hi' => { 'rend' => 'underline' } },
         '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
+        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
       },
 
       :terminal => { '«MDNM»' => { 'head' => { } } }

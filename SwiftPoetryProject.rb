@@ -308,7 +308,19 @@ EOF
 
       line = line.gsub /#{Regexp.escape("_|A certain very great person«FN1«MDNM»·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.«MDUL»»")}/, '_|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.»'
 
-      line = line.gsub /#{Regexp.escape("«FN1·«MDNM»")}/, '«FN1·'
+        line = line.gsub /#{Regexp.escape("«FN1·«MDNM»")}/, '«FN1·'
+        
+        line = line.gsub /#{Regexp.escape("HN3 TO «MDUL»Alexander Pope«MDNM», Esq; OF «MDUL»Twickenham«MDNM» in the County of «MDUL»MIDDLESEX«MDNM».«MDRV»")}/, 'HN3 TO «MDUL»Alexander Pope«MDNM», Esq; OF «MDUL»Twickenham«MDNM» in the County of «MDUL»MIDDLESEX«MDNM».'
+
+        line = line.gsub /#{Regexp.escape("«MDNM»Advertisement._«MDRV»T«MDNM»HE Subject of the following POEM, is the «MDUL»South-Sea«MDNM»: It is ascribed to a great Name, but whether truly or no, I shall not presume to determine, nor add any thing more than that the Work is Universally approved of.")}/, 'Advertisement._«MDRV»T«MDNM»HE Subject of the following POEM, is the «MDUL»South-Sea«MDNM»: It is ascribed to a great Name, but whether truly or no, I shall not presume to determine, nor add any thing more than that the Work is Universally approved of.'
+
+        line = line.gsub /#{Regexp.escape("«MDUL»Quid scribam vobis, vel quid omnino non scribam, | Dii me De\ae\que perdant, si satis scio.·· S«MDSD»UET«MDNM».")}/, ''
+        line = line.gsub /#{Regexp.escape("«MDNM»Upon a «MDUL»Maxim«MDNM» in «MDUL»Rochefoucault«MDNM».")}/, 'Upon a «MDUL»Maxim«MDNM» in «MDUL»Rochefoucault«MDNM».'
+        line = line.gsub /#{Regexp.escape("«X7")}\s*#{Regexp.escape("»")}/, ''
+        line = line.gsub /#{Regexp.escape("«X8")}\s*#{Regexp.escape("»")}/, ''
+
+        line = line.gsub /#{Regexp.escape("«MDNM»The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»")}/, 'The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»'
+
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 
@@ -612,7 +624,9 @@ EOF
 
       # Decorator literal handling
       #
-      ['«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',       
+      [
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+       '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
        '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
        '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
        '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',

@@ -326,6 +326,9 @@ EOF
         
         line = line.gsub /#{Regexp.escape("HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, S«MDSD»T. «MDNM»P«MDSD»ATRICK'S«MDNM».")}/, "HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, ST. «MDNM»P«MDSD»ATRICK'S«MDNM»."
 
+        line = line.gsub /#{Regexp.escape("HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, 'HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»'
+      line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»A certain very great «MDNM»")}/, 'HN3 «MDUL»A certain very great «MDNM»'
+
       m = /HN(\d\d?) ?(.*)/.match(line)
 
       if not m
@@ -2013,7 +2016,8 @@ EOF
 
      @poem = @poem.gsub(/#{Regexp.escape("553-54B-   70  But this with envy makes me burst«MDNM».")}/, "553-54B-   70  But this with envy makes me burst.")
 
-     @poem = @poem.gsub(/#{Regexp.escape("bless the Church, and three of our Mitres;")}/, "bless the Church, and three of our Mitres;«MDNM»")
+     # @poem = @poem.gsub(/#{Regexp.escape("bless the Church, and three of our Mitres;")}/, "bless the Church, and three of our Mitres;«MDNM»")
+     @poem = @poem.gsub(/#{Regexp.escape("803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;")}/, "803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;«MDNM»")
 
      puts @poem
      # exit

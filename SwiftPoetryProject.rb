@@ -306,6 +306,10 @@ EOF
       line = line.gsub /#{Regexp.escape("HN1 «MDNM»")}/, 'HN1'
       line = line.gsub /#{Regexp.escape("HN1«MDNM»")}/, 'HN1'
 
+      line = line.gsub /#{Regexp.escape("_|A certain very great person«FN1«MDNM»·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.«MDUL»»")}/, '_|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.»'
+
+      line = line.gsub /#{Regexp.escape("«FN1·«MDNM»")}/, '«FN1·'
+
       m = /HN(\d\d?) ?(.*)/.match(line)
 
       if not m

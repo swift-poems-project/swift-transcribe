@@ -323,6 +323,8 @@ EOF
       line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Year 1731.")}/, 'HN2 Written in the Year 1731.'
 
         line = line.gsub /#{Regexp.escape("HN«MDNM»3")}/, 'HN3'
+        
+        line = line.gsub /#{Regexp.escape("HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, S«MDSD»T. «MDNM»P«MDSD»ATRICK'S«MDNM».")}/, "HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, ST. «MDNM»P«MDSD»ATRICK'S«MDNM»."
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

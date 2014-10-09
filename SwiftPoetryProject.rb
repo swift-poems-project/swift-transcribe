@@ -320,6 +320,7 @@ EOF
         line = line.gsub /#{Regexp.escape("«X8")}\s*#{Regexp.escape("»")}/, ''
 
         line = line.gsub /#{Regexp.escape("«MDNM»The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»")}/, 'The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»'
+      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Year 1731.")}/, 'HN2 Written in the Year 1731.'
 
 
       m = /HN(\d\d?) ?(.*)/.match(line)

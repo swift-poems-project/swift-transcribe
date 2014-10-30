@@ -336,7 +336,7 @@ line text: «MDNM»
      end
 
      def push(token)
-
+       
        # puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
@@ -384,9 +384,9 @@ line text: «MDNM»
          pushSingleToken token
        else
 
-       # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag
-       # puts NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token.strip if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
-       # puts NB_MARKUP_TEI_MAP[@opened_tag.name].keys if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
+         # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag
+         # puts NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token.strip if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
+         # puts NB_MARKUP_TEI_MAP[@opened_tag.name].keys if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
 
          # Terminal tokens are not being properly parsed
          # e. g. previous line had a token MDUL, terminal token MDNM present in the following
@@ -398,7 +398,7 @@ line text: «MDNM»
 
          # logger.debug "Appending text to the line: #{token}"
          
-         pushText token
+         # pushText token
 
          debugOutput = @opened_tags.map { |tag| tag.name }
          # puts "Updated tags for the line: #{debugOutput}"

@@ -58,8 +58,10 @@ module SwiftPoemsProject
     
     '«MDSU»' => {
 
-      :secondary => { '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
+      :secondary => {
 
+        '«MDBU»' => { 'hi' => { 'rend' => 'sup' } },
+        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } }
       },
 
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }

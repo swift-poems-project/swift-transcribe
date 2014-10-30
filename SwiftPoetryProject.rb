@@ -331,6 +331,12 @@ EOF
 
       # @todo Resolve this fully within SPP-124
       line = line.gsub /#{Regexp.escape("HN12 THE LIFE and CHARACTER OF Dean ")}.+/, 'HN12 THE LIFE and CHARACTER OF Dean S«DECORATOR»«/DECORATOR»t.'
+      line = line.gsub /#{Regexp.escape("HN4 by an Express To y«MDSU»e«MDBO» «MDNM»| house would crep on \\«MDUL»?«MDNM»all 4s\\")}/, "HN4 by an Express To y«MDSU»e«MDNM» | house would crep on \\«MDUL»?«MDNM»all 4s\""
+
+      # @todo Resolve this fully by implementing SPP-125
+      line = line.gsub /#{Regexp.escape("«MDBU»Your most faithfull friend_&_Humble Serv«MDSU»t«MDBU» 08.__Will Livingston«MDNM»")}/, "«MDBU»Your most faithfull friend_&_Humble Serv«MDNM»«MDSU»t«MDNM»«MDBU» 08.__Will Livingston«MDNM»"
+
+        # puts 'trace: ' + line
 
       m = /HN(\d\d?) ?(.*)/.match(line)
 

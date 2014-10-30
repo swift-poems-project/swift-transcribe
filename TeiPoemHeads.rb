@@ -2,7 +2,7 @@
 
 module SwiftPoemsProject
 
-    class TeiPoemHeads
+  class TeiPoemHeads
 
     attr_reader :elem
     attr_accessor :opened_tags
@@ -35,16 +35,16 @@ module SwiftPoemsProject
 
       if @heads.length == 1 and @heads.last.elem.content.empty?
 
-        token = token.sub /\s\|\s/, ''
+        #token = token.sub /\s\|\s/, ''
         @heads.last.push token
       else
 
         # Trigger a new line
-        if /\s\|\s/.match token
+        #if /\s\|\s/.match token
 
-          pushHead
-          token = token.sub /\s\|\s/, ''
-        end
+        #  pushHead
+        #  token = token.sub /\s\|\s/, ''
+        #end
 
         token = token.sub /\r/, ''
         @heads.last.push token

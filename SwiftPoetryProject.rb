@@ -11,6 +11,8 @@ require_relative 'TeiTitle'
 require_relative 'TeiStanza'
 require_relative 'TeiLine'
 
+require_relative 'NotaBeneHeadnoteParser'
+require_relative 'NotaBeneTitleParser'
 
 module SwiftPoetryProject
 
@@ -137,245 +139,10 @@ EOF
     /─ / => '─'    
   }
 
-  class NotaBeneHeadFieldParser
-
-    attr_reader :teiParser, :document
-
-    def initialize(teiParser, text, docTokens = nil)
-
-      @teiParser = teiParser
-      @text = text
-      @document = teiParser.teiDocument
-      @documentTokens = teiParser.documentTokens
-    end
-  end
-
-  # One Nota Bene title field value for one TEI <title/> element  
-  class NotaBeneTitleParser < NotaBeneHeadFieldParser
-
-    include SwiftPoemsProject
-
-    class TeiHeader
-
-      attr_reader :sponsor, :elem, :opened_tags
-      # attr_accessor :opened_tags
-
-      def initialize(elem)
-
-        @elem = elem
-        @document = elem.document
-        @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
-        @opened_tags = []
-        
-        @titles = [ SwiftPoemsProject::TeiTitle.new(@document, self) ]
-      end
-
-      def pushTitle
-        
-        last_title = @titles.last
-
-        # Add additional tokens
-        @sponsor.add_previous_sibling @titles.last.elem
-
-        @titles << SwiftPoemsProject::TeiTitle.new(@document, self)
-
-        @titles.last.has_opened_tag = last_title.has_opened_tag
-
-        if @titles.last.has_opened_tag
-
-          @opened_tags.unshift last_title.current_leaf
-          if not last_title.tokens.empty?
-            @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.tokens.last, @document
-
-          else
-            @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
-          end
-        end
-
-#
-        # Close the opened tags
-        # Does this seem to close the current leaf?
-        # if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-#        if @titles.last.elem.has_opened_tag
-
-          # One cannot resolve the tag name and attributes until both tags have been fully parsed
-#          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-#          @current_leaf = @current_leaf.parent
-
-#          @has_opened_tag = false
-#        end
-
-      end
-
-      def push(token)
-
-        if @titles.length == 1 and @titles.last.elem.content.empty?
-
-          token = token.sub /\s\|\s/, ''
-          @titles.last.push token
-        else
-
-          # Trigger a new line
-          if /\s\|\s/.match token
-
-            pushTitle
-            token = token.sub /\s\|\s/, ''
-          end
-
-          token = token.sub /\r/, ''
-          @titles.last.push token
-        end
-      end
-
-      def close(token)
-
-        pushTitle
-        token = token.sub /\r/, ''
-        @titles.last.push token
-
-        @titles.map { |title| title.elem }
-      end
-    end
-
-    # Parse the text and append the TEI element to the document
-    def parse
-
-      header = TeiHeader.new(@teiParser.headerElement)
-
-      initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
-
-      # As there exists no actual terminating character for titles, the index within the array must be used in order to generate the note
-      initialTokens[0..-2].each do |initialToken|
-
-        header.push initialToken
-      end
-
-      header.close initialTokens.last
-    end
-  end
-
-
-  
-
-  # <head n="12"><head>The <hi>Latin</hi> is Word for Word as follows:</head></head>
-  # <head n="12">|<«MDUL»>Aut agiter res in scenis, aut acta refertur.</«MDUL»></head>
-  # <head n="12">Segnius irritant animos demissa per aurem,</head>
-  # <head n="12">Quam quæ sunt oculis subjecta fidelibus, &amp; quæ</head>
-  # <head n="12">Ipse sibi tradit spectator. Non tamen intus</head>
-  # <head n="12">Digna geri promes in scenam: Multaq; tolles</head><head n="12">Ex oculis, quæ mox narret facundia præsens.</head><head n="12">Nec pueros coram populo «MDNM»Medea<«MDUL»> trucidet;</«MDUL»></head><head n="12">Aut humana palam coquat exta nefarius «MDNM»Atreus<«MDUL»>.</«MDUL»></head><head n="12">Aut in avem «MDNM»Progne<hi> vertetur, </hi>Cadmus<«MDUL»> in anguem.</«MDUL»></head><head n="12">Quodcunq; ostendis mihi sic, incredulus odi«MDNM».</head><head n="12"><head>The literal Translation whereof is thus:</head></head>
-
-  class NotaBeneHeadnoteParser < NotaBeneHeadFieldParser
-
-    include SwiftPoemsProject
-
-    def initialize(teiParser, text, docTokens = nil)
-
-      super(teiParser, text, docTokens)
-
-      # Note: This assumes that HN fields consistently begin with an index of 1 and increment solely by a value of 1
-      @heads = TeiPoemHeads.new @teiParser.poemElem, '1'
-    end
-
-    # Refactor
-    def parse(line)
-
-      # For cleaning extraneous MDNM mode codes
-      # @todo Refactor
-      line = line.gsub /#{Regexp.escape("HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, 'HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.'
-      line = line.gsub /«MDNM»   HN11/, 'HN11'
-      line = line.gsub /#{Regexp.escape("HN1 «MDUL»By Honest «FN1«MDNM»·")}/, 'HN1 «MDUL»By Honest «FN1·'
-      line = line.gsub /#{Regexp.escape("HN2 «MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, 'HN2 W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.'
-
-      line = line.gsub /#{Regexp.escape("HN1 «MDNM»To Y«MDSU»e«MDNM» Tune of the Cutpurse.")}/, 'HN1 To Y«MDSU»e«MDNM» Tune of the Cutpurse.'
-
-      line = line.gsub /#{Regexp.escape("HN9 I «MDSD»SHOULD«MDNM» be very sorry to offend the D«MDSD»EAN«MDNM», although I am a perfect Stranger to His «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to send it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit a few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, "HN9 I «MDSD»SHOULD«MDNM» be very sorry to offend the D«MDSD»EAN«MDNM», although I am a perfect Stranger to His «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to send it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit a few «MDUL»Errors«MDNM» as possible."
-
-      line = line.gsub /#{Regexp.escape("«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails")}/, "«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·Wigs with long black Tails"
-      line = line.gsub /#{Regexp.escape("HN1 «MDNM»Upon lending")}/, "HN1 Upon lending"
-      line = line.gsub /#{Regexp.escape("HN1 «MDNM»In L«MDSD»ILLIPUTIAN«MDNM» VERSE.")}/, "HN1 In L«MDSD»ILLIPUTIAN«MDNM» VERSE."
-      line = line.gsub /#{Regexp.escape("supplements; which answering my expectation, the perusal has produced what you find inclosed.")}/, "supplements; which answering my expectation, the perusal has produced what you find inclosed.«MDNM»"
-      line = line.gsub /#{Regexp.escape("«MDNM»HN4 «MDUL»As I have been somewhat inclined to this folly")}/, "HN4 «MDUL»As I have been somewhat inclined to this folly"
-
-      line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago")}/, 'HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago«MDNM»'
-      line = line.gsub /#{Regexp.escape("«MDNM»HN3")}\s+#{Regexp.escape("«MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.")}/, 'HN3    «MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.«MDNM»'
-      line = line.gsub /#{Regexp.escape("«MDNM»HN4")}\s+#{Regexp.escape("«MDUL»Some Expressions being peculiar to «MDNM»Ireland«MDUL», I have prevailed on a Gentleman of that Kingdom to explain them, and I have put the several Explainations i,n their proper Places.«MDNM»")}/, 'HN4    «MDUL»Some Expressions being peculiar to «MDNM»Ireland«MDUL», I have prevailed on a Gentleman of that Kingdom to explain them, and I have put the several Explainations i,n their proper Places.«MDNM»'
-      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Y«MDSD»EAR«MDNM» 1712.")}/, 'HN2 Written in the Y«MDSD»EAR«MDNM» 1712.'
-      line = line.gsub /#{Regexp.escape("HN«MDNM»1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")}/, 'HN1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».'
-      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Year 1730.")}/, 'HN2 Written in the Year 1730.'
-      line = line.gsub /#{Regexp.escape("HN1 «MDNM»Written «MDUL»Anno«MDNM» 1713.")}/, 'HN1 Written «MDUL»Anno«MDNM» 1713.'
-      line = line.gsub /#{Regexp.escape("HN1 «MDNM»")}/, 'HN1'
-      line = line.gsub /#{Regexp.escape("HN1«MDNM»")}/, 'HN1'
-
-      line = line.gsub /#{Regexp.escape("_|A certain very great person«FN1«MDNM»·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.«MDUL»»")}/, '_|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.»'
-
-        line = line.gsub /#{Regexp.escape("«FN1·«MDNM»")}/, '«FN1·'
-        
-        line = line.gsub /#{Regexp.escape("HN3 TO «MDUL»Alexander Pope«MDNM», Esq; OF «MDUL»Twickenham«MDNM» in the County of «MDUL»MIDDLESEX«MDNM».«MDRV»")}/, 'HN3 TO «MDUL»Alexander Pope«MDNM», Esq; OF «MDUL»Twickenham«MDNM» in the County of «MDUL»MIDDLESEX«MDNM».'
-
-        line = line.gsub /#{Regexp.escape("«MDNM»Advertisement._«MDRV»T«MDNM»HE Subject of the following POEM, is the «MDUL»South-Sea«MDNM»: It is ascribed to a great Name, but whether truly or no, I shall not presume to determine, nor add any thing more than that the Work is Universally approved of.")}/, 'Advertisement._«MDRV»T«MDNM»HE Subject of the following POEM, is the «MDUL»South-Sea«MDNM»: It is ascribed to a great Name, but whether truly or no, I shall not presume to determine, nor add any thing more than that the Work is Universally approved of.'
-
-        line = line.gsub /#{Regexp.escape("«MDUL»Quid scribam vobis, vel quid omnino non scribam, | Dii me De\ae\que perdant, si satis scio.·· S«MDSD»UET«MDNM».")}/, ''
-        line = line.gsub /#{Regexp.escape("«MDNM»Upon a «MDUL»Maxim«MDNM» in «MDUL»Rochefoucault«MDNM».")}/, 'Upon a «MDUL»Maxim«MDNM» in «MDUL»Rochefoucault«MDNM».'
-        line = line.gsub /#{Regexp.escape("«X7")}\s*#{Regexp.escape("»")}/, ''
-        line = line.gsub /#{Regexp.escape("«X8")}\s*#{Regexp.escape("»")}/, ''
-
-        line = line.gsub /#{Regexp.escape("«MDNM»The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»")}/, 'The Preface. | «MDRV»I«MDNM» «MDUL»HAVE been long of Opinion, that there is not a more general and greater Mistake, or of worse Consequences through the Commerce of Mankind, than the wrong Judgments they are apt to entertain of their own Talents: I knew a stuttering Alderman in «MDNM»London«MDUL»'
-      line = line.gsub /#{Regexp.escape("HN2 «MDNM»Written in the Year 1731.")}/, 'HN2 Written in the Year 1731.'
-
-        line = line.gsub /#{Regexp.escape("HN«MDNM»3")}/, 'HN3'
-        
-        line = line.gsub /#{Regexp.escape("HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, S«MDSD»T. «MDNM»P«MDSD»ATRICK'S«MDNM».")}/, "HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, ST. «MDNM»P«MDSD»ATRICK'S«MDNM»."
-
-        line = line.gsub /#{Regexp.escape("HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, 'HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»'
-      line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»A certain very great «MDNM»")}/, 'HN3 «MDUL»A certain very great «MDNM»'
-
-      # @todo Resolve this fully within SPP-124
-      line = line.gsub /#{Regexp.escape("HN12 THE LIFE and CHARACTER OF Dean ")}.+/, 'HN12 THE LIFE and CHARACTER OF Dean S«DECORATOR»«/DECORATOR»t.'
-      line = line.gsub /#{Regexp.escape("HN4 by an Express To y«MDSU»e«MDBO» «MDNM»| house would crep on \\«MDUL»?«MDNM»all 4s\\")}/, "HN4 by an Express To y«MDSU»e«MDNM» | house would crep on \\«MDUL»?«MDNM»all 4s\""
-
-      # @todo Resolve this fully by implementing SPP-125
-      line = line.gsub /#{Regexp.escape("«MDBU»Your most faithfull friend_&_Humble Serv«MDSU»t«MDBU» 08.__Will Livingston«MDNM»")}/, "«MDBU»Your most faithfull friend_&_Humble Serv«MDNM»«MDSU»t«MDNM»«MDBU» 08.__Will Livingston«MDNM»"
-
-        # puts 'trace: ' + line
-
-      m = /HN(\d\d?) ?(.*)/.match(line)
-
-      if not m
-
-        if @teiParser.headnote_open
-
-          headIndex = @teiParser.headnote_opened_index
-          headContent = line
-        else
-
-          raise NotImplementedError.new "Failed to parse the following line as a headnote: #{line}"
-        end
-      else
-
-        # headIndex = m[1]
-        @teiParser.headnote_opened_index = m[1]
-        headIndex = @teiParser.headnote_opened_index
-
-        headContent = m[2]
-      end
-
-      # This needs to be refactored for tokens which encoded content beyond that of 1 line
-      if headContent != ''
-
-        # initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
-        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\s(?=om\.)|(?<=om\.)|\n/
-
-        # poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
-
-        initialTokens.each do |initialToken|
-
-          # poem.push initialToken
-          @heads.push initialToken
-        end
-      end
-    end
-  end
-
+  # Class for the TEI Document generation
+  # This is specific to the Swift Poems Collection
+  # @todo Map to either the TEI-Simple (https://github.com/TEIC/TEI-Simple) or TEI Boilerplate
+  #
   class TeiParser
 
     include SwiftPoemsProject
@@ -1477,8 +1244,6 @@ EOF
   end
 
   def parseTitleAndHeadnote
-
-
 
     # Single parser instance must be utilized for multiple lines
     # @todo Refactor and restructure the parsing process

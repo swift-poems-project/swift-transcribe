@@ -221,6 +221,9 @@ module SwiftPoemsProject
     /─ / => '─'    
   }
 
+  # The XML TEI namespace
+  TEI_NS = {'tei' => 'http://www.tei-c.org/ns/1.0'}
+
   class TeiStanza
 
     attr_reader :document, :elem

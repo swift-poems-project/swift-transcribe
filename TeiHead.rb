@@ -64,10 +64,11 @@ module SwiftPoemsProject
         @footnote_opened = true
       end
 =end
-
       # Hard-coding support for footnote parsing
       # @todo Refactor
-      if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN?/.match(token)
+      if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN./.match(token)
+
+
 
         if NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token
 
@@ -80,10 +81,8 @@ module SwiftPoemsProject
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
-
-          # puts @current_leaf.to_xml
         elsif NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-          
+
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
           @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
           @current_leaf = @current_leaf.parent
@@ -98,7 +97,7 @@ module SwiftPoemsProject
             
             opened_tag = @poem.opened_tags.first
           end
-          
+
         elsif @flush_right_opened or @flush_left_opened or @footnote_opened # @todo Refactor
 
           # Add a new child node to the current leaf
@@ -112,8 +111,6 @@ module SwiftPoemsProject
           raise NotImplementedError.new "Unhandled token: #{token}"
         end
       else
-
-        # puts "adding token: #{token}"
 
         # Add a new child node to the current leaf
         # Temporarily use the token itself as a tagname
@@ -162,7 +159,7 @@ module SwiftPoemsProject
         token = token.gsub(nbCharTokenPattern, utf8Char)
       end
       
-      if token == '_|'
+      if token == '|'
         
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
       else
@@ -173,9 +170,6 @@ module SwiftPoemsProject
     
     def push(token)
 
-      # puts "trace current_leaf: #{@current_leaf.name}"
-      # puts "token: #{token}"
-      
       # if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
         

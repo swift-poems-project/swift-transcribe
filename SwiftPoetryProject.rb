@@ -635,15 +635,14 @@ EOF
       # Decorator literal handling
       #
       [
-       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
-       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
-       '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
-       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
        '«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*_«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',
-       '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
-       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',
        '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»_«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',
-
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDNM»',
+       '*«MDSD»*«MDSU»**«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
+       '«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDSU»*«MDNM»*«MDNM»',
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»',
+       '«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*',
       ].each do |decorative_literal|
         
         if lines.index decorative_literal
@@ -2010,7 +2009,9 @@ EOF
      @poem = @poem.gsub(/#{Regexp.escape("584-07H1   1  «MDRV»O«MDNM»F Chloe«MDNM»")}/, "584-07H1   1  «MDRV»O«MDNM»F Chloe")
      @poem = @poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
      @poem = @poem.gsub(/#{Regexp.escape("949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO«MDNM»")}/, "949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO")
-     @poem = @poem.gsub(/#{Regexp.escape("866-0204   180  As, who shou'd say, «MDUL»Now, am I «FN1·«MDNM»Nick-names for my Lady..» Skinny and Lean«MDNM»?")}/, "866-0204   180  As, who shou'd say, «MDUL»Now, am I«MDNM»«FN1·Nick-names for my Lady..»«MDUL»Skinny and Lean?«MDNM»")
+
+     @poem = @poem.gsub(/#{Regexp.escape("866-0204   180  As, who shou'd say, ")}.+\?/, "866-0204   180  As, who shou'd say, «MDUL»Now, am I«MDNM»«FN1·Nick-names for my Lady..»«MDUL»Skinny and Lean?«MDNM»")
+
      @poem = @poem.gsub(/X44\-612B   6  A back\-sword, poker, with\\«MDUL»ins«MDNM»·out«MDNM»/, "X44-612B   6  A back-sword, poker, with\«MDUL»ins«MDNM»·out")
      @poem = @poem.gsub(/#{Regexp.escape("P0030603   2  ``As often as they change their Cloaths«MDNM»")}/, "P0030603   2  ``As often as they change their Cloaths")
 
@@ -2023,7 +2024,7 @@ EOF
      # @poem = @poem.gsub(/#{Regexp.escape("bless the Church, and three of our Mitres;")}/, "bless the Church, and three of our Mitres;«MDNM»")
      @poem = @poem.gsub(/#{Regexp.escape("803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;")}/, "803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;«MDNM»")
 
-     puts @poem
+     # puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

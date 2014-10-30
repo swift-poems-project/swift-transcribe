@@ -337,7 +337,7 @@ line text: «MDNM»
 
      def push(token)
        
-       # puts "Appending the following token to the line: #{token}"
+       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 
@@ -398,7 +398,7 @@ line text: «MDNM»
 
          # logger.debug "Appending text to the line: #{token}"
          
-         # pushText token
+         pushText token
 
          debugOutput = @opened_tags.map { |tag| tag.name }
          # puts "Updated tags for the line: #{debugOutput}"

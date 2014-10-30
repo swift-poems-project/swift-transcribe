@@ -1795,7 +1795,13 @@ EOF
      # @poem = @poem.gsub(/#{Regexp.escape("bless the Church, and three of our Mitres;")}/, "bless the Church, and three of our Mitres;«MDNM»")
      @poem = @poem.gsub(/#{Regexp.escape("803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;")}/, "803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;«MDNM»")
 
-     # puts @poem
+     @poem = @poem.gsub(/#{Regexp.escape("«FN1·The Ode I writ to the King in«MDNM» Ireland")}/, "«FN1·The Ode I writ to the King in Ireland")
+
+     # @poem = @poem.gsub(/#{Regexp.escape("\Greek shoulder note\«MDUL»» God Himself to help him out«MDNM»\.")}/, "\Greek shoulder note\» «MDUL»God Himself to help him out«MDNM».")
+     # @poem = @poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\«MDUL»» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\» «MDUL»God Himself to help him out«MDNM».')
+     @poem = @poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\\.» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\.» «MDUL»God Himself to help him out«MDNM».')
+
+     puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

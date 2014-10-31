@@ -68,8 +68,6 @@ module SwiftPoemsProject
       # @todo Refactor
       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN./.match(token)
 
-
-
         if NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token
 
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
@@ -169,6 +167,8 @@ module SwiftPoemsProject
     end
     
     def push(token)
+
+      # puts 'Adding token ' + token
 
       # if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token

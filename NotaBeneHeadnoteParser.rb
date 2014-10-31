@@ -69,6 +69,11 @@ module SwiftPoemsProject
           line = line.gsub /#{Regexp.escape("HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, S«MDSD»T. «MDNM»P«MDSD»ATRICK'S«MDNM».")}/, "HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, ST. «MDNM»P«MDSD»ATRICK'S«MDNM»."
           
           line = line.gsub /#{Regexp.escape("HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, 'HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»'
+
+          # Work around for witnesses of the same apparatus (?)
+          # @todo Resolve
+          line = line.gsub /#{Regexp.escape("Years ago«MDNM».«MDNM»")}/, 'Years ago.«MDNM»'
+
           line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»A certain very great «MDNM»")}/, 'HN3 «MDUL»A certain very great «MDNM»'
           
           # @todo Resolve this fully within SPP-124

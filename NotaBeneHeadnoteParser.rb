@@ -83,6 +83,9 @@ module SwiftPoemsProject
           # @todo Resolve this fully by implementing SPP-125
           line = line.gsub /#{Regexp.escape("«MDBU»Your most faithfull friend_&_Humble Serv«MDSU»t«MDBU» 08.__Will Livingston«MDNM»")}/, "«MDBU»Your most faithfull friend_&_Humble Serv«MDNM»«MDSU»t«MDNM»«MDBU» 08.__Will Livingston«MDNM»"
 
+          line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, "HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»"
+          line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»")}/, "HN3 «MDUL»"
+
           # puts 'trace: ' + line
       end
 

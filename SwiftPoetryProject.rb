@@ -1694,6 +1694,7 @@ EOF
      @poem = @poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
      @poem = @poem.gsub /«FN1\|·/, "«FN1·"
      @poem = @poem.gsub /«FN1\\/, "«FN1·\\"
+
      @poem = @poem.gsub(/#{Regexp.escape("«FN1──────")}/, "«FN1·──────")
 
      @poem = @poem.gsub /\\»/, "\\.»"

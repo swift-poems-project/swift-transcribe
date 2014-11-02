@@ -18,6 +18,8 @@ module SwiftPoemsProject
     # Refactor
     def parse(line)
 
+      line = line.gsub /──»/, '──.»'
+
       # For cleaning extraneous MDNM mode codes
       # @todo Refactor into a CSV file for parsing (original line, cleaned line)
       #

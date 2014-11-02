@@ -37,7 +37,9 @@ module SwiftPoemsProject
           line = line.gsub /#{Regexp.escape("«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails")}/, "«MDNM»Contrast«MDUL» of wearing Scarlet and Gold, with what they call «FN1·Wigs with long black Tails"
           line = line.gsub /#{Regexp.escape("HN1 «MDNM»Upon lending")}/, "HN1 Upon lending"
           line = line.gsub /#{Regexp.escape("HN1 «MDNM»In L«MDSD»ILLIPUTIAN«MDNM» VERSE.")}/, "HN1 In L«MDSD»ILLIPUTIAN«MDNM» VERSE."
-          line = line.gsub /#{Regexp.escape("supplements; which answering my expectation, the perusal has produced what you find inclosed.")}/, "supplements; which answering my expectation, the perusal has produced what you find inclosed.«MDNM»"
+
+          # line = line.gsub /#{Regexp.escape("supplements; which answering my expectation, the perusal has produced what you find inclosed.")}/, "supplements; which answering my expectation, the perusal has produced what you find inclosed.«MDNM»"
+
           line = line.gsub /#{Regexp.escape("«MDNM»HN4 «MDUL»As I have been somewhat inclined to this folly")}/, "HN4 «MDUL»As I have been somewhat inclined to this folly"
           
           line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago")}/, 'HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago«MDNM»'

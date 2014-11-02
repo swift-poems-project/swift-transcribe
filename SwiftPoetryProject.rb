@@ -1808,6 +1808,8 @@ EOF
      # @poem = @poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\«MDUL»» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\» «MDUL»God Himself to help him out«MDNM».')
      @poem = @poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\\.» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\.» «MDUL»God Himself to help him out«MDNM».')
 
+     @poem = @poem.gsub(/#{Regexp.escape("866-S908   180  ``As, who shou'd say, «MDUL»Now am «FN1·«MDNM»")}/, "866-S908   180  ``As, who shou'd say, «MDUL»Now am«MDNM» «FN1·")
+
      # puts @poem
      # exit
 

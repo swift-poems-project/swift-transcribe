@@ -415,6 +415,9 @@ EOF
       lines = lines.gsub(/#{Regexp.escape("903-0251   HN«MDNM»1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")}/, "903-0251   HN1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")
 
       lines = lines.gsub(/#{Regexp.escape("198-03P5   H«MDNM»ORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")}/, "198-03P5   HORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")
+      lines = lines.gsub(/#{Regexp.escape("026-07H1   «FN1·When the authors posthumous pieces were reprinted in «MDUL»Ireland«MDNM», this and the foregoing odes were omitted.» ODE | «MDUL»To the Hon«MDBU»ble«MDUL» Sir«MDNM» WILLIAM TEMPLE.")}/, "026-07H1   «FN1·When the authors posthumous pieces were reprinted in «MDUL»Ireland«MDNM», this and the foregoing odes were omitted.» ODE | «MDUL»To the Hon«MDNM»«MDBU»ble«MDNM»«MDUL» Sir«MDNM» WILLIAM TEMPLE.")
+
+      # puts lines
       
       # Decorator literal handling
       #

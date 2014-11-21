@@ -409,6 +409,8 @@ EOF
       # Please see SPP-113
       lines = lines.gsub(/#{Regexp.escape("640-0202   551  _«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDUL»C\\ae\\tera desiderantur«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»")}/, "640-0202   551  _«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDUL»C\\ae\\tera desiderantur«MDNM»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»")
 
+      
+
       # Decorator literal handling
       #
       [
@@ -1268,6 +1270,9 @@ EOF
     @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("866-0251   HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago")}\r\n#{Regexp.escape("866-0251   «MDNM»HN3")}/, "866-0251   HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago«MDNM»\r\n866-0251   HN3"
 
     @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("866-0251   HN3 ")}\t#{Regexp.escape("«MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.")}\r\n#{Regexp.escape("866-0251   «MDNM»HN4")}/, "866-0251   HN3 «MDUL»A certain very great Person, then in that Kingdom, having heard much of this Poem, obtained a Copy from the Gentleman, or, as some say, the Lady, in whose House it was written, from whence, I know not by what Accident, several other Copies were transcribed, full of Errors. As I have a great Respect for the supposed Author, I have procured a true Copy of the Poem, the Publication whereof can do him less Injury than printing any of those incorrect ones which run about in Manuscript, and would infallibly be soon in the Press, if not thus prevented.«MDNM»\r\n866-0251   HN4"
+
+    # For imbalanced tokens within the title of each poem...
+    @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("516-0202   «MDUL»An Excellent new «MDNM»Ballad«MDUL»; or the true | «MDNM»English«MDUL» «FN1·«MDNM»────Sawbridge, «MDUL»Dean of «MDNM»Ferns«MDUL», lately deceased«MDNM».» Dean to be hanged for a«MDNM» | Rape.")}/, "516-0202   «MDUL»An Excellent new «MDNM»Ballad«MDUL»; or the true | «MDNM»English «FN1·────Sawbridge, «MDUL»Dean of «MDNM»Ferns«MDUL», lately deceased«MDNM».» «MDUL»Dean to be hanged for a«MDNM» | Rape."
 
     # For each line containing the title and head-note fields...
     @titleAndHeadnote.each_line do |line|

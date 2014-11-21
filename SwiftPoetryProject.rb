@@ -405,6 +405,10 @@ EOF
       # lines.gsub(/#{Regexp.escape("M442090A   20  ────── Who does no know Sir Isaac and the Dean?")}/, "M442090A   20  ────── Who does no know Sir Isaac and the Dean?«MDUL» «MDNM»")
       lines = lines.gsub(/#{Regexp.escape("M442090A   %%                                                  «MDUL» «MDNM»")}/, "M442090A   %%\r")
 
+      # Resolves issues for ambiguous modecode parsing
+      # Please see SPP-113
+      lines = lines.gsub(/#{Regexp.escape("640-0202   551  _«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDUL»C\\ae\\tera desiderantur«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»")}/, "640-0202   551  _«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDUL»C\\ae\\tera desiderantur«MDNM»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDNM»")
+
       # Decorator literal handling
       #
       [
@@ -1821,7 +1825,6 @@ EOF
 
      @poem = @poem.gsub(/#{Regexp.escape("866-S908   180  ``As, who shou'd say, «MDUL»Now am «FN1·«MDNM»")}/, "866-S908   180  ``As, who shou'd say, «MDUL»Now am«MDNM» «FN1·")
 
-     # puts @poem
      # exit
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|

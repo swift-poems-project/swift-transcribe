@@ -1274,6 +1274,8 @@ EOF
     # For imbalanced tokens within the title of each poem...
     @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("516-0202   «MDUL»An Excellent new «MDNM»Ballad«MDUL»; or the true | «MDNM»English«MDUL» «FN1·«MDNM»────Sawbridge, «MDUL»Dean of «MDNM»Ferns«MDUL», lately deceased«MDNM».» Dean to be hanged for a«MDNM» | Rape.")}/, "516-0202   «MDUL»An Excellent new «MDNM»Ballad«MDUL»; or the true | «MDNM»English «FN1·────Sawbridge, «MDUL»Dean of «MDNM»Ferns«MDUL», lately deceased«MDNM».» «MDUL»Dean to be hanged for a«MDNM» | Rape."
 
+    @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("584-46L1   S«MDSD»TREPHON«MDNM» and«MDNM» C«MDSD»HLOE«MDNM».")}/, "584-46L1   S«MDSD»TREPHON«MDNM» and C«MDSD»HLOE«MDNM»."
+
     # For each line containing the title and head-note fields...
     @titleAndHeadnote.each_line do |line|
 

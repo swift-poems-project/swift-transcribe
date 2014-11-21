@@ -417,6 +417,11 @@ EOF
       lines = lines.gsub(/#{Regexp.escape("198-03P5   H«MDNM»ORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")}/, "198-03P5   HORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")
       lines = lines.gsub(/#{Regexp.escape("026-07H1   «FN1·When the authors posthumous pieces were reprinted in «MDUL»Ireland«MDNM», this and the foregoing odes were omitted.» ODE | «MDUL»To the Hon«MDBU»ble«MDUL» Sir«MDNM» WILLIAM TEMPLE.")}/, "026-07H1   «FN1·When the authors posthumous pieces were reprinted in «MDUL»Ireland«MDNM», this and the foregoing odes were omitted.» ODE | «MDUL»To the Hon«MDNM»«MDBU»ble«MDNM»«MDUL» Sir«MDNM» WILLIAM TEMPLE.")
 
+      lines = lines.gsub(/#{Regexp.escape("866-0253   The Grand Question debated: | WHETHER | H«MDSD»AMILTON'«MDNM»s«MDSD» «FN1·«MDUL»A «MDNM»B«MDSD»AWN«MDUL» was a Place near the House inclosed with Mud or Stone-Walls, to keep the Cattle from being stolen in the Night. They are now little used«MDNM».» «MDNM»B«MDSD»AWN«MDNM» should be | turned into a «MDUL»Barrack«MDNM» or «MDUL»Malt-house«MDNM».")}/,
+                         "866-0253   The Grand Question debated: | WHETHER | H«MDSD»AMILTON'«MDNM»s«MDSD» «FN1·«MDUL»A «MDNM»B«MDSD»AWN«MDNM»«MDUL» was a Place near the House inclosed with Mud or Stone-Walls, to keep the Cattle from being stolen in the Night. They are now little used«MDNM».» B«MDSD»AWN«MDNM» should be | turned into a «MDUL»Barrack«MDNM» or «MDUL»Malt-house«MDNM».")
+
+      lines = lines.gsub(/#{Regexp.escape("348-0253   «FN1·That noted Chief Justice, who twice prosecuted the«MDNM» D«MDSD»RAPIER«MDNM», «MDUL»and dissolved the Grand Jury for not finding the Bill against him«MDNM».» «MDUL»WHITSHED«MDNM»'s Motto on his Coach.")}/, "348-0253   «FN1·That noted Chief Justice, who twice prosecuted the D«MDSD»RAPIER«MDNM», «MDUL»and dissolved the Grand Jury for not finding the Bill against him«MDNM».» «MDUL»WHITSHED«MDNM»'s Motto on his Coach.")
+
       # puts lines
       
       # Decorator literal handling

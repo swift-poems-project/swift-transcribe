@@ -91,9 +91,15 @@ module SwiftPoemsProject
           # line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, "HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»"
           line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»")}/, "HN3 «MDUL»"
 
-          # puts 'trace: ' + line
-      end
+          line = line.gsub /#{Regexp.escape("of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails, worn for some Years Past.")}/, "of wearing Scarlet and Gold, with what they call«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past."
 
+          # ???
+          # @todo Identify the source of this
+          # @todo Refactor
+          line = line.gsub /#{Regexp.escape("«MDUL»November«MDNM» 1738.«MDUL»» ")}/, "«MDUL»November«MDNM» 1738.» «MDUL»"
+          line = line.gsub /#{Regexp.escape("wearing Scarlet and Gold, with what they call «FN1·")}/, "wearing Scarlet and Gold, with what they call«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past."
+      end
+      
       # Parse for the HN index
       m = /HN(\d\d?) ?(.*)/.match(line)
       if not m

@@ -413,6 +413,8 @@ EOF
       lines = lines.gsub(/#{Regexp.escape("419B0251   HN«MDNM»1 Written in the Y«MDSD»EAR«MDNM» 1730.")}/, "419B0251   HN1 Written in the Y«MDSD»EAR«MDNM» 1730.")
       lines = lines.gsub(/#{Regexp.escape("521-0251   On «MDUL»Stephen Duck«MDNM», the Thresher, | and favourite Poet, | «MDNM»A «MDUL»QUIBBLING EPIGRAM«MDNM».")}/, "521-0251   On «MDUL»Stephen Duck«MDNM», the Thresher, | and favourite Poet, | A «MDUL»QUIBBLING EPIGRAM«MDNM».")
       lines = lines.gsub(/#{Regexp.escape("903-0251   HN«MDNM»1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")}/, "903-0251   HN1 «MDUL»To an agreeable young Lady, but extremely lean«MDNM».")
+
+      lines = lines.gsub(/#{Regexp.escape("198-03P5   H«MDNM»ORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")}/, "198-03P5   HORACE, «MDUL»Lib. «MDNM»2«MDUL». Sat. «MDNM»6.")
       
       # Decorator literal handling
       #

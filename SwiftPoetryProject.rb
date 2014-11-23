@@ -426,6 +426,10 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("Y34A33D-   A | Friendly Apology | «MDNM»FOR A | Certain Justice of Peace; by way of De- | fence of ────── ────── Esq;")}/, "Y34A33D-   A | Friendly Apology | FOR A | Certain Justice of Peace; by way of De- | fence of ────── ────── Esq;")
 
+      lines = lines.gsub(/#{Regexp.escape("«MDNM»$$«MDBO»Proofed by & dates:«MDNM» JIF 26MY87, 30MY87; √'d JW 15JL93 agt independent transcript by CK 17FE93 (proofed JReiseman 15JL93); √'d JW agt independent transcript by JIF 10MY87; cleaned JW 26MY87, 14AU91; √'d JIF 4MR96 agt 079-21D-; √'d JW 9JA97 agt 002D; ed. JW 16AU01, 9JE14; √'d JW 13SE08 agt WILH")}/, "$$«MDBO»Proofed by & dates:«MDNM» JIF 26MY87, 30MY87; √'d JW 15JL93 agt independent transcript by CK 17FE93 (proofed JReiseman 15JL93); √'d JW agt independent transcript by JIF 10MY87; cleaned JW 26MY87, 14AU91; √'d JIF 4MR96 agt 079-21D-; √'d JW 9JA97 agt 002D; ed. JW 16AU01, 9JE14; √'d JW 13SE08 agt WILH")
+
+      lines = lines.gsub(/#{Regexp.escape("132-11L-   «MDNM»THE | VIRTUES | OF | «MDUL»Sid Hamet«MDNM» the M«MDSD»AGICIAN«MDNM»'«MDUL»s«MDNM» | ROD.")}/, "132-11L-   THE | VIRTUES | OF | «MDUL»Sid Hamet«MDNM» the M«MDSD»AGICIAN«MDNM»'«MDUL»s«MDNM» | ROD.")
+
       # puts lines
       
       # Decorator literal handling

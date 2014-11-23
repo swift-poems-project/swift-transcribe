@@ -434,6 +434,10 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("949B11M2   «MDUL»An«MDBO» «MDNM»E«MDSD»PIGRAM«MDNM» «MDUL»on«MDNM» «MDNM»Scolding.")}/, "949B11M2   «MDUL»An«MDBO» «MDNM»E«MDSD»PIGRAM«MDNM» «MDUL»on«MDNM» Scolding.")
 
+      lines = lines.gsub(/#{Regexp.escape("X19B1151   A Copy of a Copy of Verses from T«MDSD»HOMAS | «MDNM»S«MDSD»HERIDAN«MDNM», Clerk, to G«MDSD»EORGE «FN1·«MDNM»G«MDSD»EORGE «MDNM»R«MDSD»OCHFORT«MDNM», Esq;» «MDNM»N«MDSD»IM-«MDNM»«FN1·«MDUL»His Brother«MDNM» J«MDSD»OHN«MDNM» R«MDSD»OCHFORT«MDNM», «MDUL»called«MDNM» N«MDSD»IM«MDNM», «MDUL»because he was a great Hunter, from«MDNM» N«MDSD»IMROD«MDNM».» | «MDNM»D«MDSD»AN-«MDNM»«FN1·«MDUL»The Rev. Mr«MDNM» D«MDSD»ANIEL«MDNM» J«MDSD»ACKSON«MDNM».»D«MDSD»EAN«MDNM»«FN1·«MDUL»Dr«MDNM». S«MDSD»WIFT«MDNM», «MDUL»Dean of St.«MDNM» Patrick's.», Esq; Written «MDUL»July«MDNM» 15th, | 1721, at Night.")}/, "X19B1151   A Copy of a Copy of Verses from T«MDSD»HOMAS | «MDNM»S«MDSD»HERIDAN«MDNM», Clerk, to G«MDSD»EORGE«MDNM» «FN1·G«MDSD»EORGE «MDNM»R«MDSD»OCHFORT«MDNM», Esq;» N«MDSD»IM-«MDNM»«FN1·«MDUL»His Brother«MDNM» J«MDSD»OHN«MDNM» R«MDSD»OCHFORT«MDNM», «MDUL»called«MDNM» N«MDSD»IM«MDNM», «MDUL»because he was a great Hunter, from«MDNM» N«MDSD»IMROD«MDNM».» | D«MDSD»AN-«MDNM»«FN1·«MDUL»The Rev. Mr«MDNM» D«MDSD»ANIEL«MDNM» J«MDSD»ACKSON«MDNM».»D«MDSD»EAN«MDNM»«FN1·«MDUL»Dr«MDNM». S«MDSD»WIFT«MDNM», «MDUL»Dean of St.«MDNM» Patrick's.», Esq; Written «MDUL»July«MDNM» 15th, | 1721, at Night.")
+
+      lines = lines.gsub(/#{Regexp.escape("859-1151   Dean S«MDSD»WIFT«MDNM» at Sir A«MDSD»RTHUR «MDNM»A«MDSD»CHESON«MDNM»'s«MDNM» in | the North of I«MDSD»RELAND«MDNM».")}/, "859-1151   Dean S«MDSD»WIFT«MDNM» at Sir A«MDSD»RTHUR «MDNM»A«MDSD»CHESON«MDNM»'s in | the North of I«MDSD»RELAND«MDNM».")
+
       # Decorator literal handling
       #
       [

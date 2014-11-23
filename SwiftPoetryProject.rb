@@ -422,6 +422,8 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("348-0253   «FN1·That noted Chief Justice, who twice prosecuted the«MDNM» D«MDSD»RAPIER«MDNM», «MDUL»and dissolved the Grand Jury for not finding the Bill against him«MDNM».» «MDUL»WHITSHED«MDNM»'s Motto on his Coach.")}/, "348-0253   «FN1·That noted Chief Justice, who twice prosecuted the D«MDSD»RAPIER«MDNM», «MDUL»and dissolved the Grand Jury for not finding the Bill against him«MDNM».» «MDUL»WHITSHED«MDNM»'s Motto on his Coach.")
 
+      lines = lines.gsub(/#{Regexp.escape("132-S935   THE | VIRTUES | OF | «MDUL»S«MDBR»ID«MDNM» «MDUL»H«MDBR»AMET«MDNM» the MAGICIAN's | ROD.")}/, "132-S935   THE | VIRTUES | OF | «MDUL»S«MDNM»«MDBR»ID«MDNM» «MDUL»H«MDNM»«MDBR»AMET«MDNM» the MAGICIAN's | ROD.")
+
       # puts lines
       
       # Decorator literal handling
@@ -1844,6 +1846,8 @@ EOF
      @poem = @poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\\.» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\.» «MDUL»God Himself to help him out«MDNM».')
 
      @poem = @poem.gsub(/#{Regexp.escape("866-S908   180  ``As, who shou'd say, «MDUL»Now am «FN1·«MDNM»")}/, "866-S908   180  ``As, who shou'd say, «MDUL»Now am«MDNM» «FN1·")
+
+     @poem = @poem.gsub(/#{Regexp.escape("147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.«MDBO»")}/, "147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.")
 
      # exit
 

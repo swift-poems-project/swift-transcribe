@@ -424,6 +424,8 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("132-S935   THE | VIRTUES | OF | «MDUL»S«MDBR»ID«MDNM» «MDUL»H«MDBR»AMET«MDNM» the MAGICIAN's | ROD.")}/, "132-S935   THE | VIRTUES | OF | «MDUL»S«MDNM»«MDBR»ID«MDNM» «MDUL»H«MDNM»«MDBR»AMET«MDNM» the MAGICIAN's | ROD.")
 
+      lines = lines.gsub(/#{Regexp.escape("Y34A33D-   A | Friendly Apology | «MDNM»FOR A | Certain Justice of Peace; by way of De- | fence of ────── ────── Esq;")}/, "Y34A33D-   A | Friendly Apology | FOR A | Certain Justice of Peace; by way of De- | fence of ────── ────── Esq;")
+
       # puts lines
       
       # Decorator literal handling

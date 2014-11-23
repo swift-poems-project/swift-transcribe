@@ -438,6 +438,10 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("859-1151   Dean S«MDSD»WIFT«MDNM» at Sir A«MDSD»RTHUR «MDNM»A«MDSD»CHESON«MDNM»'s«MDNM» in | the North of I«MDSD»RELAND«MDNM».")}/, "859-1151   Dean S«MDSD»WIFT«MDNM» at Sir A«MDSD»RTHUR «MDNM»A«MDSD»CHESON«MDNM»'s in | the North of I«MDSD»RELAND«MDNM».")
 
+      lines = lines.gsub(/#{Regexp.escape("Y20-03P2   THE | «MDUL»QUIDNUNCKI'S«MDNM»: | A | TALE. | «MDNM»Occasioned by the D«MDSD»EATH«MDNM» of the | Duke Regent of «MDUL»France«MDNM».")}/, "Y20-03P2   THE | «MDUL»QUIDNUNCKI'S«MDNM»: | A | TALE. | Occasioned by the D«MDSD»EATH«MDNM» of the | Duke Regent of «MDUL»France«MDNM».")
+
+      lines = lines.gsub(/#{Regexp.escape("076-03P2   HN«MDNM»1 «MDUL»To the Tune of the Cutpurse«MDNM».")}/, "076-03P2   HN1 «MDUL»To the Tune of the Cutpurse«MDNM».")
+
       # Decorator literal handling
       #
       [

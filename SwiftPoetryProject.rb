@@ -432,8 +432,8 @@ EOF
 
       lines = lines.gsub(/#{Regexp.escape("405B04P3   «MDUL»Dr. «MDNM»Sw---«MDUL» to Mr. «MDNM»P---e«MDUL»,")}/, "405B04P3   «MDUL»Dr. «MDNM»Sw---«MDUL» to Mr. «MDNM»P---e,")
 
-      # puts lines
-      
+      lines = lines.gsub(/#{Regexp.escape("949B11M2   «MDUL»An«MDBO» «MDNM»E«MDSD»PIGRAM«MDNM» «MDUL»on«MDNM» «MDNM»Scolding.")}/, "949B11M2   «MDUL»An«MDBO» «MDNM»E«MDSD»PIGRAM«MDNM» «MDUL»on«MDNM» Scolding.")
+
       # Decorator literal handling
       #
       [

@@ -99,9 +99,6 @@ module SwiftPoemsProject
       @text = @text.gsub(/(['\\,])»/, '\\1.»')
 
       @text = @text.gsub("«LD »T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»", ".»T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»")
-
-      # puts @text
-
       @text = @text.gsub('X13-0802   X13-0802   » S«MDSD»HERIDAN«MDNM».', '')
 
       header = TeiHeader.new(@teiParser.headerElement)

@@ -20,6 +20,10 @@ module SwiftPoemsProject
 
       line = line.gsub /──»/, '──.»'
 
+      # Resolves issues related to certain footnote terminating modecodes
+      # See SPP-93
+      line = line.gsub /([a-z])»/, '\\1.»'
+
       # For cleaning extraneous MDNM mode codes
       # @todo Refactor into a CSV file for parsing (original line, cleaned line)
       #

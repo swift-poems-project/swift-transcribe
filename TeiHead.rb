@@ -118,6 +118,8 @@ module SwiftPoemsProject
         # Temporarily use the token itself as a tagname
         newLeaf = Nokogiri::XML::Node.new token, @document
 
+        puts token
+
         # newLeaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
         @current_leaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
 
@@ -139,8 +141,10 @@ module SwiftPoemsProject
         @current_leaf.add_child newLeaf
         @current_leaf = newLeaf
 
-        @flush_left_opened = /«FC»/.match(token)
-        @flush_right_opened = /«LD ?»/.match(token)
+        # @flush_left_opened = /«FC»/.match(token)
+        # @flush_right_opened = /«LD ?»/.match(token)
+        @flush_left_opened = false
+        @flush_right_opened = false
 
       else
 

@@ -1868,7 +1868,9 @@ EOF
 
      @poem = @poem.gsub(/#{Regexp.escape("147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.«MDBO»")}/, "147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.")
 
-     # exit
+     # Work-around
+     # @todo Refactor
+     @poem = @poem.gsub(/#{Regexp.escape("971-WILH   14  «FN1·«MDUL»The Dean's Answer..»«MDNM»")}/, "971-WILH   14  «MDUL»«FN1·The Dean's Answer..»«MDNM»")
 
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 
@@ -1885,6 +1887,8 @@ EOF
 
      # Initialize the poem
      stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
+
+     # puts initialTokens.to_s
 
      # Classify our tokens
      initialTokens.each do |initialToken|
@@ -1920,6 +1924,8 @@ EOF
 
        stanzas.last.push initialToken
      end
+
+     # titleElem = @headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS)
    end
 
    def parsePoem_deprecated

@@ -142,7 +142,8 @@ module SwiftPoemsProject
     # Additional footnotes
     '«FN1' => {
       
-      '»' => { 'note' => { 'place' => 'foot' } }
+      '»' => { 'note' => { 'place' => 'foot' } },
+      '.»' => { 'note' => { 'place' => 'foot' } }
     },
 
     # Additional footnotes

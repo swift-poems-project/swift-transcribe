@@ -47,7 +47,7 @@ module SwiftPoemsProject
            # @todo Refactor
            if last_tag_name == opened_tag.name
 
-             puts "TRACE: #{opened_tag.children}"
+             # puts "TRACE: #{opened_tag.children}"
              elem.add_child opened_tag.children
            else
 

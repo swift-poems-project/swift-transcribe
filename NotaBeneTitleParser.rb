@@ -96,7 +96,7 @@ module SwiftPoemsProject
 
       @text = @text.gsub(/«FN1/, '«FN1·')
       @text = @text.gsub(/([a-z\.][\d\s]*)»/, '\\1.»')
-      @text = @text.gsub(/([,])»/, '\\1.»')
+      @text = @text.gsub(/([\\,])»/, '\\1.»')
 
       header = TeiHeader.new(@teiParser.headerElement)
 

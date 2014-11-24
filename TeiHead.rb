@@ -27,7 +27,7 @@ module SwiftPoemsProject
     
     def pushToken(token)
 
-      puts "trace: ...#{token}...\n"
+      # puts "trace: ...#{token}...\n"
 
 =begin
       # Does this close a ternary leaf?
@@ -220,13 +220,13 @@ module SwiftPoemsProject
     
     def push(token)
 
-      puts 'trace2: ' + @current_leaf.name
-      puts 'trace4: ' + token
+      # puts 'trace2: ' + @current_leaf.name
+      # puts 'trace4: ' + token
 
-      if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+      # if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
 
-        puts 'trace3: ' + NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?(token).to_s
-      end
+      #   puts 'trace3: ' + NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?(token).to_s
+      # end
 
       # if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or

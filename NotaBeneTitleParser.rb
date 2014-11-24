@@ -94,9 +94,15 @@ module SwiftPoemsProject
     # Parse the text and append the TEI element to the document
     def parse
 
-      @text = @text.gsub(/«FN1/, '«FN1·')
+      @text = @text.gsub(/«FN1(?!·)/, '«FN1·')
       @text = @text.gsub(/([a-z\.][\d\s]*)»/, '\\1.»')
       @text = @text.gsub(/([\\,])»/, '\\1.»')
+
+      @text = @text.gsub("«LD »T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»", ".»T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»")
+
+      # puts @text
+
+      @text = @text.gsub('X13-0802   X13-0802   » S«MDSD»HERIDAN«MDNM».', '')
 
       header = TeiHeader.new(@teiParser.headerElement)
 

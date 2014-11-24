@@ -94,6 +94,8 @@ module SwiftPoemsProject
     # Parse the text and append the TEI element to the document
     def parse
 
+      @text = @text.gsub(/([a-z\.][\d\s]*)»/, '\\1.»')
+
       header = TeiHeader.new(@teiParser.headerElement)
 
       initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require_relative '../spec_helper'
 
 describe 'TeiParser' do
@@ -17,6 +18,16 @@ describe 'TeiParser' do
 
         @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
         @parser.parse.to_xml
+      }.to_not raise_error
+    end
+
+    it "parses the Nota Bene document #{file_path}" do
+      
+      expect {
+
+        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+        results = @parser.parse.to_xml
+        expect(results).not_to match(/«.+»/)
       }.to_not raise_error
     end
   end

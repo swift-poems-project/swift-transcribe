@@ -22,7 +22,7 @@ module SwiftPoemsProject
 
       # Resolves issues related to certain footnote terminating modecodes
       # See SPP-93
-      line = line.gsub /([a-z])»/, '\\1.»'
+      line = line.gsub /([a-z\.]\d+?)»/, '\\1.»'
 
       # For cleaning extraneous MDNM mode codes
       # @todo Refactor into a CSV file for parsing (original line, cleaned line)

@@ -84,7 +84,7 @@ describe 'TeiParser' do
 
             @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
             results = @parser.parse.to_xml
-            expect(results).not_to match(/«MD..»/)
+            expect(results).not_to match(/«.+»/)
           }.to_not raise_error
         end
       end

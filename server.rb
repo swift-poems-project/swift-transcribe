@@ -14,6 +14,51 @@ set :fileStorePath, config['file_store_path']
 
 NB_STORE_PATH = config['nb_store_path']
 
+IGNORED_DIRS = [
+                'TEI-samp',
+                'BIBLS',
+                'CASE',
+                'PRSOURCE',
+                'MSSOURCE',
+                'EDIT',
+                'DESCRIBE',
+                '4DOS750',
+                'HW37',
+                'XML-Test',
+                'incoming',
+                'POEMCOLL',
+                'NB',
+                'NEWDOS',
+                'INSTALL',
+                'FAULKNER',
+                'STEMMAS',
+                'FAIRBROT',
+                'INV'
+               ]
+
+IGNORED_FILES = [
+                 'tocheck',
+                 'PUMP',
+                 'tochk',
+                 'TOCHECK',
+                 'proofed.by',
+                 'pages',
+                 '!W61500B',
+                 'README',
+                 'M63514W2',
+                 'FULL.NB3',
+                 'FULLTEXT.HTM',
+                 'FILL@.NB3',
+                 'TRANS',
+                 'NEWFULL.RTF',
+                 'ANOTHER',
+                 'Z725740L',
+                 'Smythe of Barbavilla.doc',
+                 'Y08B002H',
+                 'Z787600L',
+                 'SOURCES'
+                ]
+
 post '/xhtml/compare' do
 
   docs = params.values.map do |docId|
@@ -220,7 +265,7 @@ set :haml, :format => :html5
 
 get '/' do
 
-  haml :index, :locals => { :appPath => NB_STORE_PATH }
+  haml :index, :locals => { :appPath => NB_STORE_PATH, :ignoredDirs => IGNORED_DIRS, :ignoredFiles => IGNORED_FILES }
 end
 
 # Support for the TEI P5 MIME type within a production environment

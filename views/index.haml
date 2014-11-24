@@ -6,12 +6,12 @@
   Swift Poem Annotation Collections
 - Dir.foreach(appPath) do |collId|
 
-  - if collId != '.' and collId != '..' and File.directory? "#{appPath}/#{collId}"
+  - if collId != '.' and collId != '..' and File.directory? "#{appPath}/#{collId}" and not ignoredDirs.include? collId
     %h3=collId
     %ul
       - Dir.foreach("#{appPath}/#{collId}") do |docId|
 
-        - if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}"
+        - if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}" and not ignoredFiles.include? docId
           %li
             %a(title=docId){:href => "/spp/#{collId}/#{docId}"} #{docId} (TEI P5)
           %li

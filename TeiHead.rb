@@ -88,7 +88,8 @@ module SwiftPoemsProject
           @has_opened_tag = false
           
           opened_tag = @poem.opened_tags.first
-          while opened_tag and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+
+          while not opened_tag.nil? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
             
             closed_tag = @poem.opened_tags.shift
             closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
@@ -97,6 +98,8 @@ module SwiftPoemsProject
           end
 
         elsif @flush_right_opened or @flush_left_opened or @footnote_opened # @todo Refactor
+
+          @current_leaf.name = NB_SINGLE_TOKEN_TEI_MAP[token]
 
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
@@ -108,6 +111,20 @@ module SwiftPoemsProject
           
           raise NotImplementedError.new "Unhandled token: #{token}"
         end
+
+      elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
+
+        newLeaf = Nokogiri::XML::Node.new token, @document
+
+        newLeaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
+
+        NB_SINGLE_TOKEN_TEI_MAP[token][newLeaf.name].each do |name, value|
+
+          newLeaf[name] = value
+        end
+
+        @current_leaf.add_child newLeaf
+        @current_leaf = newLeaf
       else
 
         # Add a new child node to the current leaf
@@ -119,7 +136,7 @@ module SwiftPoemsProject
 
         @footnote_opened = /«FN?/.match(token)
         @flush_left_opened = /«FC»/.match(token)
-        @flush_right_opened = /«LD »/.match(token)
+        @flush_right_opened = /«LD ?»/.match(token)
 
 =begin
       else

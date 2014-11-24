@@ -95,6 +95,7 @@ module SwiftPoemsProject
     def parse
 
       @text = @text.gsub(/([a-z\.][\d\s]*)»/, '\\1.»')
+      @text = @text.gsub(/([,])»/, '\\1.»')
 
       header = TeiHeader.new(@teiParser.headerElement)
 

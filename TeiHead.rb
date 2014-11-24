@@ -64,6 +64,7 @@ module SwiftPoemsProject
         @footnote_opened = true
       end
 =end
+
       # Hard-coding support for footnote parsing
       # @todo Refactor
       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN./.match(token)
@@ -97,20 +98,32 @@ module SwiftPoemsProject
             opened_tag = @poem.opened_tags.first
           end
 
-        elsif @flush_right_opened or @flush_left_opened or @footnote_opened # @todo Refactor
-
-          @current_leaf.name = NB_SINGLE_TOKEN_TEI_MAP[token]
+        elsif NB_MARKUP_TEI_MAP.has_key? token
 
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
-          # @has_opened_tag = true
+          @has_opened_tag = true
+
         else
           
           raise NotImplementedError.new "Unhandled token: #{token}"
         end
+
+      elsif @flush_right_opened or @flush_left_opened or @footnote_opened # @todo Refactor
+
+        # Add a new child node to the current leaf
+        # Temporarily use the token itself as a tagname
+        newLeaf = Nokogiri::XML::Node.new token, @document
+
+        # newLeaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
+        @current_leaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
+
+        @current_leaf.add_child newLeaf
+        @current_leaf = newLeaf
+        # @has_opened_tag = true
 
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
 
@@ -125,6 +138,10 @@ module SwiftPoemsProject
 
         @current_leaf.add_child newLeaf
         @current_leaf = newLeaf
+
+        @flush_left_opened = /«FC»/.match(token)
+        @flush_right_opened = /«LD ?»/.match(token)
+
       else
 
         # Add a new child node to the current leaf
@@ -134,9 +151,7 @@ module SwiftPoemsProject
         @current_leaf = newLeaf
         @has_opened_tag = true
 
-        @footnote_opened = /«FN?/.match(token)
-        @flush_left_opened = /«FC»/.match(token)
-        @flush_right_opened = /«LD ?»/.match(token)
+        # @footnote_opened = /«FN?/.match(token)
 
 =begin
       else
@@ -184,8 +199,6 @@ module SwiftPoemsProject
     end
     
     def push(token)
-
-      # puts 'Adding token ' + token
 
       # if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token

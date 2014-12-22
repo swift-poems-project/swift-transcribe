@@ -161,10 +161,10 @@ module SwiftPoemsProject
     },
 
     # The end-of-center (FL, FL) delta
-#    '«FL»' => {
-#      
-#      '«FL»' => { 'head' => {} },
-#    },
+    '«FL»' => {
+      
+      '«MDNM»' => { 'head' => {} },
+    },
     
     # The flush right (FR, FL) delta
     '«FR»' => {
@@ -176,7 +176,8 @@ module SwiftPoemsProject
     'om' => {
 
       '.' => { 'gap' => {} }
-    }
+    },
+
   }
 
   # This hash is for Nota Bene tokens which encompass a single line (i. e. they are terminated by a newline character rather than another token)

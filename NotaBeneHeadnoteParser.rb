@@ -33,7 +33,7 @@ module SwiftPoemsProject
         line = line.gsub /#{Regexp.escape("HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.«MDUL»")}/, 'HN10 I should be very sorry to offend the «MDUL»Dean«MDNM», although I am a perfect Stranger to his «MDUL»Person«MDNM»: But, since the «MDUL»Poem«MDNM» will infallibly be soon printed, either «MDUL»here«MDNM», or in «MDUL»Dublin«MDNM», I take myself to have the best «MDUL»Title«MDNM» to sent it to the «MDUL»Press«MDNM»; and, I shall direct the «MDUL»Printer«MDNM» to commit as few «MDUL»Errors«MDNM» as possible.'
         line = line.gsub /«MDNM»   HN11/, 'HN11'
         line = line.gsub /#{Regexp.escape("HN1 «MDUL»By Honest «FN1«MDNM»·")}/, 'HN1 «MDUL»By Honest «FN1·'
-        line = line.gsub /#{Regexp.escape("HN2 «MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, 'HN2 W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.'
+          line = line.gsub /#{Regexp.escape("HN2 «MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, 'HN2 W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.'
           
           line = line.gsub /#{Regexp.escape("HN1 «MDNM»To Y«MDSU»e«MDNM» Tune of the Cutpurse.")}/, 'HN1 To Y«MDSU»e«MDNM» Tune of the Cutpurse.'
           
@@ -107,10 +107,9 @@ module SwiftPoemsProject
           line = line.gsub /#{Regexp.escape("HN4  «MDRV»T«MDUL»HE author of the following poem is said to be Dr «MDNM»J. S. D. S. P. D«MDUL» who writ it, as well as several other copies of verses of the like kind, by way of amusement, in the family of an Honourable gentleman in the north of Ireland, where he spent a summer about two or three years ago. _|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.«MDUL»», then in that kingdom, having heard much of this poem, obtained a copy from the gentleman, or, as some say, the lady, in whose house it was written; from whence, I know not by what accident, several other copies were transcribed, full of errors. As I have a great respect for the supposed author, I have procured a true copy of the poem; the publication whereof can do him less injury than printing any of those incorrect ones which ran about in manuscript, and would infallibly be soon in the press, if not thus prevented._|Some expressions being peculiar to Ireland, I have prevailed on a gentleman of that kingdom to explain them, and I have put the several explanations in their proper places«MDNM».")}/, "HN4  «MDRV»T«MDUL»HE author of the following poem is said to be Dr «MDNM»J. S. D. S. P. D«MDUL» who writ it, as well as several other copies of verses of the like kind, by way of amusement, in the family of an Honourable gentleman in the north of Ireland, where he spent a summer about two or three years ago. _|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.», then in that kingdom, having heard much of this poem, obtained a copy from the gentleman, or, as some say, the lady, in whose house it was written; from whence, I know not by what accident, several other copies were transcribed, full of errors. As I have a great respect for the supposed author, I have procured a true copy of the poem; the publication whereof can do him less injury than printing any of those incorrect ones which ran about in manuscript, and would infallibly be soon in the press, if not thus prevented._|Some expressions being peculiar to Ireland, I have prevailed on a gentleman of that kingdom to explain them, and I have put the several explanations in their proper places«MDNM»."
 
           line = line.gsub(/#{Regexp.escape("«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past.Wigs with long black Tails, worn for some Years past. «MDUL»November«MDNM» 1738.» Toupees")}/, "«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past.Wigs with long black Tails, worn for some Years past. «MDUL»November«MDNM» 1738.» «MDUL»Toupees")
-
-        # puts line
-
       end
+
+      # puts "\nheadnote line: #{line} \n\n"
       
       # Parse for the HN index
       m = /HN(\d\d?) ?(.*)/.match(line)
@@ -136,18 +135,25 @@ module SwiftPoemsProject
         headContent = m[2]
 
         # @todo Refactor
-        @heads.pushHead if @teiParser.headnote_opened_index.to_i > 1
+        # @heads.pushHead if @teiParser.headnote_opened_index.to_i > 1
+        if @teiParser.headnote_opened_index.to_i > 1
+
+          # puts "Closing the line...\n"
+
+          @heads.pushHead
+        end
       end
 
       # This needs to be refactored for tokens which encoded content beyond that of 1 line
       if headContent != ''
 
         # Push the tokenized NB content of each HN line to the set of HN's
-        
-        # initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
+
+        # puts "head Content: #{headContent}"
+
         initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\s(?=om\.)|(?<=om\.)|(?=\|)|(?<=\|)|\n/
 
-        # poem = TeiPoemHeads.new @teiParser.poemElem, headIndex
+        # puts "initialTokens: #{initialTokens}"
 
         initialTokens.each do |initialToken|
 

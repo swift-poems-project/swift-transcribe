@@ -1872,6 +1872,12 @@ EOF
      # @todo Refactor
      @poem = @poem.gsub(/#{Regexp.escape("971-WILH   14  «FN1·«MDUL»The Dean's Answer..»«MDNM»")}/, "971-WILH   14  «MDUL»«FN1·The Dean's Answer..»«MDNM»")
 
+     @poem = @poem.gsub(/#{Regexp.escape("006-WILH   51  |«MDUL»In vain, «MDNM»said He«MDUL», does «FN1·Ireland«MDNM»» Utmost Thule«MDUL» boast")}/, "006-WILH   51  |«MDUL»In vain, «MDNM»said He«MDUL», does«MDNM» «FN1·Ireland» Utmost Thule«MDUL» boast")
+
+     @poem = @poem.gsub(/#{Regexp.escape("006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure«MDNM» there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")}/, "006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")
+
+     # puts @poem
+
      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 
        # @poem = @poem.sub Regexp.new(Regexp.escape pattern), '«UNCLEAR»'

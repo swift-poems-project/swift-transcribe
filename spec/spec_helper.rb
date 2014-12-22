@@ -1,3 +1,3 @@
 
 require_relative "../SwiftPoetryProject"
-require_relative "../SwiftApp"
+# require_relative "../SwiftApp"

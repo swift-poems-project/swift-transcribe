@@ -11,6 +11,9 @@ module SwiftPoemsProject
       
       @document = document
       @poem = poem
+
+#      @elem = @poem.elem
+#      @elem['n'] = index
       
       @elem = Nokogiri::XML::Node.new('head', @document)
       @elem['n'] = index
@@ -193,6 +196,8 @@ module SwiftPoemsProject
     # Add this as a text node for the current line element
     def pushText(token)
 
+      # puts 'appending the following text token: ' + token
+
       raise NotImplementedError.new "Failure to parse the following token within a headnote: #{token}" if /«.{2}/.match token
 
       # Remove the 8 character identifier from the beginning of the line
@@ -221,7 +226,7 @@ module SwiftPoemsProject
     def push(token)
 
       # puts 'trace2: ' + @current_leaf.name
-      # puts 'trace4: ' + token
+      # puts 'appending the following token: ' + token
 
       # if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
 

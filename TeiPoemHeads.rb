@@ -33,6 +33,8 @@ module SwiftPoemsProject
 
     def push(token)
 
+      # puts "Pushing the token #{token}..."
+
       if @heads.length == 1 and @heads.last.elem.content.empty?
 
         #token = token.sub /\s\|\s/, ''
@@ -56,7 +58,7 @@ module SwiftPoemsProject
       token = token.sub /\r/, ''
       @heads.last.push token
       pushHead
-        
+      
       @heads.map { |title| title.elem }
     end
   end

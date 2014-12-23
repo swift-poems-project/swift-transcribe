@@ -221,6 +221,29 @@ module SwiftPoemsProject
     },
   }
 
+  NB_DELTA_ATTRIB_TEI_MAP = {
+
+    '«LD»' => {
+      
+      'rend' => "flush right"
+    },
+
+    '«FL»' => {
+
+      'rend' => "flush left"
+    },
+
+    '«FC»' => {
+      
+      'rend' => "align(center)"
+    },
+
+    '«FR»' => {
+      
+      'rend' => "flush right"
+    },
+  }
+
   NB_CHAR_TOKEN_MAP = {
       
     /\\ae\\/ => 'æ',
@@ -327,7 +350,6 @@ module SwiftPoemsProject
            # puts "Appending a new line: #{token}\n"
            pushLine
            token = token.sub POEM_ID_PATTERN, ''
-
          elsif /([0-9A-Z\-]{8})   /.match token
 
            # indexMatch = /([0-9A-Z]{8})   /.match(token) if not indexMatch
@@ -341,6 +363,6 @@ module SwiftPoemsProject
 
          @lines.last.push token
        end
-     end
-   end
+    end
+  end
 end

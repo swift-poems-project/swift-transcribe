@@ -153,7 +153,13 @@ line text: «MDNM»
 =begin
        singleTag = @current_leaf.add_child Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @teiDocument
 =end
-       single_tag = UnaryNotaBeneDelta.new(token, @teiDocument, @current_leaf)
+       if NB_DELTA_ATTRIB_TEI_MAP.has_key? token
+
+         current_leaf = AttributeNotaBeneDelta.new(token, @teiDocument, @current_leaf)
+       else
+
+         single_tag = UnaryNotaBeneDelta.new(token, @teiDocument, @current_leaf)
+       end
      end
 
      def pushTermTernaryToken(token, opened_tag)
@@ -228,7 +234,7 @@ line text: «MDNM»
        @has_opened_tag = true
        @opened_tag = @current_leaf
 
-       # puts "Opening a tag: #{@opened_tag.parent}"
+       puts "Opening a tag: #{@opened_tag.parent}"
 
        # @stanza.opened_tags << @opened_tag
        
@@ -288,6 +294,7 @@ line text: «MDNM»
 
        debugOutput = @stanza.opened_tags.map {|tag| tag.name }
        puts "Terminating a sequence #{debugOutput}"
+       puts @stanza.elem.to_xml
 
        # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
        # logger.debug @stanza.elem.to_xml
@@ -328,7 +335,10 @@ line text: «MDNM»
          if opened_tag.name != '«FN1'
 
            @current_leaf.close '«MDNM»'
+
+           @stanza.opened_tags.shift
            @opened_tags.shift
+
            @current_leaf = @current_leaf.parent
            
            pushInitialToken(token)
@@ -343,10 +353,6 @@ line text: «MDNM»
          # First, retrieve last opened tag for the line
          # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
          #
-         
-         
-         
-         
          
          # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
          

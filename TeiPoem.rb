@@ -211,35 +211,48 @@ module SwiftPoemsProject
        @tokens.each do |initialToken|
 
          # logger.debug "Parsing the following into a stanza: #{initialToken}"
-         puts "Parsing the following into a stanza: #{initialToken}"
+         # puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
-
+         
          # Create a new stanza
-#         if /\s{3}\d+\s{2}_/.match initialToken
+         if initialToken == '_'
 
-         stanza_tokens = initialToken.split('_')
-         while stanza_tokens.length > 1
-
-           @stanzas.last.push stanza_tokens.shift
-
-           # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
-           # puts "Opened stanza tags: #{debugOutput}\n\n"
-
+           puts 'trace4' + @stanzas.last.elem.to_xml
+           debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+           puts 'trace5' + debugOutput.to_s
+           
            # Append the new stanza to the poem body
            @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+         else
+           
+           stanza_tokens = initialToken.split('_')
+           
+           while stanza_tokens.length > 1
+             
+             puts "Appending the token for the existing stanza: #{stanza_tokens.first}"
+             
+             @stanzas.last.push stanza_tokens.shift
+             
+             # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
+             # puts "Opened stanza tags: #{debugOutput}\n\n"
+             
+             # Append the new stanza to the poem body
+             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+
+           end
+           
+           # Solution implemented for SPP-86
+           #
+           # @todo Refactor
+           # puts initialToken
+           if initialToken.match /^[^«].+?»$/
+             
+             raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
+           end
+           
+           @stanzas.last.push stanza_tokens.shift           
          end
-
-         # Solution implemented for SPP-86
-         #
-         # @todo Refactor
-         # puts initialToken
-         if initialToken.match /^[^«].+?»$/
-
-           raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
-         end
-
-         @stanzas.last.push stanza_tokens.shift
        end
      end
    end

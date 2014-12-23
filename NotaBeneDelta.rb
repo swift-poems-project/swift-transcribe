@@ -55,6 +55,54 @@ module SwiftPoemsProject
     end
   end
 
+  class AttributeNotaBeneDelta < UnaryNotaBeneDelta
+
+    def initialize(token, document, parent)
+
+      super
+
+      @element = @parent
+      @name = @element.name
+
+      # Apply the attributes
+      attributes = NB_DELTA_ATTRIB_TEI_MAP[token]
+      attributes.each_pair do |name, value|
+
+        if @element[name]
+
+          @element[name] = [@element[name], value].join(' ')
+        else
+
+          @element[name] = value
+        end
+      end
+    end
+  end
+
+  class FlushDelta < UnaryNotaBeneDelta
+
+    def initialize(token, document, parent)
+
+      super
+
+      @element = @parent
+      @name = @element.name
+
+      # Apply the attributes
+      attributes = NB_DELTA_ATTRIB_TEI_MAP[token]
+      attributes.each_pair do |name, value|
+
+        if @element[name]
+
+          @element[name] = [@element[name], value].join(' ')
+        else
+
+          @element[name] = value
+        end
+      end
+    end
+  end
+
    class BinaryNotaBeneDelta < NotaBeneDelta
 
      def initialize(token, document, parent)

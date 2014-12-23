@@ -85,10 +85,24 @@ module SwiftPoemsProject
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
-        elsif NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+        elsif NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token # If this token closes the currently opened token
+
+          # Throw an exception if this is not a "MDNM" Modecode
+          if token != '«MDNM»'
+
+            raise NotImplementedError.new "Cannot close an opened Modecode with the token: #{token}"
+          end
+
+          # Iterate through all of the markup and set the appropriate TEI attributes
+          attribMap = NB_MARKUP_TEI_MAP[@current_leaf.name][token].values[0]
+          @current_leaf[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
 
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
           @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+
+
+          
+
           @current_leaf = @current_leaf.parent
           
           @has_opened_tag = false

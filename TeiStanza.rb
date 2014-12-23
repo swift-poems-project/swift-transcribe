@@ -81,6 +81,7 @@ module SwiftPoemsProject
         
       '«MDNM»' => { 'hi' => { 'rend' => 'underline' } },
       '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
     },
     
     '«MDBO»' => {
@@ -154,23 +155,22 @@ module SwiftPoemsProject
 
     # For deltas
     # The begin-center (FC, FL) delta
-    '«FC»' => {
+#    '«FC»' => {
       
-      '«FL»' => { 'note' => { 'rend' => "small type flush left" } },
-      '«MDNM»' => { 'head' => {} }
-    },
+#      '«MDNM»' => { 'note' => { 'rend' => "align(center)" } }
+#    },
 
     # The end-of-center (FL, FL) delta
-    '«FL»' => {
+#    '«FL»' => {
       
-      '«MDNM»' => { 'head' => {} },
-    },
+#      '«MDNM»' => { 'note' => { 'rend' => "flush left" } },
+#    },
     
     # The flush right (FR, FL) delta
-    '«FR»' => {
+#    '«FR»' => {
       
-      '«FL»' => { 'head' => {} }
-    },
+#      '«FL»' => { 'note' => { 'rend' => "flush right" } }
+#    },
     
     # <gap>
     'om' => {
@@ -184,14 +184,13 @@ module SwiftPoemsProject
   NB_SINGLE_TOKEN_TEI_MAP = {
 
     # The flush right (LD) delta
-#    '«LD »' => {
     '«LD»' => {
       
-      'head' => {}
+      'note' => { 'rend' => "flush right" }
     },
     '«LD »' => {
       
-      'head' => {}
+      'note' => { 'rend' => "flush right" }
     },
     
     # Footnotes encompassing an entire line
@@ -207,8 +206,19 @@ module SwiftPoemsProject
 
     '«FL»' => {
 
-      'head' => {}
-    }
+      'note' => { 'rend' => "flush left" }
+    },
+
+    '«FC»' => {
+      
+      'note' => { 'rend' => "align(center)" }
+    },
+
+    # The flush right (FR, FL) delta
+    '«FR»' => {
+      
+      'note' => { 'rend' => "flush right" }
+    },
   }
 
   NB_CHAR_TOKEN_MAP = {
@@ -250,7 +260,7 @@ module SwiftPoemsProject
 
       @poemElem.add_child(@elem)
 
-      debugOutput = @opened_tags.map {|tag| tag.to_xml }
+      # debugOutput = @opened_tags.map {|tag| tag.to_xml }
       # puts "Appending the following line tags: #{debugOutput}\n\n"
 
       # If there is an open tag...

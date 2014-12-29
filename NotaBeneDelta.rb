@@ -17,6 +17,11 @@ module SwiftPoemsProject
       @element.add_child node
     end
 
+    def to_xml
+
+      @element.to_xml
+    end
+
     def add_text(text)
 
       node = Nokogiri::XML::Text.new text, @document

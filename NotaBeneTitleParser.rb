@@ -22,6 +22,7 @@ module SwiftPoemsProject
         @opened_tags = []
         
         @titles = [ SwiftPoemsProject::TeiTitle.new(@document, self) ]
+        # @titles = [ ]
       end
 
       def pushTitle
@@ -83,11 +84,11 @@ module SwiftPoemsProject
 
       def close(token)
 
-        pushTitle
         token = token.sub /\r/, ''
         @titles.last.push token
+        pushTitle
 
-        @titles.map { |title| title.elem }
+        # @titles.map { |title| title.elem }
       end
     end
 

@@ -52,19 +52,15 @@ module SwiftPoemsProject
         # Does this seem to close the current leaf?
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
           
-          # One cannot resolve the tag name and attributes until both tags have been fully parsed
-          # @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-          # @current_leaf = @current_leaf.parent
-
           @current_leaf.close(token)
-          
+          @current_leaf = @current_leaf.parent
           @has_opened_tag = false
+          
           
           # Recurse through previously opened tags
           # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
           
           opened_tag = @header.opened_tags.first
-          # puts opened_tag
 
           # @todo Resolve
           if NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name] != nil
@@ -72,33 +68,19 @@ module SwiftPoemsProject
             while opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
               closed_tag = @header.opened_tags.shift
-=begin
-
-              closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
-              
-              opened_tag = @header.opened_tags.first
-=end
-
               closed_tag.close(token)
             end
           elsif not @header.opened_tags.empty? and opened_tag.name == 'hi'
 
-
-
+            # @todo Refactor
             closed_tag = @header.opened_tags.shift
             opened_tag = @header.opened_tags.first
-
-#            raise NotImplementedError
-
           end
         else
           
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
-          # newLeaf = Nokogiri::XML::Node.new token, @document
-          # @current_leaf.add_child newLeaf
-          # @current_leaf = newLeaf
-
+          # @todo Refactor
           @current_leaf = BinaryNotaBeneDelta.new(token, @document, @current_leaf)
 
           @has_opened_tag = true
@@ -142,7 +124,7 @@ module SwiftPoemsProject
 
     # Add this as a text node for the current line element
     def pushText(token)
-      
+
       # Remove the 8 character identifier from the beginning of the line
       indexMatch = /\s{3}(\d+)\s{2}/.match token
       if indexMatch
@@ -150,13 +132,13 @@ module SwiftPoemsProject
         @elem['n'] = indexMatch.to_s.strip
         token = token.sub /\s{3}(\d+)\s{2}/, ''
       end
-      
+
       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
       NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
         
         token = token.gsub(nbCharTokenPattern, utf8Char)
       end
-      
+
       # if token == '_|'
       if /_\|/.match token
         
@@ -169,7 +151,7 @@ module SwiftPoemsProject
     
     def push(token)
 
-      puts "Adding the following token to title: " + token
+      # puts "Adding the following token to title: " + token
 
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
         

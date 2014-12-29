@@ -44,7 +44,6 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
-        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>
@@ -86,7 +85,6 @@ EOF
   <teiHeader>
     <fileDesc>
       <titleStmt>
-        <title></title>
         <sponsor>Lafayette College</sponsor>
         <principal>James Woolley</principal>
       </titleStmt>

@@ -238,7 +238,7 @@ line text: «MDNM»
        @has_opened_tag = true
        @opened_tag = @current_leaf
 
-       puts "Opening a tag: #{@opened_tag.parent}"
+       # puts "Opening a tag: #{@opened_tag.parent}"
 
        # @stanza.opened_tags << @opened_tag
        
@@ -296,12 +296,11 @@ line text: «MDNM»
 
      def closeStanza(token, opened_tag, closed_tag = nil)
 
+=begin
        debugOutput = @stanza.opened_tags.map {|tag| tag.name }
        puts "Terminating a sequence #{debugOutput}"
        puts @stanza.elem.to_xml
-
-       # logger.debug "Current opened tags in the stanza: #{debugOutput}" # @todo Refactor
-       # logger.debug @stanza.elem.to_xml
+=end
 
        # For terminal tokens, ensure that both the current line and preceding lines are closed by it
        # Hence, iterate through all matching opened tags within the stanza
@@ -390,7 +389,7 @@ line text: «MDNM»
 
      def push(token)
        
-       puts "Appending the following token to the line: #{token}"
+       # puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 

@@ -221,6 +221,29 @@ module SwiftPoemsProject
     },
   }
 
+  NB_DELTA_FLUSH_TEI_MAP = {
+
+    '«LD»' => {
+      
+      'rend' => "flush right"
+    },
+
+    '«FL»' => {
+
+      'rend' => "flush left"
+    },
+
+    '«FC»' => {
+      
+      'rend' => "align(center)"
+    },
+
+    '«FR»' => {
+      
+      'rend' => "flush right"
+    },
+  }
+
   NB_DELTA_ATTRIB_TEI_MAP = {
 
     '«LD»' => {
@@ -362,6 +385,15 @@ module SwiftPoemsProject
          # logger.debug "new line token: #{token}"
 
          @lines.last.push token
+
+         # Update the line number
+         unless @lines.last.elem['n']
+
+           previous_stanza_index = @elem['n'].to_i - 1
+           previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
+
+           @lines.last.elem['n'] = previous_line['n'] if previous_line
+         end
        end
     end
   end

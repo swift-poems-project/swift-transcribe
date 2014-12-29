@@ -55,7 +55,7 @@ module SwiftPoemsProject
     end
   end
 
-  class AttributeNotaBeneDelta < UnaryNotaBeneDelta
+  class AttributeNotaBeneDelta < NotaBeneDelta
 
     def initialize(token, document, parent)
 
@@ -79,7 +79,7 @@ module SwiftPoemsProject
     end
   end
 
-  class FlushDelta < UnaryNotaBeneDelta
+  class FlushDelta < NotaBeneDelta
 
     def initialize(token, document, parent)
 
@@ -103,36 +103,36 @@ module SwiftPoemsProject
     end
   end
 
-   class BinaryNotaBeneDelta < NotaBeneDelta
+  class BinaryNotaBeneDelta < NotaBeneDelta
 
-     def initialize(token, document, parent)
+    def initialize(token, document, parent)
 
-       super
+      super
+      
+      @element = Nokogiri::XML::Node.new token, @document
+      @name = @element.name
+      
+      @parent.add_child @element
+    end
 
-       @element = Nokogiri::XML::Node.new token, @document
-       @name = @element.name
-       
-       @parent.add_child @element
-     end
+    def close(token)
 
-     def close(token)
+      tei_map = NB_MARKUP_TEI_MAP[@element.name][token]
 
-       tei_map = NB_MARKUP_TEI_MAP[@element.name][token]
+      names = tei_map.keys
+      raise NotImplementedError.new "Could not close the delta #{@element.name} using #{token}" if names.empty?
 
-       names = tei_map.keys
-       raise NotImplementedError.new "Could not close the delta #{@element.name} using #{token}" if names.empty?
+      # Always use the first name
+      @name = names.first
 
-       # Always use the first name
-       @name = names.first
+      # Apply the attributes
+      attributes = tei_map[@name]
+      attributes.each_pair do |name, value|
 
-       # Apply the attributes
-       attributes = tei_map[@name]
-       attributes.each_pair do |name, value|
+        @element[name] = value
+      end
 
-         @element[name] = value
-       end
-
-       @element.name = @name
-     end
-   end
+      @element.name = @name
+    end
+  end
 end

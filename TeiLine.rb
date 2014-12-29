@@ -153,7 +153,11 @@ line text: «MDNM»
 =begin
        singleTag = @current_leaf.add_child Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @teiDocument
 =end
-       if NB_DELTA_ATTRIB_TEI_MAP.has_key? token
+       if NB_DELTA_FLUSH_TEI_MAP.has_key? token
+
+         current_leaf = FlushDelta.new(token, @teiDocument, @current_leaf)
+
+       elsif NB_DELTA_ATTRIB_TEI_MAP.has_key? token
 
          current_leaf = AttributeNotaBeneDelta.new(token, @teiDocument, @current_leaf)
        else

@@ -25,7 +25,8 @@ module SwiftPoemsProject
 
       poem = poem.gsub /«LD─\.?»/, "«LD »"
       poem = poem.gsub /«FC»«MDNM»/, "«FC»"
-      
+      poem = poem.gsub /«FL»_/, "_«FL»"
+
       poem = poem.gsub /\.»/, '..»'
       poem = poem.gsub /\)»/, ').»'
       poem = poem.gsub /\*»/, '*.»'
@@ -211,22 +212,26 @@ module SwiftPoemsProject
        @tokens.each do |initialToken|
 
          # logger.debug "Parsing the following into a stanza: #{initialToken}"
-         # puts "Parsing the following into a stanza: #{initialToken}"
+         puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
          
          # Create a new stanza
-         if initialToken == '_'
+         if m = /(.*)_$/.match(initialToken)
 
-           puts 'trace4' + @stanzas.last.elem.to_xml
-           debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
-           puts 'trace5' + debugOutput.to_s
+           # puts 'trace4' + @stanzas.last.elem.to_xml
+           # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+           # puts 'trace5' + debugOutput.to_s
+
+           @stanzas.last.push m[1] unless m[1].empty?
            
            # Append the new stanza to the poem body
            @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
          else
            
            stanza_tokens = initialToken.split('_')
+
+           puts "stanza tokens: #{stanza_tokens}"
            
            while stanza_tokens.length > 1
              

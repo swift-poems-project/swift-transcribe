@@ -10,9 +10,8 @@ describe 'TeiParser' do
 
   @nb_store_path = '/var/lib/spp/master'
 
-  Dir.glob("#{@nb_store_path}/0201/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
-  # Dir.glob("#{@nb_store_path}/0201/640-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
-  # Dir.glob("#{@nb_store_path}/0201/866-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+#  Dir.glob("#{@nb_store_path}/0201/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
+  Dir.glob("#{@nb_store_path}/0201/060-0201").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) }.each do |file_path|
 
     it "parses the Nota Bene document #{file_path}" do
 
@@ -21,7 +20,7 @@ describe 'TeiParser' do
       expect {
 
         @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        @parser.parse.to_xml
+        puts @parser.parse.to_xml
       }.to_not raise_error
     end
 

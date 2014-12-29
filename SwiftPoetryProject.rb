@@ -1713,201 +1713,6 @@ EOF
      poem.parse
    end
 
-   def parsePoem_deprecated_1
-
-     @poem = TeiPoem.normalize(@poem)
-
-     initialTokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
-     poemTokens = []
-
-     # Initialize the poem
-     stanzas = [ TeiStanza.new(@workType, @poemElem, 1) ]
-
-     # puts initialTokens.to_s
-
-     # Classify our tokens
-     initialTokens.each do |initialToken|
-
-       # logger.debug "Parsing the following into a stanza: #{initialToken}"
-       # puts "Parsing the following into a stanza: #{initialToken}"
-
-       raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
-
-       # Create a new stanza
-       if /\s{3}\d+\s{2}_/.match initialToken
-
-         # puts "Appending a new stanza: #{initialToken}"
-         # puts "The last stanza: #{stanzas.last.elem.to_xml}"
-         # logger.debug "Does the last stanza have opened tags? #{!stanzas.last.opened_tags.empty?}"
-         # logger.debug "The opened tags: #{stanzas.last.opened_tags}" unless stanzas.last.opened_tags.empty?
-
-         debugOutput = stanzas.last.opened_tags.map {|tag| tag.to_xml }
-         # puts "Opened stanza tags: #{debugOutput}\n\n"
-
-         # Append the new stanza to the poem body
-         stanzas << TeiStanza.new(@workType, @poemElem, stanzas.size + 1, { :opened_tags => Array.new(stanzas.last.opened_tags) })
-       end
-
-       # Solution implemented for SPP-86
-       #
-       # @todo Refactor
-       # puts initialToken
-       if initialToken.match /^[^«].+?»$/
-
-         raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
-       end
-
-       stanzas.last.push initialToken
-     end
-
-     # titleElem = @headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS)
-   end
-
-   def parsePoem_deprecated
-
-     # stanzas = @poem.split(/(?<!08|_)_/)
-     stanzas = [@poem]
-
-     # <lg n="I.1" type="stanza">
-     stanzaElem = nil
-
-     @lineIndex = 1
-
-     stanzas.each do |stanza|
-
-       m = stanza.match(/(^\d+)/)
-       if m
-
-         _lineIndex = (m[1].to_i - 1) if m[1].to_i > 1
-       end
-
-       # Depending upon whether or not this work is a poem, this shall alter the name of the element containing the stanza
-       @blockElemName = @workType == POEM ? 'lg' : 'div'
-
-       # Create the "stanza" element
-       stanzaElem = Nokogiri::XML::Node.new(@blockElemName, @teiDocument)
-       @poemElem.add_child(stanzaElem)
-
-       if @workType == POEM
-
-         stanzaElem['type'] = 'stanza'
-       end
-
-       # Index the stanzas
-       stanzaElem['n'] = @stanzaIndex
-       @stanzaIndex+=1
-
-       stanza.each_line do |line|
-
-         line.chomp!
-
-         @lineElemName = @workType == POEM ? 'l' : 'p'
-
-         # Construct a new <p> element for each line within the poem
-         # Reference: http://www.tei-c.org/release/doc/tei-p5-doc/en/html/DS.html#DSDIV
-         lineElem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
-
-         # Remove the 8 character identifier from the beginning of the line
-         line.sub!(POEM_ID_PATTERN, '')
-         line.lstrip!
-
-         # Only parse non-empty lines
-         if line != ''
-
-           stanzaElem.add_child(lineElem)
-
-           lineText = Nokogiri::XML::Text.new(line, @teiDocument)
-           lineElem.add_child lineText
-
-           # Parse for <<FN .>> tokens
-           # This method maps one element to one or many elements
-
-           e = parseFNTokens lineText
-
-           # This returns a line element <tei:l/>
-           s = Nokogiri::XML::NodeSet.new @teiDocument
-
-           # Iterate through the node set (the tree) generated from the parsing of FN tokens...
-           e.children.each do |c|
-
-             # If this is an empty XML Text Node, iterate
-             # Refactor
-             next if c.is_a? Nokogiri::XML::Text and c.content == ''
-
-             # Parse for all other Nota Bene tokens
-             # This method maps one element to one or many elements
-             # This method also requires that "e" be the parent element being actively modified
-             textElems = parseXMLTextNode c, e
-
-             # If the entire element is the child...
-             # Refactor
-             if textElems != e
-
-               if e.content == ''
-
-                 e.swap (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])                 
-               elsif textElems.name == e.name
-
-                 c.swap textElems.children
-               elsif textElems.content != c.content
-
-                 c.swap (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])
-                 #c = (Nokogiri::XML::NodeSet.new @teiDocument, [textElems])
-               end
-             end
-           end
-
-           if s.length > 0
-
-             #lineElem.remove
-             ##e.content = ''
-             ##e.add_child s
-             ##stanzaElem.add_child e
-             #stanzaElem.add_child s
-
-             lineElem.swap s
-           end
-
-           #lineElem = parseNotaBeneMarkup(lineElem, stanzaElem)
-
-           { '_' => 'lb' }.each_pair do |char, markup|
-
-             if /_/.match(lineElem.content)
-
-               # While the subtree/branch contains a Text Node containing the "_", the exact Node must be recursively located
-               parent = lineElem
-               text_nodes_with_char = []
-
-               while text_nodes_with_char.empty?
-
-                 children = parent.children.select { |child| /_/.match child.content  }
-                 text_nodes_with_char = children.select { |child| child.is_a? Nokogiri::XML::Text }
-
-                 parent = children.first
-               end
-
-               text_node_with_char = text_nodes_with_char.first
-
-               # stanza = /(.+)?_/.match(text_node_with_char.first)
-               if text_node_with_char
-
-                 newChild = text_node_with_char.content.split('_').map { |text| Nokogiri::XML::NodeSet.new(@teiDocument, [ Nokogiri::XML::Text.new(text, @teiDocument), Nokogiri::XML::Node.new('lb', @teiDocument) ]) }.reduce(:|)
-                 text_node_with_char.add_next_sibling newChild if newChild
-                 text_node_with_char.remove
-               end
-
-               # text_node_with_char = Nokogiri::XML::Text.new( , @teiDocument) | Nokogiri::XML::Node.new('<lb />', @teiDocument) | Nokogiri::XML::Text.new( /_(.+)/.match(text_node_with_char.first.content)[1] , @teiDocument)
-             end
-           end
-         end
-       end
-
-       stanzaElem = parseNotaBeneMarkup(stanzaElem)
-     end
-
-     return @textElem
-   end
-
    def stripNotaBeneTokens(str)
 
      str = str.gsub(/(«.{1,4}(·| )?»)/,'') if str
@@ -2107,6 +1912,8 @@ EOF
 
      str = ''
 
+     # puts 'trace5: ' + searchStr.nil?
+
      text = stripNotaBeneTokens(searchStr)
      text = Regexp.escape(text)
 
@@ -2303,47 +2110,18 @@ EOF
                  lineNumber = m[1]
 
                  sicPhrase = m[2]
+
+                 sicElem = Nokogiri::XML::Node.new('note', @teiDocument)
+                 sicElem['type'] = 'sic'
+                 sicElem.content = sicPhrase
+
+                 targetElem = @textElem.at_xpath("//tei:l[@n='#{lineNumber}']", TEI_NS)
+
+                 containsSearchStr = false
+
+                 results = parseSicNote(targetElem, sicPhrase) if targetElem
                end
-
-               # <text> (tag)<text>(tag)
-
-               # parsing the sic field: 36 Os «MDUL»petrosum«MDNM»
-               # searching for : Os petrosum
-               # in : Which near the Os 
-               # searching for : Os petrosum
-               # in : petrosum
-               # searching for : Os petrosum
-               # in :  pass,
-
-               # ['text', <data>]
-
-               sicElem = Nokogiri::XML::Node.new('note', @teiDocument)
-               sicElem['type'] = 'sic'
-               sicElem.content = sicPhrase
-
-               targetElem = @textElem.at_xpath("//tei:l[@n='#{lineNumber}']", TEI_NS)
-
-               containsSearchStr = false
-
-               results = parseSicNote(targetElem, sicPhrase) if targetElem
-
-=begin
-               if(results.empty?)
-
-                 if containsSearchStr
-
-                   text = stripNotaBeneTokens(sicPhrase)
-                 end
-               else
-
-                 targetElem.content = ''
-                 targetElem.add_child(results)
-                 #targetElem.add_next_sibling(results)
-                 #targetElem.remove()
-               end
-=end
              end
-
            else
 
              # Refactor
@@ -2353,15 +2131,15 @@ EOF
                lineNumber = m[1]
                
                sicPhrase = m[2]
+
+               sicElem = Nokogiri::XML::Node.new('note', @teiDocument)
+               sicElem['type'] = 'sic'
+               sicElem.content = sicPhrase
+
+               targetElem = @textElem.at_xpath("//tei:l[@n='#{lineNumber}']", TEI_NS)
+
+               results = parseSicNote(targetElem, sicPhrase) if targetElem
              end
-
-             sicElem = Nokogiri::XML::Node.new('note', @teiDocument)
-             sicElem['type'] = 'sic'
-             sicElem.content = sicPhrase
-
-             targetElem = @textElem.at_xpath("//tei:l[@n='#{lineNumber}']", TEI_NS)
-
-             results = parseSicNote(targetElem, sicPhrase) if targetElem
            end
 
 =begin

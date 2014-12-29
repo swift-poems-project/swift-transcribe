@@ -53,8 +53,10 @@ module SwiftPoemsProject
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
           
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
-          @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-          @current_leaf = @current_leaf.parent
+          # @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+          # @current_leaf = @current_leaf.parent
+
+          @current_leaf.close(token)
           
           @has_opened_tag = false
           
@@ -68,40 +70,67 @@ module SwiftPoemsProject
           if NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name] != nil
 
             while opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
-            
+
               closed_tag = @header.opened_tags.shift
+=begin
+
               closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
               
               opened_tag = @header.opened_tags.first
+=end
+
+              closed_tag.close(token)
             end
           elsif not @header.opened_tags.empty? and opened_tag.name == 'hi'
 
+
+
             closed_tag = @header.opened_tags.shift
             opened_tag = @header.opened_tags.first
+
+#            raise NotImplementedError
+
           end
         else
           
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
-          newLeaf = Nokogiri::XML::Node.new token, @document
-          @current_leaf.add_child newLeaf
-          @current_leaf = newLeaf
+          # newLeaf = Nokogiri::XML::Node.new token, @document
+          # @current_leaf.add_child newLeaf
+          # @current_leaf = newLeaf
+
+          @current_leaf = BinaryNotaBeneDelta.new(token, @document, @current_leaf)
+
           @has_opened_tag = true
           @header.opened_tags << @current_leaf
         end
 
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
 
-        newLeaf = Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @document
-        @current_leaf.add_child newLeaf
+        # newLeaf = Nokogiri::XML::Node.new NB_SINGLE_TOKEN_TEI_MAP[token].keys[0], @document
+        # @current_leaf.add_child newLeaf
+
+        if NB_DELTA_FLUSH_TEI_MAP.has_key? token
+
+          current_leaf = FlushDelta.new(token, @document, @current_leaf)
+        elsif NB_DELTA_ATTRIB_TEI_MAP.has_key? token
+
+          current_leaf = AttributeNotaBeneDelta.new(token, @document, @current_leaf)
+        else
+
+          current_leaf = UnaryNotaBeneDelta.new(token, @document, @current_leaf)
+        end
       else
 
         # Add a new child node to the current leaf
         # Temporarily use the token itself as a tagname
         # @todo Refactor
-        newLeaf = Nokogiri::XML::Node.new token, @document
-        @current_leaf.add_child newLeaf
-        @current_leaf = newLeaf
+#        newLeaf = Nokogiri::XML::Node.new token, @document
+#        @current_leaf.add_child newLeaf
+#        @current_leaf = newLeaf
+
+        @current_leaf = BinaryNotaBeneDelta.new(token, @document, @current_leaf)
+
         @has_opened_tag = true
         @header.opened_tags << @current_leaf
       end
@@ -139,6 +168,8 @@ module SwiftPoemsProject
     end
     
     def push(token)
+
+      puts "Adding the following token to title: " + token
 
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
         

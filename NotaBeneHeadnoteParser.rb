@@ -151,7 +151,7 @@ module SwiftPoemsProject
 
         # puts "head Content: #{headContent}"
 
-        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\s(?=om\.)|(?<=om\.)|(?=\|)|(?<=\|)|\n/
+        initialTokens = headContent.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|\s(?=om\.)|(?<=om\.)|(?=\|)|(?<=\|)|(?=_)|(?<=_)|\n/
 
         # puts "initialTokens: #{initialTokens}"
 

@@ -19,8 +19,13 @@ module SwiftPoemsProject
       @elem['n'] = index
       
       @poem.elem.add_child @elem
-      
-      @current_leaf = @elem
+
+      # Insert handling for paragraphs within headnotes
+      # @current_leaf = @elem
+      @current_leaf = @elem.add_child Nokogiri::XML::Node.new 'lg', @document
+      @paragraph_index = 1
+      @current_leaf['n'] = @paragraph_index
+
       @tokens = []
 
       @footnote_opened = false
@@ -99,9 +104,6 @@ module SwiftPoemsProject
 
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
           @current_leaf.name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-
-
-          
 
           @current_leaf = @current_leaf.parent
           
@@ -236,19 +238,28 @@ module SwiftPoemsProject
         @current_leaf.add_child Nokogiri::XML::Text.new token, @document
       end
     end
+
+    def pushParagraph
+
+      @current_leaf = @current_leaf.parent
+#      new_paragraph = Nokogiri::XML::Node.new 'lg', @document
+#      @current_leaf.add_child new_paragraph
+#      @current_leaf = new_paragraph
+      @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'lg', @document
+      @paragraph_index += 1
+      @current_leaf['n'] = @paragraph_index
+    end
     
     def push(token)
 
-      # puts 'trace2: ' + @current_leaf.name
-      # puts 'appending the following token: ' + token
+      # puts 'appending the following headnote token: ' + token
 
-      # if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+      if token == '_'
 
-      #   puts 'trace3: ' + NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?(token).to_s
-      # end
+        # 
+        pushParagraph
 
-      # if NB_MARKUP_TEI_MAP.has_key? token or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token)
-      if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
+      elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
           (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or
           (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or
           NB_MARKUP_TEI_MAP.has_key? token

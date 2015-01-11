@@ -118,13 +118,13 @@ module SwiftPoemsProject
            indentValue = token_segments.size - 1
          end
 
-         puts 'trace2: ' + token
-         puts 'trace1: ' + token.split(/\|/).to_s
+         # puts 'trace2: ' + token
+         # puts 'trace1: ' + token.split(/\|/).to_s
 
          raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token}" if indentValue < 1
 
          @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
-         token = token.sub /\|/, ''
+         token = token.sub /\|+/, ''
        end
 
        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas

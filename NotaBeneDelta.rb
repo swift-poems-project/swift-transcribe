@@ -122,10 +122,13 @@ module SwiftPoemsProject
 
     def close(token)
 
+      puts @document.to_xml
+      raise NotImplementedError.new( "Could not close the delta #{@element.name} using #{token}" ) unless NB_MARKUP_TEI_MAP[@element.name].has_key? token
+
       tei_map = NB_MARKUP_TEI_MAP[@element.name][token]
 
       names = tei_map.keys
-      raise NotImplementedError.new "Could not close the delta #{@element.name} using #{token}" if names.empty?
+      raise NotImplementedError.new( "No TEI mapping for the the delta #{@element.name} closed using #{token}") if names.empty?
 
       # Always use the first name
       @name = names.first

@@ -212,7 +212,7 @@ module SwiftPoemsProject
        @tokens.each do |initialToken|
 
          # logger.debug "Parsing the following into a stanza: #{initialToken}"
-         # puts "Parsing the following into a stanza: #{initialToken}"
+         puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
          

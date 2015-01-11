@@ -383,6 +383,7 @@ module SwiftPoemsProject
          token = token.sub /\r/, ''
 
          # logger.debug "new line token: #{token}"
+         # puts "Appending a new line: #{token}\n"
 
          @lines.last.push token
 

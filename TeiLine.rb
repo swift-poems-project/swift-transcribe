@@ -105,22 +105,23 @@ module SwiftPoemsProject
          token = token.sub /\s3\}$/, ''
        end
 
-=begin
-new stanza token: «MDUL»
-new stanza token: Upon the Water cast thy Bread,
-line text: Upon the Water cast thy Bread,
-new stanza token: 250-0201   142  |And after many Days thou'lt find it
-new line token:    142  |And after many Days thou'lt find it
-line text:    142  |And after many Days thou'lt find it
-new stanza token: «MDNM»
-new line token: «MDNM»
-line text: «MDNM»
-=end
-
        # Transform pipes into @rend values
        if /\|/.match token and @current_leaf === @elem
 
-         indentValue = (token.split /\|/).size - 1
+         token_segments = token.split /\|/
+
+         if token_segments.empty?
+
+           indentValue = 1
+         else
+
+           indentValue = token_segments.size - 1
+         end
+
+         puts 'trace2: ' + token
+         puts 'trace1: ' + token.split(/\|/).to_s
+
+         raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token}" if indentValue < 1
 
          @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
          token = token.sub /\|/, ''
@@ -332,11 +333,20 @@ line text: «MDNM»
 
      def pushTerminalToken(token, opened_tag)
 
-       # Throw an exception if this is not a "MDNM" Modecode
-       if token != '«MDNM»'
+       if /^«FN1/.match opened_tag.name and /»$/.match token
 
-         if opened_tag.name != '«FN1'
+         @current_leaf.close token
 
+         @stanza.opened_tags.shift
+         @opened_tags.shift
+         
+         @current_leaf = @current_leaf.parent
+       elsif token != '«MDNM»'
+
+         # Throw an exception if this is not a "MDNM" Modecode
+         # if opened_tag.name != '«FN1' # Redundant
+
+           # @todo Reimplement; Resolve these anomalous cases
            @current_leaf.close '«MDNM»'
 
            @stanza.opened_tags.shift
@@ -347,10 +357,10 @@ line text: «MDNM»
            pushInitialToken(token)
 
            # raise NotImplementedError.new "Cannot close the opened Modecode #{opened_tag.name} with the token: #{token}"
-         else
+         #else
 
-           raise NotImplementedError.new "Attempting to parse the footnote #{opened_tag.name} closed with the token #{token} as a standard line"
-         end
+         #  raise NotImplementedError.new "Attempting to parse the footnote #{opened_tag.name} closed with the token #{token} as a standard line"
+         #end
        else
 
          # First, retrieve last opened tag for the line
@@ -389,7 +399,7 @@ line text: «MDNM»
 
      def push(token)
        
-       # puts "Appending the following token to the line: #{token}"
+       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 

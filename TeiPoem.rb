@@ -214,6 +214,9 @@ module SwiftPoemsProject
          # puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
+
+         # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
+         
          
          # Create a new stanza
          if m = /(.*)_$/.match(initialToken)
@@ -238,11 +241,12 @@ module SwiftPoemsProject
              
              @stanzas.last.push stanza_tokens.shift
              
-             # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
-             # puts "Opened stanza tags: #{debugOutput}\n\n"
+             debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
+             puts "Opened stanza tags: #{debugOutput}\n\n"
              
              # Append the new stanza to the poem body
-             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+             # @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
 
            end
            

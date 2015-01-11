@@ -399,7 +399,7 @@ module SwiftPoemsProject
 
      def push(token)
        
-       # puts "Appending the following token to the line: #{token}"
+       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 
@@ -409,23 +409,21 @@ module SwiftPoemsProject
        # opened_tag = @opened_tags.first
        opened_tag = @stanza.opened_tags.first
 
-       # puts "Does this line have an opened tag? #{!opened_tag.nil?}"
-       # puts "Name of the opened tag: #{opened_tag.name}" if opened_tag
+       # Deprecating ternary token parsing
+       # if opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:secondary].has_key? token
 
-       # Check to see if this is a terminal token for a ternary sequence
-       # if opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:terminal].has_key? token
+       # raise NotImplementedError.new "Attempting to parse tokens as 'ternary tokens'"
+       # pushSecondTernaryToken token, opened_tag
 
-         # pushTermTernaryToken token, opened_tag
+       # Handling for new paragraphs within footnotes (signified with "_" characters)
 
-       # Check to see if this is a secondary token for a ternary sequence
-       # elsif opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:secondary].has_key? token
-       if opened_tag and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_tag.name][:secondary].has_key? token
-
-         raise NotImplementedError.new "Attempting to parse tokens as 'ternary tokens'"
-         pushSecondTernaryToken token, opened_tag
+       # Handling for identation characters within footnotes (signified with "_|" sequences)
+       
+       debugOutput = @stanza.opened_tags.map {|tag| tag.to_xml }
+       puts "Opened stanza tags2: #{debugOutput}\n\n"
 
        # Check to see if this is a terminal token
-       elsif opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
+       if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
          pushTerminalToken token, opened_tag
          #

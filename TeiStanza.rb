@@ -12,7 +12,7 @@ module SwiftPoemsProject
 
       :secondary => {
 
-        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
+#        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
         '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
       },
 
@@ -310,10 +310,12 @@ module SwiftPoemsProject
       # puts "Appending the following line tags: #{debugOutput}\n\n"
 
       # If there is an open tag...
-      if not @opened_tags.empty?
+      # if not @opened_tags.empty?
+      if false
 
         # lineElem = TeiLine.new @workType, self, { :has_opened_tag => @line_has_opened_tag, :opened_tag => @opened_tags.last }
-        lineElem = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
+        # lineElem = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
+        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
       else
 
         lineElem = TeiLine.new @workType, self

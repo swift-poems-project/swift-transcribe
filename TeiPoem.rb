@@ -237,12 +237,12 @@ module SwiftPoemsProject
            
            while stanza_tokens.length > 1
              
-             puts "Appending the token for the existing stanza: #{stanza_tokens.first}"
+             # puts "Appending the token for the existing stanza: #{stanza_tokens.first}"
              
              @stanzas.last.push stanza_tokens.shift
              
              debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
-             puts "Opened stanza tags: #{debugOutput}\n\n"
+             # puts "Opened stanza tags: #{debugOutput}\n\n"
              
              # Append the new stanza to the poem body
              # @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })

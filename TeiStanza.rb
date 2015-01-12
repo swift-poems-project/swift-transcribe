@@ -370,7 +370,7 @@ module SwiftPoemsProject
 
       # Work-around for completely empty lines
       
-      puts 'trace4: ' + token
+      # puts 'trace4: ' + token
 
        if @lines.length == 1 and @lines.last.elem.content.empty?
 

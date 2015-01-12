@@ -32,6 +32,7 @@ module SwiftPoemsProject
     
     def pushToken(token)
 
+=begin
       if NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token
 
         # One cannot resolve the tag name and attributes until both tags have been fully parsed
@@ -45,17 +46,32 @@ module SwiftPoemsProject
         @current_leaf = newLeaf
         @has_opened_tag = true
         @header.opened_tags << @current_leaf
+=end
 
       # If this is the first line, or, if this tag must be closed...
-      elsif NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
-        
+#      elsif NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+      if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
+
         # Does this seem to close the current leaf?
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
+
+          # @todo Resolve
+          if @current_leaf.class.to_s == 'Nokogiri::XML::Element'
+
+            closed_tag_name = NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
+
+            NB_MARKUP_TEI_MAP[@current_leaf.name][token][closed_tag_name].each_pair do |attrib_name, attrib_value|
+
+              @current_leaf[attrib_name] = attrib_value
+            end
+            @current_leaf.name = closed_tag_name
+          else
           
-          @current_leaf.close(token)
+            @current_leaf.close(token)
+          end
+
           @current_leaf = @current_leaf.parent
           @has_opened_tag = false
-          
           
           # Recurse through previously opened tags
           # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
@@ -77,6 +93,8 @@ module SwiftPoemsProject
             opened_tag = @header.opened_tags.first
           end
         else
+
+
           
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
@@ -115,6 +133,8 @@ module SwiftPoemsProject
 
         @has_opened_tag = true
         @header.opened_tags << @current_leaf
+
+        
       end
 
       # puts "\n" + @header.opened_tags.to_s + "\n"

@@ -122,7 +122,7 @@ module SwiftPoemsProject
 
     def close(token)
 
-      puts @document.to_xml
+      # puts @document.to_xml
       raise NotImplementedError.new( "Could not close the delta #{@element.name} using #{token}" ) unless NB_MARKUP_TEI_MAP[@element.name].has_key? token
 
       tei_map = NB_MARKUP_TEI_MAP[@element.name][token]

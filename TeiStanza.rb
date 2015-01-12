@@ -4,7 +4,7 @@ module SwiftPoemsProject
 
   POEM = 0
   LETTER = 1
-  POEM_ID_PATTERN = /[M\d]\d\d\-?[0-9A-Z\!\-]{4,5}/
+  POEM_ID_PATTERN = /[A-Z\d]\d\d\-?[0-9A-Z\!\-]{4,5}\s+/
 
   NB_TERNARY_TOKEN_TEI_MAP = {
 
@@ -219,6 +219,11 @@ module SwiftPoemsProject
       
       'note' => { 'rend' => "flush right" }
     },
+
+    'om.' => {
+
+      'gap' => {}
+    },
   }
 
   NB_DELTA_FLUSH_TEI_MAP = {
@@ -363,6 +368,10 @@ module SwiftPoemsProject
 
     def push(token)
 
+      # Work-around for completely empty lines
+      
+      puts 'trace4: ' + token
+
        if @lines.length == 1 and @lines.last.elem.content.empty?
 
          token = token.sub POEM_ID_PATTERN, ''
@@ -370,16 +379,17 @@ module SwiftPoemsProject
        else
 
          # Trigger a new line
+         # @todo Refactor with a single regular expression
+         
          if POEM_ID_PATTERN.match token
 
-           # puts "Appending a new line: #{token}\n"
-           pushLine
            token = token.sub POEM_ID_PATTERN, ''
-         elsif /([0-9A-Z\-]{8})   /.match token
+           pushLine unless token.strip.empty?
 
-           # indexMatch = /([0-9A-Z]{8})   /.match(token) if not indexMatch
-           pushLine
-           token = token.sub /([0-9A-Z\-]{8})   /, ''
+         elsif /([0-9A-Z\-]{8})\s+/.match token
+
+           token = token.sub /([0-9A-Z\-]{8})\s+/, ''
+           pushLine unless token.strip.empty?
          end
 
          token = token.sub /\r/, ''

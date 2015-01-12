@@ -84,18 +84,19 @@ module SwiftPoemsProject
      def pushText(token)
 
        # Remove the 8 character identifier from the beginning of the line
-       indexMatch = /\s{3}(\d+)\s{2}/.match token
-       indexMatch = /([0-9A-Z\!\-]{8})   /.match(token) if not indexMatch
-       indexMatch = /([0-9A-Z]{8})   /.match(token) if not indexMatch
+       poem_id_match = /\s*(\d+)\s+/.match token
 
-       # puts token
+       poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
+       poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match
 
-       if indexMatch
+       if poem_id_match
 
-         @elem['n'] = indexMatch.to_s.strip
+         @elem['n'] = poem_id_match.to_s.strip
 
-         # token = token.sub /[!#\$A-Z0-9]{8}\s{3}(\d+)\s{2}_?/, ''
-         token = token.sub /\s{3}(\d+)\s{2}_?/, ''
+         token = token.sub poem_id_match[0], ''
+       elsif token.strip.empty?
+
+         return
        end
 
        # Transform triplet indicators for the stanza
@@ -110,7 +111,7 @@ module SwiftPoemsProject
 
          token_segments = token.split /\|/
 
-         if token_segments.empty?
+         if (token_segments.length == 1 and not /\|/.match token_segments.first) or token_segments.empty?
 
            indentValue = 1
          else
@@ -118,7 +119,7 @@ module SwiftPoemsProject
            indentValue = token_segments.size - 1
          end
 
-         raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token}" if indentValue < 1
+         raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token} (#{token_segments.to_s})" if indentValue < 1
 
          @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
          token = token.sub /\|+/, ''

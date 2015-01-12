@@ -328,7 +328,8 @@ EOF
                                  
                                 ]
 
-    POEM_ID_PATTERN = /[\dA-Z]\d{2}[\-\d][\dA-Z\!\-]{4}/
+    # POEM_ID_PATTERN = /[\dA-Z]\d{2}[\-\d][\dA-Z\!\-]{4}/
+    POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s+/
 
     NB_STORE_PATH = "#{File.dirname(__FILE__)}/master"
 

@@ -4,7 +4,10 @@ module SwiftPoemsProject
 
   POEM = 0
   LETTER = 1
-  POEM_ID_PATTERN = /[A-Z\d]\d\d\-?[0-9A-Z\!\-]{4,5}\s+/
+
+  # 991A002D
+# POEM_ID_PATTERN = /[A-Z\d]\d\d\-?[0-9A-Z\!\-]{4,5}\s+/
+  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s+/
 
   NB_TERNARY_TOKEN_TEI_MAP = {
 

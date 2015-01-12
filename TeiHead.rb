@@ -127,8 +127,8 @@ module SwiftPoemsProject
           end
 
           # Work-around for "overridden" Nota Bene Deltas
-          if not( /^«FN/.match @current_leaf.name and /»/.match token) or token != '«MDNM»'
-
+          if not( /^«FN/.match @current_leaf.name and /»/.match token) and token != '«MDNM»'
+            
             # Add the cloned token
             
             newLeaf = Nokogiri::XML::Node.new token, @document

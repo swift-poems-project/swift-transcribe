@@ -39,10 +39,19 @@ module SwiftPoemsProject
         if @titles.last.has_opened_tag
 
           @opened_tags.unshift last_title.current_leaf
-          if not last_title.tokens.empty?
-            @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.tokens.last, @document
 
+          # Work-around
+          if /^«/.match last_title.current_leaf.name
+
+            # print 'trace17'
+            # last_title.current_leaf.name = 'hi'
+          end
+
+          if not last_title.tokens.empty?
+
+            @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.tokens.last, @document
           else
+
             @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
           end
         end
@@ -64,11 +73,22 @@ module SwiftPoemsProject
 
       def push(token)
 
+        puts 'trace15: ' + token
+
         if @titles.length == 1 and @titles.last.elem.content.empty?
 
-          token = token.sub /\s\|\s/, ''
+          puts 'trace13: ' + token
+
+          if /\|/.match token
+
+            puts 'trace14'
+            token = token.sub /\s\|\s/, ''
+          end
+
           @titles.last.push token
         else
+
+          puts 'trace12'
 
           # Trigger a new line
           if /\s\|\s/.match token
@@ -83,7 +103,7 @@ module SwiftPoemsProject
       end
 
       def close(token)
-
+        
         token = token.sub /\r/, ''
         @titles.last.push token
         pushTitle

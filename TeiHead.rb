@@ -114,7 +114,15 @@ module SwiftPoemsProject
           while not opened_tag.nil? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
             
             closed_tag = @poem.opened_tags.shift
-            closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+
+            closed_tag_name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
+
+            # @todo Integrate Nota Bene Delta Objects
+            NB_MARKUP_TEI_MAP[closed_tag.name][token][closed_tag_name].each_pair do |attrib_name, attrib_value|
+
+              closed_tag[attrib_name] = attrib_value
+            end
+            closed_tag.name = closed_tag_name
             
             opened_tag = @poem.opened_tags.first
           end
@@ -126,6 +134,9 @@ module SwiftPoemsProject
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
           @has_opened_tag = true
+
+          puts 'trace3: opened'
+          @poem.opened_tags.unshift @current_leaf
         elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
 
           newLeaf = Nokogiri::XML::Node.new token, @document
@@ -190,6 +201,8 @@ module SwiftPoemsProject
         @current_leaf = newLeaf
         @has_opened_tag = true
 
+
+        @poem.opened_tags.unshift @current_leaf
         # @footnote_opened = /«FN?/.match(token)
 
 =begin
@@ -241,23 +254,41 @@ module SwiftPoemsProject
 
     def pushParagraph
 
+      puts 'new paragraph'
+
       @current_leaf = @current_leaf.parent
-#      new_paragraph = Nokogiri::XML::Node.new 'lg', @document
-#      @current_leaf.add_child new_paragraph
-#      @current_leaf = new_paragraph
-      @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'lg', @document
+      new_paragraph = Nokogiri::XML::Node.new 'lg', @document
       @paragraph_index += 1
-      @current_leaf['n'] = @paragraph_index
+      new_paragraph['n'] = @paragraph_index
+
+      @current_leaf.add_child new_paragraph
+
+      @current_leaf = new_paragraph
+
+      if not @poem.opened_tags.empty?
+
+        prev_opened_tag = @poem.opened_tags.first
+        current_opened_tag = Nokogiri::XML::Node.new prev_opened_tag.name, @document
+
+        @current_leaf.add_child current_opened_tag
+        @current_leaf = current_opened_tag
+      end
+
+      # Implement handling for opened tags
+      # puts 'trace3: ' + @poem.opened_tags.to_s
+      puts 'currently opened tag: ' + @current_leaf.parent.to_xml
     end
     
     def push(token)
 
-      # puts 'appending the following headnote token: ' + token
+      puts 'appending the following headnote token: ' + token
 
       if token == '_'
 
         # 
         pushParagraph
+
+        puts 'trace2: ' + @poem.opened_tags.to_s
 
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
           (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or

@@ -118,9 +118,6 @@ module SwiftPoemsProject
            indentValue = token_segments.size - 1
          end
 
-         # puts 'trace2: ' + token
-         # puts 'trace1: ' + token.split(/\|/).to_s
-
          raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token}" if indentValue < 1
 
          @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
@@ -258,9 +255,6 @@ module SwiftPoemsProject
      def close(token, opened_tag)
 
        while not @stanza.opened_tags.empty? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
-
-
-
 
          # This reduces the total number of opened tags within the stanza
          closed_tag = @stanza.opened_tags.shift
@@ -415,12 +409,8 @@ module SwiftPoemsProject
        # raise NotImplementedError.new "Attempting to parse tokens as 'ternary tokens'"
        # pushSecondTernaryToken token, opened_tag
 
-       # Handling for new paragraphs within footnotes (signified with "_" characters)
-
-       # Handling for identation characters within footnotes (signified with "_|" sequences)
-       
-       debugOutput = @stanza.opened_tags.map {|tag| tag.to_xml }
-       puts "Opened stanza tags2: #{debugOutput}\n\n"
+       # debugOutput = @stanza.opened_tags.map {|tag| tag.to_xml }
+       # puts "Opened stanza tags2: #{debugOutput}\n\n"
 
        # Check to see if this is a terminal token
        if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token

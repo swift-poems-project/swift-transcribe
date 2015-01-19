@@ -211,13 +211,14 @@ module SwiftPoemsProject
        # Classify our tokens
        @tokens.each do |initialToken|
 
-         # puts "Parsing the following into a stanza: #{initialToken}"
+         debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+         puts 'trace18:' + debugOutput.to_s
+         puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
 
          # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
-         
-         
+
          # Create a new stanza
          if m = /(.*)_$/.match(initialToken)
 
@@ -225,10 +226,16 @@ module SwiftPoemsProject
            # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
            # puts 'trace5' + debugOutput.to_s
 
-           @stanzas.last.push m[1] unless m[1].empty?
+           # if not @stanzas.last.opened_tags.last.nil? and //.match( @stanzas.last.opened_tags.last.tag )
+           if not @stanzas.last.opened_tags.last.nil?
+
+             puts 'trace19:' + @stanzas.last.opened_tags.last.name
+
+             @stanzas.last.push m[1] unless m[1].empty?
            
-           # Append the new stanza to the poem body
-           @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+             # Append the new stanza to the poem body
+             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+           end
          else
            
            stanza_tokens = initialToken.split('_')
@@ -238,16 +245,24 @@ module SwiftPoemsProject
            while stanza_tokens.length > 1
              
              # puts "Appending the token for the existing stanza: #{stanza_tokens.first}"
-             
-             @stanzas.last.push stanza_tokens.shift
-             
-             debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
-             # puts "Opened stanza tags: #{debugOutput}\n\n"
-             
-             # Append the new stanza to the poem body
-             # @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
-             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
 
+             stanza_token = stanza_tokens.shift
+             @stanzas.last.push stanza_token
+             
+             if not @stanzas.last.opened_tags.last.nil? and /^«/.match( @stanzas.last.opened_tags.last.name )
+
+               puts 'trace20:' + @stanzas.last.opened_tags.last.name
+
+               @stanzas.last.push_line_break stanza_token
+             else
+
+               # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
+               # puts "Opened stanza tags: #{debugOutput}\n\n"
+             
+               # Append the new stanza to the poem body
+               # @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+               @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
+             end
            end
            
            # Solution implemented for SPP-86

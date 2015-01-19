@@ -369,6 +369,11 @@ module SwiftPoemsProject
       @lines << newLine
     end
 
+    def push_line_break(line_break)
+
+      @lines.last.push_line_break(line_break)
+    end
+
     def push(token)
 
       # Work-around for completely empty lines

@@ -330,6 +330,9 @@ module SwiftPoemsProject
 
        if /^«FN1/.match opened_tag.name and /»$/.match token
 
+         puts 'trace16: ' + @current_leaf.class.name
+         puts 'trace17: ' + @current_leaf.to_xml
+
          @current_leaf.close token
 
          @stanza.opened_tags.shift
@@ -341,8 +344,8 @@ module SwiftPoemsProject
          # Throw an exception if this is not a "MDNM" Modecode
          # if opened_tag.name != '«FN1' # Redundant
 
-           # @todo Reimplement; Resolve these anomalous cases
-           @current_leaf.close '«MDNM»'
+         # @todo Reimplement; Resolve these anomalous cases
+         @current_leaf.close '«MDNM»'
 
            @stanza.opened_tags.shift
            @opened_tags.shift
@@ -392,9 +395,15 @@ module SwiftPoemsProject
        end
      end
 
+     def push_line_break(line_break)
+
+       line_break_elem = Nokogiri::XML::Node.new 'lb', @teiDocument
+       @current_leaf.add_child line_break_elem
+     end
+
      def push(token)
        
-       # puts "Appending the following token to the line: #{token}"
+       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 

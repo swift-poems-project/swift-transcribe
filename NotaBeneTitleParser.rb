@@ -115,6 +115,8 @@ module SwiftPoemsProject
       @text = @text.gsub('X13-0802   X13-0802   » S«MDSD»HERIDAN«MDNM».', '')
       @text = @text.gsub('«MDUL» | on his being Steward to the | Duke of«MDNM»', ' | «MDUL» on his being Steward to the «MDNM» | «MDUL» Duke of«MDNM»')
 
+      @text = @text.gsub('P«MDSD»ULTENEY«MDUL»', 'P«MDSD»ULTENEY«MDNM»«MDUL»')
+
       header = TeiHeader.new(@teiParser.headerElement)
 
       initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/

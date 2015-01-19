@@ -219,8 +219,6 @@ module SwiftPoemsProject
          
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
 
-         puts 'trace34: ' + initialToken
-
          # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
 
          # Create a new stanza
@@ -243,8 +241,6 @@ module SwiftPoemsProject
          else
            
            stanza_tokens = initialToken.split('_')
-
-           puts 'trace35: ' + stanza_tokens.to_s
 
            while stanza_tokens.length > 1
              

@@ -55,6 +55,8 @@ module SwiftPoemsProject
         # Does this seem to close the current leaf?
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
 
+          # puts 'trace36: ' + token
+
           # @todo Resolve
           if @current_leaf.class.to_s == 'Nokogiri::XML::Element'
 
@@ -77,7 +79,7 @@ module SwiftPoemsProject
           # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
 
           debug_opened_tags = @header.opened_tags.map { |tag| tag.to_xml }
-          puts 'trace 23: ' + debug_opened_tags.to_s
+          # puts 'trace 23: ' + debug_opened_tags.to_s
           
           opened_tag = @header.opened_tags.first
 
@@ -186,10 +188,12 @@ module SwiftPoemsProject
     def push(token)
 
       # puts "Adding the following token to title: " + token
+      # puts 'trace 38: ' + NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?('«MDNM»').to_s if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
 
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
         
         pushToken token
+
       else
         
         pushText token

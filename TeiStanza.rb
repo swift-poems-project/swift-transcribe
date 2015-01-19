@@ -369,9 +369,14 @@ module SwiftPoemsProject
       @lines << newLine
     end
 
-    def push_line_break(line_break)
+    def push_line_break(line_break = '_')
 
       @lines.last.push_line_break(line_break)
+    end
+
+    def push_line_indent(indent = '|')
+
+      @lines.last.push_line_indent(indent)
     end
 
     def push(token)

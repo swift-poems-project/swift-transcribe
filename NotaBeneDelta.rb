@@ -12,6 +12,16 @@ module SwiftPoemsProject
       @parent = parent
     end
 
+    def [](key)
+
+      @element[key]
+    end
+
+    def []=(key, value)
+
+      @element[key] = value
+    end
+
     def add_child(node)
 
       @element.add_child node

@@ -225,8 +225,7 @@ module SwiftPoemsProject
            # if not @stanzas.last.opened_tags.last.nil? and //.match( @stanzas.last.opened_tags.last.tag )
            # if not @stanzas.last.opened_tags.last.nil?
            if not @stanzas.last.opened_tags.last.nil? and
-               /^«/.match( @stanzas.last.opened_tags.last.name ) and
-               not /_\|/.match( initialToken )
+               /^«/.match( @stanzas.last.opened_tags.last.name )
 
              @stanzas.last.push m[1] unless m[1].empty?
            
@@ -247,8 +246,7 @@ module SwiftPoemsProject
              @stanzas.last.push stanza_token
 
              if not @stanzas.last.opened_tags.last.nil? and
-                 /^«/.match( @stanzas.last.opened_tags.last.name ) and
-                 not /_\|/.match( initialToken )
+                 /^«/.match( @stanzas.last.opened_tags.last.name )
 
                @stanzas.last.push_line_break stanza_token
              else

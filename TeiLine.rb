@@ -107,22 +107,46 @@ module SwiftPoemsProject
        end
 
        # Transform pipes into @rend values
-       if /\|/.match token and @current_leaf === @elem
+       if /\|/.match token
 
-         token_segments = token.split /\|/
+         if @current_leaf === @elem
 
-         if (token_segments.length == 1 and not /\|/.match token_segments.first) or token_segments.empty?
+=begin
+           token_segments = token.split /\|/
 
-           indentValue = 1
+           if (token_segments.length == 1 and not /\|/.match token_segments.first) or token_segments.empty?
+
+             indentValue = 1
+           else
+
+             indentValue = token_segments.size - 1
+           end
+
+           raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token} (#{token_segments.to_s})" if indentValue < 1
+           
+           @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
+           token = token.sub /\|+/, ''
+=end
+
+           indentations = token.split(/\|/).select {|s| s.empty? }
+           indentations.each do |indent|
+
+             push_line_indent indent
+           end
+
+           token = token.sub /\|+/, ''
          else
 
-           indentValue = token_segments.size - 1
+           # Work-around
+           # Resolves SPP-146
+           indentations = token.split(/\|/).select {|s| s.empty? }
+           indentations.each do |indent|
+
+             push_line_indent indent
+           end
+
+           token = token.sub /\|+/, ''
          end
-
-         raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token} (#{token_segments.to_s})" if indentValue < 1
-
-         @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
-         token = token.sub /\|+/, ''
        end
 
        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
@@ -131,19 +155,6 @@ module SwiftPoemsProject
          token = token.gsub(nbCharTokenPattern, utf8Char)
        end
 
-       # Implement handling for complex textual content
-       # e. g. underdot vs. non-underdot and @rend attribute values
-       #
-
-=begin
-       if @current_leaf.is_a? SwiftPoemsProject::NotaBeneDelta
-
-         @current_leaf.add_text token
-       else
-
-         @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
-       end
-=end
        @current_leaf.add_child Nokogiri::XML::Text.new token, @teiDocument
      end
 
@@ -399,6 +410,24 @@ module SwiftPoemsProject
 
        line_break_elem = Nokogiri::XML::Node.new 'lb', @teiDocument
        @current_leaf.add_child line_break_elem
+     end
+
+     def push_line_indent(indent = '|')
+
+       rend = @current_leaf['rend']
+       m = /indent\((\d+)\)/.match rend
+
+       if m
+
+         indent = m[1].to_i + 1
+         rend.gsub /indent\(#{m[1]}\)/, "indent(#{indent})"
+       elsif rend
+
+         @current_leaf['rend'] = @current_leaf['rend'] + ' indent(1)'
+       else
+
+         @current_leaf['rend'] = "indent(1)"
+       end
      end
 
      def push(token)

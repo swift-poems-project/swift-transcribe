@@ -185,7 +185,10 @@ module SwiftPoemsProject
      poem = poem.gsub(/#{Regexp.escape("006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure«MDNM» there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")}/, "006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")
 
      poem = poem.gsub(/«FL»\.?»/, "»«FL»")
-      # puts poem
+     poem = poem.gsub(/#{Regexp.escape("531-02U1   62  At least, «MDUL»before «FN1·«MDUL»The Author seems to mean the Nation's Debts..» your Master's Debts are paid«MDNM».")}/,
+                      "531-02U1   62  At least, «MDUL»before «FN1·«MDUL»The Author seems to mean the Nation's Debts«MDNM»..» your Master's Debts are paid«MDNM».")
+
+     puts poem
 
        NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 

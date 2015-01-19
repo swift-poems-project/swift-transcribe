@@ -222,14 +222,11 @@ module SwiftPoemsProject
          # Create a new stanza
          if m = /(.*)_$/.match(initialToken)
 
-           # puts 'trace4' + @stanzas.last.elem.to_xml
-           # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
-           # puts 'trace5' + debugOutput.to_s
-
            # if not @stanzas.last.opened_tags.last.nil? and //.match( @stanzas.last.opened_tags.last.tag )
-           if not @stanzas.last.opened_tags.last.nil?
-
-             puts 'trace19:' + @stanzas.last.opened_tags.last.name
+           # if not @stanzas.last.opened_tags.last.nil?
+           if not @stanzas.last.opened_tags.last.nil? and
+               /^«/.match( @stanzas.last.opened_tags.last.name ) and
+               not /_\|/.match( initialToken )
 
              @stanzas.last.push m[1] unless m[1].empty?
            
@@ -248,10 +245,10 @@ module SwiftPoemsProject
 
              stanza_token = stanza_tokens.shift
              @stanzas.last.push stanza_token
-             
-             if not @stanzas.last.opened_tags.last.nil? and /^«/.match( @stanzas.last.opened_tags.last.name )
 
-               puts 'trace20:' + @stanzas.last.opened_tags.last.name
+             if not @stanzas.last.opened_tags.last.nil? and
+                 /^«/.match( @stanzas.last.opened_tags.last.name ) and
+                 not /_\|/.match( initialToken )
 
                @stanzas.last.push_line_break stanza_token
              else

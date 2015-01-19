@@ -184,7 +184,8 @@ module SwiftPoemsProject
 
      poem = poem.gsub(/#{Regexp.escape("006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure«MDNM» there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")}/, "006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")
 
-     # puts poem
+     poem = poem.gsub(/«FL»\.?»/, "»«FL»")
+     puts poem
 
        NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 
@@ -212,7 +213,9 @@ module SwiftPoemsProject
        @tokens.each do |initialToken|
 
          debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+         
          puts 'trace18:' + debugOutput.to_s
+         # puts 'trace19:' + @stanzas.last.elem.to_xml
          puts "Parsing the following into a stanza: #{initialToken}"
 
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
@@ -222,15 +225,18 @@ module SwiftPoemsProject
          # Create a new stanza
          if m = /(.*)_$/.match(initialToken)
 
+           @stanzas.last.push m[1] unless m[1].empty?
+
            # if not @stanzas.last.opened_tags.last.nil? and //.match( @stanzas.last.opened_tags.last.tag )
            # if not @stanzas.last.opened_tags.last.nil?
            if not @stanzas.last.opened_tags.last.nil? and
                /^«/.match( @stanzas.last.opened_tags.last.name )
 
-             @stanzas.last.push m[1] unless m[1].empty?
-           
+             @stanzas.last.push_line_break
+           else
+
              # Append the new stanza to the poem body
-             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
+             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
            end
          else
            
@@ -240,7 +246,7 @@ module SwiftPoemsProject
            
            while stanza_tokens.length > 1
              
-             # puts "Appending the token for the existing stanza: #{stanza_tokens.first}"
+             # puts "New stanza"
 
              stanza_token = stanza_tokens.shift
              @stanzas.last.push stanza_token
@@ -251,11 +257,7 @@ module SwiftPoemsProject
                @stanzas.last.push_line_break stanza_token
              else
 
-               # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.to_xml }
-               # puts "Opened stanza tags: #{debugOutput}\n\n"
-             
                # Append the new stanza to the poem body
-               # @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => Array.new(@stanzas.last.opened_tags) })
                @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
              end
            end

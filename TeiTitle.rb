@@ -75,6 +75,9 @@ module SwiftPoemsProject
           
           # Recurse through previously opened tags
           # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
+
+          debug_opened_tags = @header.opened_tags.map { |tag| tag.to_xml }
+          puts 'trace 23: ' + debug_opened_tags.to_s
           
           opened_tag = @header.opened_tags.first
 
@@ -156,8 +159,6 @@ module SwiftPoemsProject
     # Add this as a text node for the current line element
     def pushText(token)
 
-      puts "Adding the following text to title: " + token
-
       # Remove the 8 character identifier from the beginning of the line
       indexMatch = /\s{3}(\d+)\s{2}/.match token
       if indexMatch
@@ -172,13 +173,9 @@ module SwiftPoemsProject
         token = token.gsub(nbCharTokenPattern, utf8Char)
       end
 
-      puts 'trace15: ' + token
-
       # if token == '_|'
       if /_?\|/.match token
 
-        puts 'trace'
-        
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
       else
         
@@ -188,7 +185,7 @@ module SwiftPoemsProject
     
     def push(token)
 
-      puts "Adding the following token to title: " + token
+      # puts "Adding the following token to title: " + token
 
       if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
         

@@ -293,9 +293,6 @@ module SwiftPoemsProject
     
     def push(token)
 
-      puts 'appending the following headnote token: ' + token
-      # puts 'trace5: ' + @current_leaf.name
-
       if token == '_'
 
         # 

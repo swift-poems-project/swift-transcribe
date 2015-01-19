@@ -185,7 +185,7 @@ module SwiftPoemsProject
      poem = poem.gsub(/#{Regexp.escape("006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure«MDNM» there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")}/, "006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")
 
      poem = poem.gsub(/«FL»\.?»/, "»«FL»")
-     puts poem
+      # puts poem
 
        NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 
@@ -212,12 +212,8 @@ module SwiftPoemsProject
        # Classify our tokens
        @tokens.each do |initialToken|
 
-         debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+         # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
          
-         puts 'trace18:' + debugOutput.to_s
-         # puts 'trace19:' + @stanzas.last.elem.to_xml
-         puts "Parsing the following into a stanza: #{initialToken}"
-
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
 
          # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
@@ -242,12 +238,8 @@ module SwiftPoemsProject
            
            stanza_tokens = initialToken.split('_')
 
-           # puts "stanza tokens: #{stanza_tokens}"
-           
            while stanza_tokens.length > 1
              
-             # puts "New stanza"
-
              stanza_token = stanza_tokens.shift
              @stanzas.last.push stanza_token
 

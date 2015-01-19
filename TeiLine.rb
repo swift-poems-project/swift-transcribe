@@ -160,8 +160,6 @@ module SwiftPoemsProject
 
      def pushSingleToken(token)
 
-       puts 'trace23: ' + token
-
        if NB_DELTA_FLUSH_TEI_MAP.has_key? token
 
          current_leaf = FlushDelta.new(token, @teiDocument, @current_leaf)
@@ -339,9 +337,6 @@ module SwiftPoemsProject
      def pushTerminalToken(token, opened_tag)
 
        if /^«FN1/.match opened_tag.name and /»$/.match token
-
-         puts 'trace16: ' + @current_leaf.class.name
-         puts 'trace17: ' + @current_leaf.to_xml
 
          @current_leaf.close token
 

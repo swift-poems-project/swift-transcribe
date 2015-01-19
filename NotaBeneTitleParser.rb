@@ -43,7 +43,6 @@ module SwiftPoemsProject
           # Work-around
           if /^«/.match last_title.current_leaf.name
 
-            # print 'trace17'
             # last_title.current_leaf.name = 'hi'
           end
 
@@ -73,22 +72,15 @@ module SwiftPoemsProject
 
       def push(token)
 
-        puts 'trace15: ' + token
-
         if @titles.length == 1 and @titles.last.elem.content.empty?
-
-          puts 'trace13: ' + token
 
           if /\|/.match token
 
-            puts 'trace14'
             token = token.sub /\s\|\s/, ''
           end
 
           @titles.last.push token
         else
-
-          puts 'trace12'
 
           # Trigger a new line
           if /\s\|\s/.match token
@@ -121,6 +113,7 @@ module SwiftPoemsProject
 
       @text = @text.gsub("«LD »T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»", ".»T«MDSD»HOMAS«MDNM» S«MDSD»HERIDAN«MDNM»")
       @text = @text.gsub('X13-0802   X13-0802   » S«MDSD»HERIDAN«MDNM».', '')
+      @text = @text.gsub('«MDUL» | on his being Steward to the | Duke of«MDNM»', ' | «MDUL» on his being Steward to the «MDNM» | «MDUL» Duke of«MDNM»')
 
       header = TeiHeader.new(@teiParser.headerElement)
 

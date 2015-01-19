@@ -42,6 +42,11 @@ module SwiftPoemsProject
       
       @element.children
     end
+
+    def name=(name)
+
+      @element.name = name
+    end
   end
 
   class UnaryNotaBeneDelta < NotaBeneDelta

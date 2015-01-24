@@ -116,6 +116,7 @@ module SwiftPoemsProject
       @text = @text.gsub('«MDUL» | on his being Steward to the | Duke of«MDNM»', ' | «MDUL» on his being Steward to the «MDNM» | «MDUL» Duke of«MDNM»')
 
       @text = @text.gsub('P«MDSD»ULTENEY«MDUL»', 'P«MDSD»ULTENEY«MDNM»«MDUL»')
+      @text = @text.gsub('The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».«MDNM»', 'The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».')
 
       header = TeiHeader.new(@teiParser.headerElement)
 

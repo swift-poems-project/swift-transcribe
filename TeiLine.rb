@@ -4,7 +4,7 @@ module SwiftPoemsProject
 
    class TeiLine
 
-     attr_reader :elem, :has_opened_tag, :opened_tag, :opened_tags
+     attr_reader :elem, :has_opened_tag, :opened_tag, :opened_tags, :footnote_index
 
      def initialize(workType, stanza, options = {})
 
@@ -15,7 +15,9 @@ module SwiftPoemsProject
        @has_opened_tag = options[:has_opened_tag] || false
        @opened_tags = options[:opened_tags] || []
 
-       # @opened_tag ||= options[:opened_tag]
+       # Extending the Class in order to support footnote indexing
+       # SPP-156
+       @footnote_index = options[:footnote_index] || 0
 
        # @teiDocument = teiDocument
        @teiDocument = stanza.document
@@ -342,8 +344,15 @@ module SwiftPoemsProject
 
          @stanza.opened_tags.shift
          @opened_tags.shift
-         
+
+         # Add an index for the footnote
+         # SPP-156
+         @footnote_index += 1
+         @current_leaf['n'] = @footnote_index 
+
          @current_leaf = @current_leaf.parent
+
+         
        elsif token != '«MDNM»'
 
          # Throw an exception if this is not a "MDNM" Modecode

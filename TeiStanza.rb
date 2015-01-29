@@ -292,7 +292,7 @@ module SwiftPoemsProject
 
   class TeiStanza
 
-    attr_reader :document, :elem
+    attr_reader :document, :elem, :footnote_index
     attr_accessor :opened_tags
 
     def initialize(workType, poemElem, index, options = {})
@@ -309,8 +309,11 @@ module SwiftPoemsProject
       @elem['n'] = index.to_s
 
       @opened_tags = options[:opened_tags] || []
-
       @line_has_opened_tag = options[:line_has_opened_tag] || !@opened_tags.empty?
+
+      # Extending the Class in order to support footnote indexing
+      # SPP-156
+      @footnote_index = options[:footnote_index] || 0
 
       @poemElem.add_child(@elem)
 
@@ -321,12 +324,10 @@ module SwiftPoemsProject
       # if not @opened_tags.empty?
       if false
 
-        # lineElem = TeiLine.new @workType, self, { :has_opened_tag => @line_has_opened_tag, :opened_tag => @opened_tags.last }
-        # lineElem = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
-        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags }
+        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags, :footnote_index => @footnote_index }
       else
 
-        lineElem = TeiLine.new @workType, self
+        lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
       end
 
       @lines = [ lineElem ]
@@ -354,17 +355,8 @@ module SwiftPoemsProject
         nil
       end
 
-=begin
-      opened_tags = []
-      opened_tags = [ @lines.last.opened_tag ] if @lines.last.opened_tag
-
-      newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tags => opened_tags })
-=end
-
-      # puts "Adding the following tags for a new line: #{Array.new(@opened_tags)}"
-      # newLine = TeiLine.new(@workType, self, { :has_opened_tag => @lines.last.has_opened_tag, :opened_tag => @lines.last.opened_tag })
-      # newLine = TeiLine.new @workType, self, { :opened_tags => Array.new(@opened_tags) }
-      newLine = TeiLine.new @workType, self
+      @footnote_index = @lines.last.footnote_index
+      newLine = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
 
       @lines << newLine
     end

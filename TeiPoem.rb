@@ -199,15 +199,19 @@ module SwiftPoemsProject
        return poem
      end
 
-     def initialize(poem, work_type, element)
+     def initialize(poem, work_type, element, footnote_index = 0)
 
        @poem = poem
        @work_type = work_type
        @element = element
+       
+       # Extending for supporting footnote indexing
+       # SPP-156
+       @footnote_index = footnote_index
 
        @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
 
-       @stanzas = [ TeiStanza.new(@work_type, @element, 1) ]
+       @stanzas = [ TeiStanza.new(@work_type, @element, 1, { :footnote_index => @footnote_index }) ]
      end
 
      def parse
@@ -236,7 +240,12 @@ module SwiftPoemsProject
            else
 
              # Append the new stanza to the poem body
-             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
+
+
+             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
+                                         :opened_tags => @stanzas.last.opened_tags,
+                                         :footnote_index => @stanzas.last.footnote_index
+                                       })
            end
          else
            
@@ -255,7 +264,10 @@ module SwiftPoemsProject
              else
 
                # Append the new stanza to the poem body
-               @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, { :opened_tags => @stanzas.last.opened_tags })
+               @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
+                                           :opened_tags => @stanzas.last.opened_tags,
+                                           :footnote_index => @stanzas.last.footnote_index
+                                         })
              end
            end
            

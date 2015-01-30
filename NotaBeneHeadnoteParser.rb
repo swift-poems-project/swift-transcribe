@@ -6,13 +6,16 @@ module SwiftPoemsProject
 
   class NotaBeneHeadnoteParser < NotaBeneHeadFieldParser
 
-    def initialize(teiParser, text, docTokens = nil, cleanModeCodes = true)
+    attr_accessor :footnote_index
 
-      super(teiParser, text, docTokens)
+    def initialize(teiParser, text, docTokens = nil, cleanModeCodes = true, options = {})
+
+      super(teiParser, text, docTokens, options)
 
       # Note: This assumes that HN fields consistently begin with an index of 1 and increment solely by a value of 1
-      @heads = TeiPoemHeads.new @teiParser.poemElem, '1'
+      @heads = TeiPoemHeads.new @teiParser.poemElem, '1', { :footnote_index => @footnote_index }
       @cleanModeCodes = cleanModeCodes
+
     end
 
     # Refactor

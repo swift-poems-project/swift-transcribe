@@ -7,22 +7,21 @@ module SwiftPoemsProject
   # One Nota Bene title field value for one TEI <title/> element
   class NotaBeneTitleParser < NotaBeneHeadFieldParser
 
-    # include SwiftPoemsProject
-
     class TeiHeader
 
-      attr_reader :sponsor, :elem, :opened_tags
+      attr_reader :sponsor, :elem, :opened_tags, :footnote_index
       # attr_accessor :opened_tags
 
-      def initialize(elem)
+      def initialize(elem, options = {})
 
         @elem = elem
         @document = elem.document
         @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
         @opened_tags = []
+
+        @footnote_index = options[:footnote_index] || 0
         
-        @titles = [ SwiftPoemsProject::TeiTitle.new(@document, self) ]
-        # @titles = [ ]
+        @titles = [ SwiftPoemsProject::TeiTitle.new(@document, self, { :footnote_index => @footnote_index }) ]
       end
 
       def pushTitle
@@ -32,8 +31,9 @@ module SwiftPoemsProject
         # Add additional tokens
         @sponsor.add_previous_sibling @titles.last.elem
 
-        @titles << SwiftPoemsProject::TeiTitle.new(@document, self)
+        @footnote_index = @titles.last.footnote_index
 
+        @titles << SwiftPoemsProject::TeiTitle.new(@document, self, { :footnote_index => @titles.last.footnote_index })
         @titles.last.has_opened_tag = last_title.has_opened_tag
 
         if @titles.last.has_opened_tag
@@ -118,7 +118,7 @@ module SwiftPoemsProject
       @text = @text.gsub('P«MDSD»ULTENEY«MDUL»', 'P«MDSD»ULTENEY«MDNM»«MDUL»')
       @text = @text.gsub('The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».«MDNM»', 'The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».')
 
-      header = TeiHeader.new(@teiParser.headerElement)
+      header = TeiHeader.new(@teiParser.headerElement, { :footnote_index => @footnote_index })
 
       initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
 
@@ -129,6 +129,8 @@ module SwiftPoemsProject
       end
 
       header.close initialTokens.last
+
+      @footnote_index = header.footnote_index
     end
   end
 end

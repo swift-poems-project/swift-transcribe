@@ -4,14 +4,16 @@ module SwiftPoemsProject
 
   class TeiTitle
 
-    attr_reader :elem, :tokens
+    attr_reader :elem, :tokens, :footnote_index
     attr_accessor :has_opened_tag, :current_leaf
 
-    def initialize(document, header)
+    def initialize(document, header, options = {})
 
       @document = document
       @header = header
       @headerElement = header.elem
+
+      @footnote_index = options[:footnote_index] || 0
 
       @elem = Nokogiri::XML::Node.new('title', @document)
       
@@ -56,6 +58,14 @@ module SwiftPoemsProject
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
 
           # puts 'trace36: ' + token
+
+          # Implementing handling for footnote index generation
+          # SPP-156
+          if /^«FN1/.match @current_leaf.name and /»$/.match token
+
+            @footnote_index += 1
+            @current_leaf['n'] = @footnote_index
+          end
 
           # @todo Resolve
           if @current_leaf.class.to_s == 'Nokogiri::XML::Element'

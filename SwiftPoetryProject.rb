@@ -559,6 +559,8 @@ EOF
       
       @headnote_open = false
 #    end
+
+      @footnote_index = 0
   end
 
   def parse
@@ -1296,7 +1298,7 @@ EOF
 
     # Single parser instance must be utilized for multiple lines
     # @todo Refactor and restructure the parsing process
-    headnote_parser = NotaBeneHeadnoteParser.new self, @titleAndHeadnote
+    headnote_parser = NotaBeneHeadnoteParser.new self, @titleAndHeadnote, nil, { :footnote_index => @footnote_index }
 
     @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}\n/, "HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»\n"
 
@@ -1333,8 +1335,11 @@ EOF
       if not @headnote_open and not /HN\d+/.match(line)
 
         # @todo Refactor
-        NotaBeneTitleParser.new(self, line).parse
+        title_parser = NotaBeneTitleParser.new(self, line, nil, { :footnote_index => @footnote_index })
+        title_parser.parse
+        @footnote_index = title_parser.footnote_index
       else
+        headnote_parser.footnote_index = @footnote_index
 
         # Work-around
         # @todo Refactor
@@ -1342,6 +1347,7 @@ EOF
 
         #  /HN\d/.match(line) # Create the header element
         headnote_parser.parse line
+        @footnote_index = headnote_parser.footnote_index
       end
     end
 
@@ -1708,7 +1714,7 @@ EOF
 
      @poem = TeiPoem.normalize(@poem)
 
-     poem = TeiPoem.new(@poem, @workType, @poemElem)
+     poem = TeiPoem.new(@poem, @workType, @poemElem, @footnote_index)
      poem.parse
    end
 

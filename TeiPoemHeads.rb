@@ -7,20 +7,22 @@ module SwiftPoemsProject
     attr_reader :elem
     attr_accessor :opened_tags
 
-    def initialize(elem, index)
+    def initialize(elem, index, options = {})
 
       @elem = elem
       @document = elem.document
       @opened_tags = []
+
+      @footnote_index = options[:footnote_index] || 0
       
-      @heads = [ TeiHead.new(@document, self, index) ]
+      @heads = [ TeiHead.new(@document, self, index, { :footnote_index => @footnote_index }) ]
     end
     
     def pushHead
 
       last_head = @heads.last
 
-      @heads << TeiHead.new(@document, self, @heads.last.elem['n'].to_i + 1)
+      @heads << TeiHead.new(@document, self, @heads.last.elem['n'].to_i + 1, { :footnote_index => @heads.last.footnote_index })
       @heads.last.has_opened_tag = last_head.has_opened_tag
 
       # @todo Refactor with pushTitle

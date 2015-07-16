@@ -24,13 +24,9 @@ module SwiftPoetryProject
   # logger = Logger.new(STDOUT)
   # logger.level = Logger::DEBUG
 
-  class TeiParserException < Exception
-    
-  end
-  
-  class NoteBeneFormatException < TeiParserException
-    
-  end
+  class TeiParserException < StandardError; end
+  class NoteBeneFormatException < TeiParserException; end
+  class SwiftPoemsProjectError < StandardError; end
 
   # \«MDUL»dash·in·left·margin«MDNM»\
   TEI_P5_MANUSCRIPT = <<EOF

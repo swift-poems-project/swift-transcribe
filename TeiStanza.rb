@@ -322,13 +322,7 @@ module SwiftPoemsProject
 
       # If there is an open tag...
       # if not @opened_tags.empty?
-      if false
-
-        lineElem = TeiLine.new @workType, self, { :opened_tags => @opened_tags, :footnote_index => @footnote_index }
-      else
-
-        lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
-      end
+      lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
 
       @lines = [ lineElem ]
     end
@@ -374,19 +368,27 @@ module SwiftPoemsProject
     def push(token)
 
       # Work-around for completely empty lines
-      
-      # puts 'trace4: ' + token
+      if @lines.length == 1 and @lines.last.elem.content.empty?
 
-       if @lines.length == 1 and @lines.last.elem.content.empty?
+        if @elem['n'].to_i > 1
 
-         token = token.sub POEM_ID_PATTERN, ''
-         @lines.last.push token
-       else
+          # Update the line number
+          previous_stanza_index = @elem['n'].to_i - 1
+          previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
+
+          raise TeiIndexError.new "The following line from the previous stanza has no index: #{previous_line.to_xml}" unless previous_line.has_attribute? 'n'
+
+          line_index = previous_line['n'].to_i + 1
+          @lines.last.elem['n'] = line_index.to_s
+        end
+
+        token = token.sub POEM_ID_PATTERN, ''
+        @lines.last.push token
+      else
 
          # Trigger a new line
          # @todo Refactor with a single regular expression
-         
-         if POEM_ID_PATTERN.match token
+        if POEM_ID_PATTERN.match token
 
            token = token.sub POEM_ID_PATTERN, ''
            pushLine unless token.strip.empty?
@@ -395,24 +397,24 @@ module SwiftPoemsProject
 
            token = token.sub /([0-9A-Z\-]{8})\s+/, ''
            pushLine unless token.strip.empty?
-         end
+        end
+        
+        token = token.sub /\r/, ''
 
-         token = token.sub /\r/, ''
+        # logger.debug "new line token: #{token}"
+        # puts "Appending a new line: #{token}\n"
 
-         # logger.debug "new line token: #{token}"
-         # puts "Appending a new line: #{token}\n"
+        @lines.last.push token
 
-         @lines.last.push token
-
-         # Update the line number
-         unless @lines.last.elem['n']
+        # Update the line number
+        unless @lines.last.elem['n']
 
            previous_stanza_index = @elem['n'].to_i - 1
-           previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
+          previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
 
-           @lines.last.elem['n'] = previous_line['n'] if previous_line
-         end
-       end
+          @lines.last.elem['n'] = previous_line['n'] if previous_line
+        end
+      end
     end
   end
 end

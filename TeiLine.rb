@@ -85,33 +85,42 @@ module SwiftPoemsProject
      # Add this as a text node for the current line element
      def pushText(token)
 
-       # Remove the 8 character identifier from the beginning of the line
-       poem_id_match = /\s*(\d+)\s+/.match token
+       # Terminal condition for empty tokenized strings
+       return if token.strip.empty?
 
-       poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
-       poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match
+       # Extracting indices is not necessary for Nota Bene Mode Codes
+       # It is also not necessary if the @n element has already been set
+       if not @current_leaf.is_a? NotaBeneDelta
 
-       if poem_id_match
+         # @todo Refactor
+         if not(@current_leaf.is_a? Nokogiri::XML::Element and @current_leaf.has_attribute? 'n' and not @current_leaf['n'].empty?)
 
-         @elem['n'] = poem_id_match.to_s.strip
+         # Remove the 8 character identifier from the beginning of the line
+         poem_id_match = /\s*(\d+)\s+/.match token
 
+         poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
+         poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match
+
+         # Raise an exception if the transcript identifier cannot be parsed
+         raise TeiPoemIdError.new "Could not extract the Poem ID from #{token}" unless poem_id_match
+
+         poem_id = poem_id_match.to_s.strip
+         raise NotImplementedError.new if poem_id.empty?
+
+         @elem['n'] = poem_id
          token = token.sub poem_id_match[0], ''
-       elsif token.strip.empty?
 
-         return
-       end
+         # Transform triplet indicators for the stanza
+         if /\s3\}$/.match token
 
-       # Transform triplet indicators for the stanza
-       if /\s3\}$/.match token
+           @stanza.elem['type'] = 'triplet'
+           token = token.sub /\s3\}$/, ''
+         end
 
-         @stanza.elem['type'] = 'triplet'
-         token = token.sub /\s3\}$/, ''
-       end
+         # Transform pipes into @rend values
+         if /\|/.match token
 
-       # Transform pipes into @rend values
-       if /\|/.match token
-
-         if @current_leaf === @elem
+           if @current_leaf === @elem
 
 =begin
            token_segments = token.split /\|/
@@ -130,24 +139,26 @@ module SwiftPoemsProject
            token = token.sub /\|+/, ''
 =end
 
-           indentations = token.split(/\|/).select {|s| s.empty? }
-           indentations.each do |indent|
+             indentations = token.split(/\|/).select {|s| s.empty? }
+             indentations.each do |indent|
 
-             push_line_indent indent
+               push_line_indent indent
+             end
+
+             token = token.sub /\|+/, ''
+           else
+
+             # Work-around
+             # Resolves SPP-146
+             indentations = token.split(/\|/).select {|s| s.empty? }
+             indentations.each do |indent|
+
+               push_line_indent indent
+             end
+
+             token = token.sub /\|+/, ''
            end
-
-           token = token.sub /\|+/, ''
-         else
-
-           # Work-around
-           # Resolves SPP-146
-           indentations = token.split(/\|/).select {|s| s.empty? }
-           indentations.each do |indent|
-
-             push_line_indent indent
-           end
-
-           token = token.sub /\|+/, ''
+         end
          end
        end
 

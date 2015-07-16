@@ -7,6 +7,11 @@ module SwiftPoemsProject
                                /#{Regexp.escape("«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*")}/,
                               ]
 
+#  class TeiIndexError < SwiftPoemsProjectError; end
+#  class TeiPoemIdError < SwiftPoemsProjectError; end
+  class TeiIndexError < StandardError; end
+  class TeiPoemIdError < StandardError; end
+
   class TeiPoem
 
     def self.normalize(poem)
@@ -209,6 +214,10 @@ module SwiftPoemsProject
        # SPP-156
        @footnote_index = footnote_index
 
+       # Normalize sequences of "__" or greater
+       # Resolves SPP-230
+       @poem = @poem.gsub(/_{2,10}/, '_')
+
        @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
 
        @stanzas = [ TeiStanza.new(@work_type, @element, 1, { :footnote_index => @footnote_index }) ]
@@ -224,34 +233,11 @@ module SwiftPoemsProject
          raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
 
          # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
-
+         
          # Create a new stanza
-         # if m = /(.*)_$/.match(initialToken)
-         if false
+         stanza_tokens = initialToken.split('_')
 
-           @stanzas.last.push m[1] unless m[1].empty?
-
-           # if not @stanzas.last.opened_tags.last.nil? and //.match( @stanzas.last.opened_tags.last.tag )
-           # if not @stanzas.last.opened_tags.last.nil?
-           if not @stanzas.last.opened_tags.last.nil? and
-               /^«/.match( @stanzas.last.opened_tags.last.name )
-
-             @stanzas.last.push_line_break
-           else
-
-             # Append the new stanza to the poem body
-
-
-             @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
-                                         :opened_tags => @stanzas.last.opened_tags,
-                                         :footnote_index => @stanzas.last.footnote_index
-                                       })
-           end
-         else
-           
-           stanza_tokens = initialToken.split('_')
-
-           while stanza_tokens.length > 1
+         while stanza_tokens.length > 1
              
              stanza_token = stanza_tokens.shift
 
@@ -282,7 +268,6 @@ module SwiftPoemsProject
            
            @stanzas.last.push stanza_tokens.shift           
          end
-       end
      end
    end
 end

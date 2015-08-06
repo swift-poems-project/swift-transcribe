@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require_relative 'NotaBeneNormalizer'
+
 module SwiftPoemsProject
 
   NB_BLOCK_LITERAL_PATTERNS = [
@@ -16,258 +18,248 @@ module SwiftPoemsProject
 
     def self.normalize(poem)
 
-       # poem = poem.gsub(/(«MDUL»[[:alnum:]]+?)_([[:alnum:]]+«MDNM»)/, "$1<lb />$2")
-       # poem = poem.gsub(/(?<!08|_)_/, '<lb />')
-
-       # initialTokens = poem.split /(?=«)|(?=»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
-       # initialTokens = poem.split /(?=«)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om)|\n/
-
-       poem = poem.gsub /«X4The\sEpitaph»/, ''
-       poem = poem.gsub /«X2»/, ''
-
-       # Substitutions for names: 18th century convention
-       poem = poem.gsub /(\─)+»/, '\\1.»'
-
-      poem = poem.gsub /«LD─\.?»/, "«LD »"
-      poem = poem.gsub /«FC»«MDNM»/, "«FC»"
-      poem = poem.gsub /«FL»_/, "_«FL»"
-
-      poem = poem.gsub /\.»/, '..»'
-      poem = poem.gsub /\)»/, ').»'
-      poem = poem.gsub /\*»/, '*.»'
-      poem = poem.gsub /\?»/, '?.»'
-      poem = poem.gsub /`»/, '`.»'
-      poem = poem.gsub /'»/, "'.»"
-      poem = poem.gsub /!»/, "!.»"
-      poem = poem.gsub /;»/, ";.»"
-      poem = poem.gsub /,»/, ",.»"
-      poem = poem.gsub /»\s»/, '» .»'
-      poem = poem.gsub /\-»/, '-.»'
+      poem = NotaBeneNormalizer::normalize poem
       
-      poem = poem.gsub /H»/, "H.»"
+      NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
+
+        # poem = poem.sub Regexp.new(Regexp.escape pattern), '«UNCLEAR»'
+        poem = poem.sub pattern, '«UNCLEAR»'
+      end
+
+      return poem
+    end
+
+    def initialize(poem, work_type, element, footnote_index = 0)
+
+      @poem = poem
+      @work_type = work_type
+      @lg_type = @work_type == POEM ? 'stanza' : 'verse-paragraph'
+      @element = element
       
-      poem = poem.gsub /«MDbu»/, "«MDBU»"
-      
-      poem = poem.gsub /«ld »/, "«LD »"
-      poem = poem.gsub /«LS»/, "«LD »"
-      
-      poem = poem.gsub /«MDUL»«FN1·/, "«FN1·«MDUL»"
-      poem = poem.gsub /«MDUL»»«MDNM»/, "»"
-      poem = poem.gsub /«MDNM»country Parsons«MDNM»/, "country Parsons«MDNM»"
-      
-      poem = poem.gsub /«FN1«MDUL»·/, '«FN1·«MDUL»'
-      poem = poem.gsub /«FN1«MDNM»·/, '«FN1·'
-      poem = poem.gsub /«FN1 /, '«FN1·'
-      poem = poem.gsub /«FN1([0-9A-Z])/, '«FN1·\\1'
-      poem = poem.gsub /«FN1\|·/, "«FN1·"
-      poem = poem.gsub /«FN1\\/, "«FN1·\\"
-      
-      poem = poem.gsub(/#{Regexp.escape("«FN1──────")}/, "«FN1·──────")
-      
-      poem = poem.gsub /\\»/, "\\.»"
-      
-      poem = poem.gsub /Hor\.\|» midnight Dream/, "Hor.» midnight Dream"
-      poem = poem.gsub /\}«MDNM»3/, "}3"
-      
-      poem = poem.gsub /([\]\?\:a-z0-9])»/, '\\1.»'
-      poem = poem.gsub /«MDRV»»/, '.»'
-      poem = poem.gsub /«MDUL»»/, '.»'
-      
-      poem = poem.gsub /LD\s»/, 'LD»'
-      poem = poem.gsub /.\s+»/, '.»'
-      
-      poem = poem.gsub /·»/, '.»'
-      
-      poem = poem.gsub /([[:lower:]])»/, '\\1.»'
-      
-      poem = poem.gsub /553E06E2   524  ``But── not one sermon«MDNM», you may «MDUL»swear«MDNM».────/, "553E06E2   524  ``But── not one sermon, you may «MDUL»swear«MDNM».────"
-      poem = poem.gsub /284-0204   34  Form'd like the Triple-Tree near «FN1Where the «MDUL»Dublin«MDBO» «MDNM»Gallows stands·» «MDUL»Stephen's Green«MDNM»,/, "284-0204   34  Form'd like the Triple-Tree near «FN1Where the «MDUL»Dublin«MDNM» Gallows stands·» «MDUL»Stephen's Green«MDNM»,"
-      poem = poem.gsub /098-0204   16  «MDNM»Howe'er our earthly Motion varies;/, "098-0204   16  Howe'er our earthly Motion varies;"
-      poem = poem.gsub /098-0204   18  «MDNM»As if there had been no such Matter./, "098-0204   18  As if there had been no such Matter."
-      poem = poem.gsub /098-0204   21  «MDNM»/, "098-0204   21  "
-      poem = poem.gsub /098-0204   29  «MDNM»Which clearly shews the near Alliance/, "098-0204   29  Which clearly shews the near Alliance"
-      poem = poem.gsub /098-0204   30  'Twixt «MDUL»Cobling«MDNM»,«MDNM» and the «MDUL»Planets Science«MDNM»./, "098-0204   30  'Twixt «MDUL»Cobling«MDNM», and the «MDUL»Planets Science«MDNM»."
-      poem = poem.gsub /098-0204   32  «MDNM»As 'tis miscall'd, we know not who 'tis:/, "098-0204   32  As 'tis miscall'd, we know not who 'tis:"
-      poem = poem.gsub /098-0204   35  _\|The «MDUL»horned Moon«MDNM»,«MDNM» which heretofore/, "098-0204   35  _\|The «MDUL»horned Moon«MDNM», which heretofore"
-      poem = poem.gsub /098-0204   42  «MDNM»\(A great Refinement in «MDUL»Barometry«MDNM»\)/, "098-0204   42  (A great Refinement in «MDUL»Barometry«MDNM»)"
-      poem = poem.gsub /098-0204   45  «MDNM»Which an Astrologer might use,/, "098-0204   45  Which an Astrologer might use,"
-      poem = poem.gsub /098-0204   47  _\|Thus «MDUL»Partrige«MDNM»,«MDNM» by his Wit and Parts,/, "098-0204   47  _|Thus «MDUL»Partrige«MDNM», by his Wit and Parts,"
-      poem = poem.gsub /098-0204   51  «MDNM»/, "098-0204   51  "
-      poem = poem.gsub /098-0204   85  «MDNM»/, "098-0204   85  "
-      poem = poem.gsub /098-0204   87  «MDNM»/, "098-0204   87  "
-      poem = poem.gsub /098-0204   91  «MDNM»/, "098-0204   91  "
-      poem = poem.gsub /«FN1·«MDNM»C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»/, "«FN1·C«MDSD»HARLES «MDNM»F«MDSD»ITZROY«MDNM»"
-      poem = poem.gsub /«MDUL»«FN1·Ridiculum/, "«FN1·«MDUL»Ridiculum"
-     poem = poem.gsub /«MDNM», &c..» Horace«MDNM»,/, "«MDNM», &c..» «MDUL»Horace«MDNM»,"
-     poem = poem.gsub /«MDUL»Bread«MDNM»;«MDNM»/, "«MDUL»Bread«MDNM»;"
+      # Extending for supporting footnote indexing
+      # SPP-156
+      @footnote_index = footnote_index
 
-     # This was resolved manually on 08/11/14
-     # poem = poem.gsub /\|\|Of «MDUL»arma virumque,/, "||Of «MDUL»arma virumque,«MDNM»"
-     poem = poem.gsub /«FN1·«MDNM»The duchy/, "«FN1·The duchy"
-     poem = poem.gsub /» Hanoni/, "» «MDUL»Hanoni"
+      # Normalize sequences of "__" or greater
+      # Resolves SPP-230
+      @poem = @poem.gsub(/_{2,10}/, '_')
 
-#     poem = poem.gsub /«MDRV»B«MDNM»Y an «MDBU»old red·pate murdring hag «/, "«MDRV»B«MDNM»Y an «MDBU»old red·pate murdring hag «MDNM»«"
-#     poem = poem.gsub /Coningsmark«MDNM»» «MDNM»pursu'd,/, "Coningsmark«MDNM»» pursu'd,"
+      @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
 
-     poem = poem.gsub /531-02U1   8  For thee, than make a «MDNM»«FN1·/, "531-02U1   8  For thee, than make a «FN1·"
-     poem = poem.gsub /763B36L\-   2  Shall still«MDNM» be kept with Joy by me/, "763B36L-   2  Shall still be kept with Joy by me"
-     poem = poem.gsub /740C422R   53  First, \\«MDUL»add«MDNM»·«FN1·She«MDNM»/, "740C422R   53  First, \«MDUL»add«MDNM»·«FN1·She"
-     poem = poem.gsub /069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM»\. Harris\.«MDNM»/, "069-0251   66  So, my «MDUL»Lord«MDNM» call'd me; «FN1·«MDUL»A Cant Word of my Lord and Lady to Mrs«MDNM». Harris."
-     poem = poem.gsub /136-21D-   61  «MDNM»Sweepings/, "136-21D-   61  Sweepings"
-     poem = poem.gsub /734\-03P4   15  _\|N«MDSD»OW«MDNM», «MDNM»this is «MDUL»Stella«MDNM»'s Case in Fact,/, "734-03P4   15  _|N«MDSD»OW«MDNM», "
-     poem = poem.gsub /082\-03P4   47  _\|«MDNM»F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,/, "082-03P4   47  _|F«MDSD»ARTHER«MDNM» we are by «MDUL»Pliny«MDNM» told,"
-     poem = poem.gsub /947B907A   4  And that you adore «MDUL»him«MDNM», because he adores«MDNM» «MDUL»you«MDNM»\./, "947B907A   4  And that you adore «MDUL»him«MDNM», because he adores «MDUL»you«MDNM»."
-     poem = poem.gsub /08\. Thomas asserted that the Book deserved the Censure of the House; & some days afterwards acquainted them in an explanation of his former Oration that he would have punish'd the Author, «MDUL»if he could «MDNM»\\«MDNM»add/, "08. Thomas asserted that the Book deserved the Censure of the House; & some days afterwards acquainted them in an explanation of his former Oration that he would have punish'd the Author, «MDUL»if he could «MDNM»\add"
+      @stanzas = [ TeiStanza.new(@work_type, @element, 1, { :footnote_index => @footnote_index }) ]
+    end
 
-     # Duplicated
-     # poem = poem.gsub /866\-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\\«MDUL» «FN1·«MDNM»Nick\-names for my Lady\.\.?» Skinny and Lean«MDNM»\?/, "866-271R   180  As, who should say; N«MDSD»OW«MDNM», «MDUL»am «MDNM»\del·«MDUL»a«MDNM»·add·«MDUL»I«MDNM»\ «FN1·Nick-names for my Lady.» «MDUL»Skinny and Lean«MDNM»?"
+    def parse
 
-     poem = poem.gsub /357-176Y   17  Rejocing y«MDSU»t«MDNM» 08«MDNM»\. in Better Times/, "357-176Y   17  Rejocing y«MDSU»t«MDNM» 08. in Better Times"
-     poem = poem.gsub /082\-WILH   46  \|Sure that must be a«MDNM» Salamander«MDNM»!/, "082-WILH   46  |Sure that must be a«MDNM» Salamander!"
-     poem = poem.gsub /829\-1151   193  _\|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»!«MDNM» Art thou there, Man\?/, "829-1151   193  _|B«MDSD»LESS«MDNM» us, «MDUL»Morgan«MDNM»! Art thou there, Man?"
-     
-     poem = poem.gsub /480-S877   186  From «MDUL»Hell«MDNM» a «MDUL»V«MDNM»-------«MDNM» DEV'L ascends,/, "480-S877   186  From «MDUL»Hell«MDNM» a «MDUL»V«MDNM»------- DEV'L ascends,"
-     poem = poem.gsub /102\-S849   63  because, I believe, it is pretty scarce\.«MDNM»/, "102-S849   63  because, I believe, it is pretty scarce."
-     poem = poem.gsub /239\-S900   7  Breaking «MDNM»the «MDUL»Bankers«MDNM» and the «MDUL»Banks«MDNM»,/, "239-S900   7  Breaking the «MDUL»Bankers«MDNM» and the «MDUL»Banks«MDNM»,"
-     poem = poem.gsub /239\-S900   14  Quakers«MDNM», and «MDUL»Aldermen«MDNM», in State,/, "239-S900   14  Quakers, and «MDUL»Aldermen«MDNM», in State,"
-     poem = poem.gsub /239\-S900   22  Make Pinions for themselves to fly«MDNM»,/, "239-S900   22  Make Pinions for themselves to fly,"
-     poem = poem.gsub /239\-S900   26  Bills«MDNM» turn the Lenders into Debters,/, "239-S900   26  Bills turn the Lenders into Debters,"
-     poem = poem.gsub /239\-S900   64  «MDUL»Weigh'd in the Ballance, and found Light«MDNM»\.«MDNM»/, "239-S900   64  «MDUL»Weigh'd in the Ballance, and found Light«MDNM»."
+      # Classify our tokens
+      @tokens.each do |initialToken|
 
-     poem = poem.gsub /383\-S818   1  «MDRV»O«MDNM»NCE«MDNM» on a Time, a righteous Sage,/, "383-S818   1  «MDRV»O«MDNM»NCE on a Time, a righteous Sage,"
+        # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
+        
+        raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
+        
+        # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
+        
+        # Create a new stanza
+        stanza_tokens = initialToken.split(/_/)
 
-     poem = poem.gsub /098\-S833   92  She'll strain a Point, and sit «FN1·«MDUL»Tibi brachia contrahet ingens Scorpius«MDNM», &c.«MDNM»» astride/, "098-S833   92  She'll strain a Point, and sit «FN1·«MDUL»Tibi brachia contrahet ingens Scorpius, &c.«MDNM»» astride"
-     
-     poem = poem.gsub /098\-S833   101  \|«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe«MDNM», &c.«MDNM»»But do not shed thy Influence down/, "098-S833   101  |«FN1·«MDUL»Sed nec in Arctoo sedem tibi legeris orbe, &c.«MDNM».»But do not shed thy Influence down"
-
-     poem = poem.gsub(/#{Regexp.escape("Importunity of«MDNM» *·*·|*·*«MDNM»»Provided «MDUL»Bolingbroke«MDNM» were dead.")}/, "Importunity of«MDNM» *·*·|*·*.»Provided «MDUL»Bolingbroke«MDNM» were dead.")
-     poem = poem.gsub(/#{Regexp.escape("«MDNM», &c._──────· ────·· ───────·· ────·· ──────· ──────·  ──·· ──────·· ──· ────· ────·· ──«MDNM»")}/, "«MDNM», &c._──────· ────·· ───────·· ────·· ──────· ──────·  ──·· ──────·· ──· ────· ────·· ──")
-     poem = poem.gsub(/#{Regexp.escape("Act«MDNM», *····· *······ *······ *······ *······ *······ *······ *······ *······ *······ *«MDNM»»")}/, "Act«MDNM», *····· *······ *······ *······ *······ *······ *······ *······ *······ *······ *.»")
-
-     poem = poem.gsub(/#{Regexp.escape("553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?«MDNM»")}/, "553KS920   247  Where's now the Favourite of «MDUL»Apollo«MDNM»?")
-
-     poem = poem.gsub(/#{Regexp.escape("098-S832   1  «MDRV»W«MDNM»ELL«MDNM»")}/, "098-S832   1  «MDRV»W«MDNM»ELL")
-     poem = poem.gsub(/#{Regexp.escape("098-S832   104  «MDNM»")}/, "098-S832   104  ")
-     poem = poem.gsub(/#{Regexp.escape("553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». «MDNM»P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")}/, "553-S931   197  «FN1·Curl, «MDUL»hath been the most infamous Bookseller of any Age or Country: His Character in Part may be found in Mr«MDNM». P«MDSD»OPE«MDNM»'s «MDUL»Dunciad. He published three Volumes all charged on the Dean, who never writ three Pages of them: He hath used many of the Dean's Friends in almost as vile a Manner«MDNM»..»Now «MDUL»Curl«MDNM» his Shop from Rubbish drains;")
-
-     poem = poem.gsub(/#{Regexp.escape("537-07H1   1  «MDRV»S«MDNM»IR Robert«MDNM»")}/, "537-07H1   1  «MDRV»S«MDNM»IR Robert")
-     poem = poem.gsub(/#{Regexp.escape("749-07H1   1  «MDRV»D«MDNM»ON Carlos«MDNM»")}/, "749-07H1   1  «MDRV»D«MDNM»ON Carlos")
-     poem = poem.gsub(/#{Regexp.escape("X00-07H1   1  T«MDNM»")}/, "X00-07H1   1  T")
-     poem = poem.gsub(/#{Regexp.escape("584-07H1   1  «MDRV»O«MDNM»F Chloe«MDNM»")}/, "584-07H1   1  «MDRV»O«MDNM»F Chloe")
-     poem = poem.gsub(/#{Regexp.escape("062-07H1   1  «MDRV»W«MDNM»HEN«MDNM»")}/, "062-07H1   1  «MDRV»W«MDNM»HEN")
-     poem = poem.gsub(/#{Regexp.escape("949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO«MDNM»")}/, "949A05P4   7  _«FC»In «MDUL»ENGLISH«MDNM».«FL»__«MDRV»W«MDNM»HO")
-
-     poem = poem.gsub(/#{Regexp.escape("866-0204   180  As, who shou'd say, ")}.+\?/, "866-0204   180  As, who shou'd say, «MDUL»Now, am I«MDNM»«FN1·Nick-names for my Lady..»«MDUL»Skinny and Lean?«MDNM»")
-
-     poem = poem.gsub(/X44\-612B   6  A back\-sword, poker, with\\«MDUL»ins«MDNM»·out«MDNM»/, "X44-612B   6  A back-sword, poker, with\«MDUL»ins«MDNM»·out")
-     poem = poem.gsub(/#{Regexp.escape("P0030603   2  ``As often as they change their Cloaths«MDNM»")}/, "P0030603   2  ``As often as they change their Cloaths")
-
-     # Duplicate
-#     poem = poem.gsub(/#{Regexp.escape("186B1451   5  ||Of «MDUL»arma virumque,")}/, "186B1451   5  ||Of «MDUL»arma virumque,«MDNM»")
-     poem = poem.gsub(/186B1451   6  «MDNM»«FN1·The duchy of «MDUL»Hainault«MDNM»\.\.»«MDUL»Hanoni\\ae\\ qui primus ab oris«MDNM»\./, "186B1451   6  «FN1·The duchy of «MDUL»Hainault«MDNM»..»«MDUL»Hanoni\ae\ qui primus ab oris«MDNM».")
-
-     poem = poem.gsub(/#{Regexp.escape("553-54B-   70  But this with envy makes me burst«MDNM».")}/, "553-54B-   70  But this with envy makes me burst.")
-
-     # poem = poem.gsub(/#{Regexp.escape("bless the Church, and three of our Mitres;")}/, "bless the Church, and three of our Mitres;«MDNM»")
-     poem = poem.gsub(/#{Regexp.escape("803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;")}/, "803-05P1   63  _|S«MDSD»O «MDNM»G«MDSD»OD bless the Church, and three of our Mitres;«MDNM»")
-
-     poem = poem.gsub(/#{Regexp.escape("«FN1·The Ode I writ to the King in«MDNM» Ireland")}/, "«FN1·The Ode I writ to the King in Ireland")
-
-     # poem = poem.gsub(/#{Regexp.escape("\Greek shoulder note\«MDUL»» God Himself to help him out«MDNM»\.")}/, "\Greek shoulder note\» «MDUL»God Himself to help him out«MDNM».")
-     # poem = poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\«MDUL»» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\» «MDUL»God Himself to help him out«MDNM».')
-     poem = poem.gsub(/«FN1·«MDNM»\\Greek shoulder note\\\.» God Himself to help him out«MDNM»\./, '«FN1·\Greek shoulder note\.» «MDUL»God Himself to help him out«MDNM».')
-
-     poem = poem.gsub(/#{Regexp.escape("866-S908   180  ``As, who shou'd say, «MDUL»Now am «FN1·«MDNM»")}/, "866-S908   180  ``As, who shou'd say, «MDUL»Now am«MDNM» «FN1·")
-
-     poem = poem.gsub(/#{Regexp.escape("147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.«MDBO»")}/, "147-S941   26  Bury those «MDNM»Carrots«MDBO» under a«MDNM» Hill.")
-
-     # Work-around
-     # @todo Refactor
-     poem = poem.gsub(/#{Regexp.escape("971-WILH   14  «FN1·«MDUL»The Dean's Answer..»«MDNM»")}/, "971-WILH   14  «MDUL»«FN1·The Dean's Answer..»«MDNM»")
-
-     poem = poem.gsub(/#{Regexp.escape("006-WILH   51  |«MDUL»In vain, «MDNM»said He«MDUL», does «FN1·Ireland«MDNM»» Utmost Thule«MDUL» boast")}/, "006-WILH   51  |«MDUL»In vain, «MDNM»said He«MDUL», does«MDNM» «FN1·Ireland» Utmost Thule«MDUL» boast")
-
-     poem = poem.gsub(/#{Regexp.escape("006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure«MDNM» there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")}/, "006-HW37   1  «FC»«MDNM»I.«FL»_«MDNM»Sure there's some Wondrous Joy in «MDUL»Doing Good«MDNM»;")
-
-     poem = poem.gsub(/«FL»\.?»/, "»«FL»")
-     poem = poem.gsub(/#{Regexp.escape("531-02U1   62  At least, «MDUL»before «FN1·«MDUL»The Author seems to mean the Nation's Debts..» your Master's Debts are paid«MDNM».")}/,
-                      "531-02U1   62  At least, «MDUL»before «FN1·«MDUL»The Author seems to mean the Nation's Debts«MDNM»..» your Master's Debts are paid«MDNM».")
-
-#     puts poem
-
-       NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
-
-         # poem = poem.sub Regexp.new(Regexp.escape pattern), '«UNCLEAR»'
-         poem = poem.sub pattern, '«UNCLEAR»'
-       end
-
-       return poem
-     end
-
-     def initialize(poem, work_type, element, footnote_index = 0)
-
-       @poem = poem
-       @work_type = work_type
-       @element = element
-       
-       # Extending for supporting footnote indexing
-       # SPP-156
-       @footnote_index = footnote_index
-
-       # Normalize sequences of "__" or greater
-       # Resolves SPP-230
-       @poem = @poem.gsub(/_{2,10}/, '_')
-
-       @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
-
-       @stanzas = [ TeiStanza.new(@work_type, @element, 1, { :footnote_index => @footnote_index }) ]
-     end
-
-     def parse
-
-       # Classify our tokens
-       @tokens.each do |initialToken|
-
-         # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
-         
-         raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
-
-         # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
-         
-         # Create a new stanza
-         stanza_tokens = initialToken.split('_')
-
-         while stanza_tokens.length > 1
+        while stanza_tokens.length > 1
              
-             stanza_token = stanza_tokens.shift
+          # Ensure that every stanza is prepended with an empty <l>
+          # SPP-213
+          @stanzas.last.pushEmptyLine unless @stanzas.empty? or not @stanzas.last.opened_tags.empty?
 
-             @stanzas.last.push stanza_token
+#          puts 'trace1'
+#          puts @stanzas.last.elem.to_xml
 
-             if not @stanzas.last.opened_tags.last.nil? and
-                 /^«/.match( @stanzas.last.opened_tags.last.name )
+          stanza_token = stanza_tokens.shift
 
-               @stanzas.last.push_line_break stanza_token
-             else
+#          puts 'trace2'
+#          puts stanza_token
 
-               # Append the new stanza to the poem body
-               @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
-                                           :opened_tags => @stanzas.last.opened_tags,
-                                           :footnote_index => @stanzas.last.footnote_index
-                                         })
-             end
-           end
-           
-           # Solution implemented for SPP-86
-           #
-           # @todo Refactor
-           # puts initialToken
-           if initialToken.match /^[^«].+?»$/
+          # This is where the additional empty line is created
+          # This is also where empty @n attributes are created
+          # @stanzas.last.push stanza_token
+
+#          puts 'trace3'
+#          puts @stanzas.last.elem.to_xml
+
+          if not @stanzas.last.opened_tags.last.nil? and
+              /^«/.match( @stanzas.last.opened_tags.last.name )
+
+            @stanzas.last.push_line_break stanza_token
+          else
+
+            # Append the new stanza to the poem body
+            @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
+                                        :opened_tags => @stanzas.last.opened_tags,
+                                        :footnote_index => @stanzas.last.footnote_index
+                                      })
+          end
+        end
+        
+        # Solution implemented for SPP-86
+        #
+        # @todo Refactor
+        # puts initialToken
+        if initialToken.match /^[^«].+?»$/
              
-             raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
-           end
-           
-           @stanzas.last.push stanza_tokens.shift           
-         end
-     end
-   end
+          raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
+        end
+        
+        @stanzas.last.push stanza_tokens.shift unless stanza_tokens.empty?
+      end
+    end
+
+    # Retrieves the last <head> element within the <body> element
+    def last_head
+
+      xpath = '//TEI:head'
+      elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
+      elements.last
+    end
+
+    # Retrieve unnumbered lines within all stanzas
+    def unnumbered_stanza_lines
+
+      xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l"
+      l_elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
+    end
+
+    # Retrieve numbered lines within all stanzas
+    def stanza_lines(line_number = nil)
+
+      if line_number.nil?
+
+        xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n]"
+      else
+
+        xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n='#{line_number}']"
+      end
+
+      l_elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
+    end
+
+    # Retrieve a line using a line number
+    def stanza_line(line_number)
+
+      l_elements = stanza_lines(line_number)
+      l_element = l_elements.first
+    end
+
+    # Due to the quantity and complexity of certain editorial markup issues, this has been implemented as a post-parsing solution
+    # Resolves SPP-239
+    def correct
+      
+      # Find all <l> or <p> elements missing @n attributes, and provide the index
+      l_elements = stanza_lines
+      
+#      return if l_elements.empty?
+
+      indices = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? }
+      indices.each do |element|
+
+        element['n'] = element.previous_element['n'].to_i + 1
+      end
+
+      # Reorder elements
+      indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'].to_i }
+      sorted_indices = indices.sort
+      valid_range = (sorted_indices.first..sorted_indices.last).to_a
+
+      if sorted_indices.length > valid_range.length
+
+        # Handling for duplicated line numbers
+        # Using the following example...
+        # 207-06G1   43  _«FC»T«MDSD»HE«MDNM» MORAL.«FL»__|Thus did the Trojan wooden horse,
+        # ... the token "__" creates a new stanza/line grouping, and hence, a new line
+        # However, the following line is explicitly numbered as 44:
+        # 207-06G1   44  Conceal a fatal armed force;
+        # Hence, the second segment of the broken line, must then, have its index removed
+        duplicated_indices = sorted_indices.select{ |index| sorted_indices.count(index) > 1 }.uniq
+        duplicated_indices.each do |index|
+
+          prev_l_element = stanza_line(index - 1)
+
+          new_header_element = Nokogiri::XML::Node.new 'head', @element.document
+          new_header_element['type'] = @lg_type
+          new_header_element['n'] = last_head['n'].to_i + 1
+
+          new_lg_element = new_header_element.add_child Nokogiri::XML::Node.new 'lg', @element.document
+          new_l_element = new_lg_element.add_child Nokogiri::XML::Node.new 'l', @element.document
+          new_l_element.add_child prev_l_element.children
+
+          prev_l_element.attributes.each_pair do |key, value|
+
+            new_l_element[key] = value
+          end
+          new_l_element['n'] = '1'
+
+          prev_l_element.remove # Remove the previous node
+
+          # Treat the previous element as a header
+          l_element = stanza_line(index)
+          l_element['n'] = "#{index - 1}"
+
+          l_element.add_previous_sibling new_header_element
+        end
+      else
+
+        valid_range.each_index do |i|
+
+          # Work-around
+          # @todo Refactor
+          next if sorted_indices[i].to_s.empty?
+
+          if sorted_indices[i] != valid_range[i]
+
+            elements = stanza_lines(sorted_indices[i])
+
+            if elements.empty?
+
+              puts @element.to_xml
+              raise NotImplementedError.new "No Elements found using #{xpath}"
+            elsif elements.length > 1
+
+              raise NotImplementedError.new "Multiple Elements found using #{xpath}"
+            else
+              
+              element = elements.shift
+
+              previous_element = element.previous_element
+
+              if previous_element.nil?
+
+                # Retrieve the previous stanza
+                previous_stanza = element.parent.previous_element
+
+                xpath = 'TEI:l' + '[@n]'
+                previous_stanza_lines = previous_stanza.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
+
+                if previous_stanza_lines.nil?
+
+                  raise NotImplementedError.new "Could not retrieve the previous sibling Element for #{xpath}"
+                else
+
+                  element['n'] = previous_stanza_lines.last['n'].to_i + 1
+                end
+              elsif not previous_element.has_attribute? 'n'
+
+                raise NotImplementedError.new "The previous sibling Element for #{xpath} has no @n attribute"
+              else
+
+                element['n'] = previous_element['n'].to_i + 1
+              end
+            end
+          end
+        end
+      end
+
+      # expect(indices).to eq(valid_range.to_a)
+
+
+#      puts @element.to_xml
+#      exit(1)
+    end
+  end
 end

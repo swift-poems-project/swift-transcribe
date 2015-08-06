@@ -13,6 +13,7 @@ module SwiftPoemsProject
       @poem = poem
 
       @elem = Nokogiri::XML::Node.new('head', @document)
+      @elem['type'] = 'note'
       @elem['n'] = index
       
       @poem.elem.add_child @elem
@@ -21,6 +22,15 @@ module SwiftPoemsProject
       @current_leaf = @elem.add_child Nokogiri::XML::Node.new 'lg', @document
       @paragraph_index = 1
       @current_leaf['n'] = @paragraph_index
+
+      # Resolves SPP-244
+      # @todo Refactor
+      @current_leaf['type'] = 'headnote'
+
+      # Resolves SPP-243
+      # @todo Refactor
+      @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'l', @document
+      @current_leaf['n'] = 1
 
       @tokens = []
 
@@ -227,9 +237,7 @@ module SwiftPoemsProject
 
     def pushParagraph
 
-      # puts 'new paragraph'
-
-      @current_leaf = @current_leaf.parent
+      @current_leaf = @current_leaf.parent.parent
       new_paragraph = Nokogiri::XML::Node.new 'lg', @document
       @paragraph_index += 1
       new_paragraph['n'] = @paragraph_index
@@ -237,6 +245,15 @@ module SwiftPoemsProject
       @current_leaf.add_child new_paragraph
 
       @current_leaf = new_paragraph
+
+      # Resolves SPP-244
+      # @todo Refactor
+      @current_leaf['type'] = 'headnote'
+
+      # Resolves SPP-243
+      # @todo Refactor
+      @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'l', @document
+      @current_leaf['n'] = 1
 
       if not @poem.opened_tags.empty?
 

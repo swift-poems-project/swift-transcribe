@@ -18,8 +18,8 @@ require_relative 'NotaBeneTitleParser'
 
 module SwiftPoetryProject
 
-  POEM = 0
-  LETTER = 1
+  POEM = 'poem'
+  LETTER = 'letter'
 
   # logger = Logger.new(STDOUT)
   # logger.level = Logger::DEBUG
@@ -485,16 +485,16 @@ EOF
 
       # cp437 Encoding
       # lines = lines.split("$$\r\n")
-      lines = lines.split(/\$\$\r?\n/)
+      # lines = lines.split(/\$\$\r?\n/)
+      lines = lines.split(/\$\$\r?\n\S{8}?\s{3}/)
+
+      # Error handling for heading parsing errors
+      raise NotImplementedError.new "Failed to parse the Nota Bene file structure; Is #{@filePath} a Nota Bene document?" if lines.length != 2
 
       @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
-      # Parsing the header
+
+      # Parsing the heading
       @heading = lines.shift
-
-      if not lines[0] and @filePath
-
-        raise NoteBeneFormatException.new "#{@filePath} is not a Nota Bene document."
-      end
 
       # The tokens should be related to a single document
       @documentTokens = []
@@ -525,6 +525,9 @@ EOF
 
           lines = @titleAndHeadnote
         end
+
+        # Error handling for title and headnote parsing
+        raise NotImplementedError.new "Failed to parse the title and headnotes" if @titleAndHeadnote.nil?
 
         # Parsing the poem and generating the appropriate TEI elements
         @poem = lines[0]
@@ -561,22 +564,10 @@ EOF
 
   def parse
 
-    begin
-
-      parseHeader
-      parseTitleAndHeadnote
-      parsePoem
-      parseFootNotes
-      #validate
-
-    rescue => ex
-      
-      # @todo Restructure for proper logging within Sinatra
-      # raise Exception.new "#{@filePath} could not be parsed: #{ex.message}: #{ex.backtrace.join("\n")}"
-      $stderr.puts "#{@filePath} could not be parsed: #{ex.message}: #{ex.backtrace.join("\n")}"
-
-      @teiDocument
-    end
+    parseHeader
+    parseTitleAndHeadnote
+    parsePoem
+    parseFootNotes
   end
 
   def parseHeader
@@ -1711,7 +1702,10 @@ EOF
      @poem = TeiPoem.normalize(@poem)
 
      poem = TeiPoem.new(@poem, @workType, @poemElem, @footnote_index)
+
      poem.parse
+
+     poem.correct
    end
 
    def stripNotaBeneTokens(str)
@@ -1738,6 +1732,8 @@ EOF
        if m
 
          titleElem = @headerElement.at_xpath("tei:fileDesc/tei:titleStmt/tei:title", TEI_NS)
+
+         raise TeiParserException.new "Could not find the <title> element within the TEI header: #{titleElem}" if titleElem.nil?
 
          title = titleElem.content
          authorText = stripNotaBeneTokens(title)
@@ -1793,7 +1789,7 @@ EOF
            end           
          else
 
-           nil
+           # @todo Handle more complex cases in which the author's name can be extracted
          end
        else
 

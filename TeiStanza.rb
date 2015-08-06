@@ -2,12 +2,13 @@
 
 module SwiftPoemsProject
 
-  POEM = 0
-  LETTER = 1
+  POEM = 'poem'
+  LETTER = 'letter'
 
   # 991A002D
 # POEM_ID_PATTERN = /[A-Z\d]\d\d\-?[0-9A-Z\!\-]{4,5}\s+/
-  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s+/
+  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}/
+  # ^[0-9a-zA-Z\-]{8}\s{3}
 
   NB_TERNARY_TOKEN_TEI_MAP = {
 
@@ -292,7 +293,7 @@ module SwiftPoemsProject
 
   class TeiStanza
 
-    attr_reader :document, :elem, :footnote_index
+    attr_reader :document, :elem, :footnote_index, :lines
     attr_accessor :opened_tags
 
     def initialize(workType, poemElem, index, options = {})
@@ -303,10 +304,11 @@ module SwiftPoemsProject
       @teiDocument = @poemElem.document
       @document = @teiDocument
        
-      # Depending upon whether or not this work is a poem, this shall alter the name of the element containing the stanza
-      @blockElemName = @workType == POEM ? 'lg' : 'div'
+      @blockElemName = 'lg'
+
       @elem = Nokogiri::XML::Node.new @blockElemName, @teiDocument
       @elem['n'] = index.to_s
+      @elem['type'] = @workType == POEM ? 'stanza' : 'verse-paragraph' # Resolves SPP-245
 
       @opened_tags = options[:opened_tags] || []
       @line_has_opened_tag = options[:line_has_opened_tag] || !@opened_tags.empty?
@@ -325,6 +327,14 @@ module SwiftPoemsProject
       lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
 
       @lines = [ lineElem ]
+    end
+
+    # Push an empty <l> element without an @n attribute value
+    # Resolves SPP-213
+    def pushEmptyLine
+
+      newLine = TeiLine.new @workType, self
+      @lines << newLine
     end
 
     def pushLine
@@ -365,6 +375,29 @@ module SwiftPoemsProject
       @lines.last.push_line_indent(indent)
     end
 
+    # Retrieve the previous line within a stanza
+    def previous_line
+
+      if @elem['n'] == '1'
+
+        previous_stanza_index = @elem['n']
+      else
+
+        previous_stanza_index = @elem['n'].to_i - 1
+      end
+
+      previous_lines = @poemElem.xpath("tei:lg[@type='#{@elem['type']}' and @n='#{previous_stanza_index}']/tei:l[@n]", TEI_NS)
+      previous_line = previous_lines.last
+    end
+
+    def next_line_index
+
+      return '1' if previous_line.nil? or previous_line['n'].nil?
+
+      next_line_index = (previous_line['n'].to_i) + 1
+      return next_line_index.to_s
+    end
+
     def push(token)
 
       # Work-around for completely empty lines
@@ -373,10 +406,7 @@ module SwiftPoemsProject
         if @elem['n'].to_i > 1
 
           # Update the line number
-          previous_stanza_index = @elem['n'].to_i - 1
-          previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
-
-          raise TeiIndexError.new "The following line from the previous stanza has no index: #{previous_line.to_xml}" unless previous_line.has_attribute? 'n'
+          raise TeiIndexError.new "The previous stanza has no indexed lines: #{@poemElem.to_xml}" if previous_line.nil?
 
           line_index = previous_line['n'].to_i + 1
           @lines.last.elem['n'] = line_index.to_s
@@ -386,33 +416,57 @@ module SwiftPoemsProject
         @lines.last.push token
       else
 
-         # Trigger a new line
-         # @todo Refactor with a single regular expression
+        # Note: There are not indices larger than 999
+        token_is_index = /^\d{1,3}$/.match token.strip
+
+        # Trigger a new line
+        # @todo Refactor with a single regular expression
         if POEM_ID_PATTERN.match token
 
-           token = token.sub POEM_ID_PATTERN, ''
-           pushLine unless token.strip.empty?
+          token = token.sub POEM_ID_PATTERN, ''
+          pushLine unless token.strip.empty? or token_is_index
 
-         elsif /([0-9A-Z\-]{8})\s+/.match token
+#        elsif /([0-9A-Z\-]{8})\s+/.match token
 
-           token = token.sub /([0-9A-Z\-]{8})\s+/, ''
-           pushLine unless token.strip.empty?
+#          token = token.sub /([0-9A-Z\-]{8})\s+/, ''
+#          pushLine unless token.strip.empty? or token_is_index
         end
         
         token = token.sub /\r/, ''
 
-        # logger.debug "new line token: #{token}"
-        # puts "Appending a new line: #{token}\n"
+        if token_is_index
 
-        @lines.last.push token
+          pushEmptyLine
+        end
 
-        # Update the line number
-        unless @lines.last.elem['n']
+        if token_is_index
 
-           previous_stanza_index = @elem['n'].to_i - 1
-          previous_line = @poemElem.at_xpath("tei:lg[@n='#{previous_stanza_index}']/tei:l[last()]", TEI_NS)
+          @lines.last.elem['n'] = /^\d+$/.match token.strip
+        else
 
-          @lines.last.elem['n'] = previous_line['n'] if previous_line
+          @lines.last.push token unless token.strip.empty?
+        end
+
+#        puts 'trace5'
+#        puts @elem.to_xml
+
+#        puts 'trace6'
+#        puts @opened_tags
+
+#        puts 'trace7'
+
+        # Insert the line number
+        unless @lines.last.elem.has_attribute? 'n'
+
+          # For cases such as isolated tokens
+          if token.strip == 'om.'
+
+            @lines.last.elem['n'] = @lines[-2].elem['n'].to_i + 1
+          else
+
+            # For cases in which a new stanza was appended
+            @lines.last.elem['n'] = previous_line['n'] if previous_line and not previous_line.content.empty?
+          end
         end
       end
     end

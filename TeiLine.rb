@@ -22,7 +22,8 @@ module SwiftPoemsProject
        # @teiDocument = teiDocument
        @teiDocument = stanza.document
 
-       @lineElemName = @workType == POEM ? 'l' : 'p'
+       # @lineElemName = @workType == POEM ? 'l' : 'p'
+       @lineElemName = 'l'
 
        # Set the current leaf of the tree being constructed to be the root node itself
        @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
@@ -95,20 +96,31 @@ module SwiftPoemsProject
          # @todo Refactor
          if not(@current_leaf.is_a? Nokogiri::XML::Element and @current_leaf.has_attribute? 'n' and not @current_leaf['n'].empty?)
 
-         # Remove the 8 character identifier from the beginning of the line
-         poem_id_match = /\s*(\d+)\s+/.match token
+           # Remove the 8 character identifier from the beginning of the line
+           poem_id_match = /\s*(\d+)\s+/.match token
 
-         poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
-         poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match
+           poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
+           poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match # Isn't this redundant?
+           
+           # Raise an exception if the transcript identifier cannot be parsed
+           if poem_id_match
 
-         # Raise an exception if the transcript identifier cannot be parsed
-         raise TeiPoemIdError.new "Could not extract the Poem ID from #{token}" unless poem_id_match
+             poem_id = poem_id_match.to_s.strip
 
-         poem_id = poem_id_match.to_s.strip
-         raise NotImplementedError.new if poem_id.empty?
+             # @todo Implement using TeiPoemIdError
+             raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
 
-         @elem['n'] = poem_id
-         token = token.sub poem_id_match[0], ''
+             @elem['n'] = poem_id
+             token = token.sub poem_id_match[0], ''
+           elsif @elem.has_attribute? 'rend' # This handles cases in which the previous token contained a line number and a unary Nota Bene Delta
+
+             @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
+           else
+
+             @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
+           end
+           
+         end
 
          # Transform triplet indicators for the stanza
          if /\s3\}$/.match token
@@ -119,49 +131,17 @@ module SwiftPoemsProject
 
          # Transform pipes into @rend values
          if /\|/.match token
-
-           if @current_leaf === @elem
-
-=begin
-           token_segments = token.split /\|/
-
-           if (token_segments.length == 1 and not /\|/.match token_segments.first) or token_segments.empty?
-
-             indentValue = 1
-           else
-
-             indentValue = token_segments.size - 1
-           end
-
-           raise NotImplementedError.new "Could not properly parse the indentation characters within: #{token} (#{token_segments.to_s})" if indentValue < 1
            
-           @current_leaf['rend'] = 'indent(' + indentValue.to_s + ')'
-           token = token.sub /\|+/, ''
-=end
+           indentations = token.split(/\|/).select {|s| s.empty? }
+           indentations.each do |indent|
 
-             indentations = token.split(/\|/).select {|s| s.empty? }
-             indentations.each do |indent|
-
-               push_line_indent indent
-             end
-
-             token = token.sub /\|+/, ''
-           else
-
-             # Work-around
-             # Resolves SPP-146
-             indentations = token.split(/\|/).select {|s| s.empty? }
-             indentations.each do |indent|
-
-               push_line_indent indent
-             end
-
-             token = token.sub /\|+/, ''
+             push_line_indent indent
            end
-         end
+
+           token = token.sub /\|+/, ''
          end
        end
-
+       
        # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
        NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
                    

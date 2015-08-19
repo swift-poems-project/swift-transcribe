@@ -9,19 +9,20 @@ module SwiftPoemsProject
 
     class TeiHeader
 
-      attr_reader :sponsor, :elem, :opened_tags, :footnote_index
+      attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document
       # attr_accessor :opened_tags
 
-      def initialize(elem, options = {})
+      def initialize(parser, id, options = {})
 
-        @elem = elem
+        @elem = parser.element
+        @id = id
         @document = elem.document
         @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
         @opened_tags = []
 
         @footnote_index = options[:footnote_index] || 0
         
-        @titles = [ SwiftPoemsProject::TeiTitle.new(@document, self, { :footnote_index => @footnote_index }) ]
+        @titles = [ SwiftPoemsProject::TeiTitle.new(self, @id, { :footnote_index => @footnote_index }) ]
       end
 
       def pushTitle
@@ -33,7 +34,7 @@ module SwiftPoemsProject
 
         @footnote_index = @titles.last.footnote_index
 
-        @titles << SwiftPoemsProject::TeiTitle.new(@document, self, { :footnote_index => @titles.last.footnote_index })
+        @titles << SwiftPoemsProject::TeiTitle.new(self, @id, { :footnote_index => @titles.last.footnote_index })
         @titles.last.has_opened_tag = last_title.has_opened_tag
 
         if @titles.last.has_opened_tag
@@ -104,8 +105,7 @@ module SwiftPoemsProject
       end
     end
 
-    # Parse the text and append the TEI element to the document
-    def parse
+    def clean
 
       @text = @text.gsub(/«FN1(?!·)/, '«FN1·')
       @text = @text.gsub(/([a-z\.][\d\s]*)»/, '\\1.»')
@@ -117,8 +117,14 @@ module SwiftPoemsProject
 
       @text = @text.gsub('P«MDSD»ULTENEY«MDUL»', 'P«MDSD»ULTENEY«MDNM»«MDUL»')
       @text = @text.gsub('The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».«MDNM»', 'The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».')
+    end
 
-      header = TeiHeader.new(@teiParser.headerElement, { :footnote_index => @footnote_index })
+    # Parse the text and append the TEI element to the document
+    def parse
+
+      clean
+
+      header = TeiHeader.new(self, @id, { :footnote_index => @footnote_index })
 
       initialTokens = @text.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
 

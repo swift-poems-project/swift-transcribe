@@ -7,10 +7,13 @@ module SwiftPoemsProject
     attr_reader :elem, :tokens, :footnote_index
     attr_accessor :has_opened_tag, :current_leaf
 
-    def initialize(document, header, options = {})
+    def initialize(header, id, options = {})
 
-      @document = document
-      @header = header
+      @header = header.document
+      @document = @header.document
+
+      @id = id
+
       @headerElement = header.elem
 
       @footnote_index = options[:footnote_index] || 0
@@ -30,6 +33,22 @@ module SwiftPoemsProject
         @opened_tags.last.name = last_title.tokens.last
       end
 =end
+    end
+
+    # Mint the unique line identifier
+    #
+    def mint_xml_id(line_number)
+
+      @xml_id = "#{@id}-title-#{line_number}"
+      @elem['xml:id'] = @xml_id
+    end
+
+    def number=(number)
+
+      @elem['n'] = number
+
+      # Update the xml:id value
+      mint_xml_id @elem['n']
     end
     
     def pushToken(token)

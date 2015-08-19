@@ -1285,7 +1285,7 @@ EOF
 
     # Single parser instance must be utilized for multiple lines
     # @todo Refactor and restructure the parsing process
-    headnote_parser = NotaBeneHeadnoteParser.new self, @titleAndHeadnote, nil, { :footnote_index => @footnote_index }
+    headnote_parser = NotaBeneHeadnoteParser.new self, @poemID, @titleAndHeadnote, nil, { :footnote_index => @footnote_index }
 
     @titleAndHeadnote = @titleAndHeadnote.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}\n/, "HN2 «MDRV»T«MDUL»HE Author of the following Poem, is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»\n"
 
@@ -1322,7 +1322,7 @@ EOF
       if not @headnote_open and not /HN\d+/.match(line)
 
         # @todo Refactor
-        title_parser = NotaBeneTitleParser.new(self, line, nil, { :footnote_index => @footnote_index })
+        title_parser = NotaBeneTitleParser.new(self, @poemID, line, nil, { :footnote_index => @footnote_index })
         title_parser.parse
         @footnote_index = title_parser.footnote_index
       else
@@ -1701,7 +1701,7 @@ EOF
 
      @poem = TeiPoem.normalize(@poem)
 
-     poem = TeiPoem.new(@poem, @workType, @poemElem, @footnote_index)
+     poem = TeiPoem.new(@poem, @poemID, @workType, @poemElem, @footnote_index)
 
      poem.parse
 
@@ -1711,7 +1711,6 @@ EOF
    def stripNotaBeneTokens(str)
 
      str = str.gsub(/(«.{1,4}(·| )?»)/,'') if str
-     #s.sub!(/«.{1,2}\w+\W/, '')
 
      return str
    end

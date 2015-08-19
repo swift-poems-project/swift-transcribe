@@ -14,7 +14,30 @@ module SwiftPoemsProject
   class TeiIndexError < StandardError; end
   class TeiPoemIdError < StandardError; end
 
+  class TeiLinkGroup
+
+    def initialize(poem, type)
+
+      @poem = poem
+      @type = poem
+
+      @element = Nokogiri::XML::Node.new 'linkGrp', @poem.element.document
+      @poem.element.add_previous_sibling @element
+      @element['type'] = @type
+    end
+
+    def add_link(source, target)
+
+      link = Nokogiri::XML::Node.new 'link', @poem.element
+      link['target'] = "#{source} #{target}"
+
+      @element.add_child link
+    end
+  end
+
   class TeiPoem
+
+    attr_reader :id, :element
 
     def self.normalize(poem)
 
@@ -29,9 +52,10 @@ module SwiftPoemsProject
       return poem
     end
 
-    def initialize(poem, work_type, element, footnote_index = 0)
+    def initialize(poem, id, work_type, element, footnote_index = 0)
 
       @poem = poem
+      @id = id
       @work_type = work_type
       @lg_type = @work_type == POEM ? 'stanza' : 'verse-paragraph'
       @element = element
@@ -46,7 +70,7 @@ module SwiftPoemsProject
 
       @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
 
-      @stanzas = [ TeiStanza.new(@work_type, @element, 1, { :footnote_index => @footnote_index }) ]
+      @stanzas = [ TeiStanza.new(self, @work_type, 1, { :footnote_index => @footnote_index }) ]
     end
 
     def parse
@@ -54,8 +78,6 @@ module SwiftPoemsProject
       # Classify our tokens
       @tokens.each do |initialToken|
 
-        # debugOutput = @stanzas.last.opened_tags.map {|tag| tag.element.to_xml }
-        
         raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
         
         # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
@@ -69,20 +91,11 @@ module SwiftPoemsProject
           # SPP-213
           @stanzas.last.pushEmptyLine unless @stanzas.empty? or not @stanzas.last.opened_tags.empty?
 
-#          puts 'trace1'
-#          puts @stanzas.last.elem.to_xml
-
           stanza_token = stanza_tokens.shift
-
-#          puts 'trace2'
-#          puts stanza_token
 
           # This is where the additional empty line is created
           # This is also where empty @n attributes are created
           # @stanzas.last.push stanza_token
-
-#          puts 'trace3'
-#          puts @stanzas.last.elem.to_xml
 
           if not @stanzas.last.opened_tags.last.nil? and
               /^«/.match( @stanzas.last.opened_tags.last.name )
@@ -91,7 +104,7 @@ module SwiftPoemsProject
           else
 
             # Append the new stanza to the poem body
-            @stanzas << TeiStanza.new(@work_type, @element, @stanzas.size + 1, {
+            @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
                                         :opened_tags => @stanzas.last.opened_tags,
                                         :footnote_index => @stanzas.last.footnote_index
                                       })
@@ -101,7 +114,6 @@ module SwiftPoemsProject
         # Solution implemented for SPP-86
         #
         # @todo Refactor
-        # puts initialToken
         if initialToken.match /^[^«].+?»$/
              
           raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"

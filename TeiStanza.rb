@@ -293,14 +293,15 @@ module SwiftPoemsProject
 
   class TeiStanza
 
-    attr_reader :document, :elem, :footnote_index, :lines
+    attr_reader :poem, :document, :elem, :footnote_index, :lines
     attr_accessor :opened_tags
 
-    def initialize(workType, poemElem, index, options = {})
+    def initialize(poem, workType, index, options = {})
 
+      @poem = poem
       @workType = workType
        
-      @poemElem = poemElem
+      @poemElem = poem.element
       @teiDocument = @poemElem.document
       @document = @teiDocument
        
@@ -319,9 +320,6 @@ module SwiftPoemsProject
 
       @poemElem.add_child(@elem)
 
-      # debugOutput = @opened_tags.map {|tag| tag.to_xml }
-      # puts "Appending the following line tags: #{debugOutput}\n\n"
-
       # If there is an open tag...
       # if not @opened_tags.empty?
       lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
@@ -338,26 +336,6 @@ module SwiftPoemsProject
     end
 
     def pushLine
-
-      # lineElem = @lines.last
-      # lineElem['n'] = getLineIndex line
-
-      # Remove the line index from the beginning of the line
-      # line.sub!(/\d+  /, '')
-
-      # logger.debug "New line - previous line: #{@lines.last.elem.to_xml}"
-      # logger.debug "does the previous line have an opened tag? #{@lines.last.has_opened_tag}"
-
-      if @lines.last.has_opened_tag
-
-        # raise NotImplementedError, "A Nota Bene tag was not properly closed: #{@lines.last.elem.to_xml}"
-        
-        # Assumes a depth of 1 from <l> element
-        # newLine.elem.add_child Nokogiri::XML::Node.new @lines.last.current_leaf.name, @document
-
-        # @opened_tags << @lines.last.opened_tag
-        nil
-      end
 
       @footnote_index = @lines.last.footnote_index
       newLine = TeiLine.new @workType, self, { :footnote_index => @footnote_index }
@@ -409,7 +387,8 @@ module SwiftPoemsProject
           raise TeiIndexError.new "The previous stanza has no indexed lines: #{@poemElem.to_xml}" if previous_line.nil?
 
           line_index = previous_line['n'].to_i + 1
-          @lines.last.elem['n'] = line_index.to_s
+          # @lines.last.elem['n'] = line_index.to_s
+          @lines.last.number = line_index.to_s
         end
 
         token = token.sub POEM_ID_PATTERN, ''
@@ -441,7 +420,8 @@ module SwiftPoemsProject
 
         if token_is_index
 
-          @lines.last.elem['n'] = /^\d+$/.match token.strip
+          # @lines.last.elem['n'] = /^\d+$/.match token.strip
+          @lines.last.number = /^\d+$/.match token.strip
         else
 
           @lines.last.push token unless token.strip.empty?
@@ -461,11 +441,13 @@ module SwiftPoemsProject
           # For cases such as isolated tokens
           if token.strip == 'om.'
 
-            @lines.last.elem['n'] = @lines[-2].elem['n'].to_i + 1
+            # @lines.last.elem['n'] = @lines[-2].elem['n'].to_i + 1
+            @lines.last.number = @lines[-2].elem['n'].to_i + 1
           else
 
             # For cases in which a new stanza was appended
-            @lines.last.elem['n'] = previous_line['n'] if previous_line and not previous_line.content.empty?
+            # @lines.last.elem['n'] = previous_line['n'] if previous_line and not previous_line.content.empty?
+            @lines.last.number = previous_line['n'] if previous_line and not previous_line.content.empty?
           end
         end
       end

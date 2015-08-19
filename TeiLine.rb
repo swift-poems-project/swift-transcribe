@@ -19,7 +19,6 @@ module SwiftPoemsProject
        # SPP-156
        @footnote_index = options[:footnote_index] || 0
 
-       # @teiDocument = teiDocument
        @teiDocument = stanza.document
 
        # @lineElemName = @workType == POEM ? 'l' : 'p'
@@ -83,6 +82,22 @@ module SwiftPoemsProject
        @tokens = []
      end
 
+     # Mint the unique line identifier
+     #
+     def mint_xml_id(line_number)
+
+       @xml_id = "#{@stanza.poem.id}-#{line_number}"
+       @elem['xml:id'] = @xml_id
+     end
+
+     def number=(number)
+
+       @elem['n'] = number
+
+       # Update the xml:id value
+       mint_xml_id @elem['n']
+     end
+
      # Add this as a text node for the current line element
      def pushText(token)
 
@@ -110,15 +125,19 @@ module SwiftPoemsProject
              # @todo Implement using TeiPoemIdError
              raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
 
-             @elem['n'] = poem_id
+             # @elem['n'] = poem_id
+             number = poem_id
              token = token.sub poem_id_match[0], ''
            elsif @elem.has_attribute? 'rend' # This handles cases in which the previous token contained a line number and a unary Nota Bene Delta
 
-             @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
+             # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
+             number = @stanza.lines[-2].elem['n'].to_i + 1
            else
 
-             @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
+             # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
+             number = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
            end
+
            
          end
 
@@ -229,11 +248,6 @@ module SwiftPoemsProject
 
      def pushInitialToken(token)
 
-=begin
-       @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new token, @teiDocument
-       @has_opened_tag = true
-       @opened_tag = @current_leaf
-=end
        @current_leaf = BinaryNotaBeneDelta.new(token, @teiDocument, @current_leaf)
        @has_opened_tag = true
        @opened_tag = @current_leaf
@@ -329,6 +343,7 @@ module SwiftPoemsProject
 
      def pushTerminalToken(token, opened_tag)
 
+       # This closes a footnote
        if /^«FN1/.match opened_tag.name and /»$/.match token
 
          @current_leaf.close token
@@ -339,10 +354,26 @@ module SwiftPoemsProject
          # Add an index for the footnote
          # SPP-156
          @footnote_index += 1
-         @current_leaf['n'] = @footnote_index 
+         @current_leaf['n'] = @footnote_index
+
+         # Add more complexity for the footnotes
+         # SPP-253
+         xml_id = "#{@stanza.poem.id}-footnote-#{@footnote_index}"
+         @current_leaf['xml:id'] = @footnote_index
+
+         target = "##{xml_id}"
+         source = "##{@xml_id}"
+
+         # Add an inline <ref> element
+         ref = Nokogiri::XML::Node.new 'ref', @teiDocument
+         ref.content = @footnote_index
+         ref['target'] = target
+         @current_leaf.add_previous_sibling ref
+         
+         # Add an element to <linkGrp>
+         @stanza.poem.link_group.add_link source, target
 
          @current_leaf = @current_leaf.parent
-
          
        elsif token != '«MDNM»'
 

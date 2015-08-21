@@ -13,7 +13,7 @@ module SwiftPoemsProject
       super(teiParser, id, text, docTokens, options)
 
       # Note: This assumes that HN fields consistently begin with an index of 1 and increment solely by a value of 1
-      @heads = TeiPoemHeads.new @teiParser.poemElem, '1', { :footnote_index => @footnote_index }
+      @heads = TeiPoemHeads.new @teiParser.poemElem, @id, '1', { :footnote_index => @footnote_index }
       @cleanModeCodes = cleanModeCodes
     end
 
@@ -111,7 +111,7 @@ module SwiftPoemsProject
       # For cleaning extraneous MDNM mode codes
       # @todo Refactor into a CSV file for parsing (original line, cleaned line)
       #
-      clean if @cleanModeCodes
+      clean line if @cleanModeCodes
       
       # Parse for the HN index
       m = /HN(\d\d?) ?(.*)/.match(line)

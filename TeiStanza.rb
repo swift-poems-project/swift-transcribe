@@ -388,7 +388,7 @@ module SwiftPoemsProject
 
           line_index = previous_line['n'].to_i + 1
           # @lines.last.elem['n'] = line_index.to_s
-          @lines.last.number = line_index.to_s
+          @lines.last.number=line_index.to_s
         end
 
         token = token.sub POEM_ID_PATTERN, ''
@@ -421,7 +421,7 @@ module SwiftPoemsProject
         if token_is_index
 
           # @lines.last.elem['n'] = /^\d+$/.match token.strip
-          @lines.last.number = /^\d+$/.match token.strip
+          @lines.last.number=/^\d+$/.match token.strip
         else
 
           @lines.last.push token unless token.strip.empty?
@@ -442,12 +442,12 @@ module SwiftPoemsProject
           if token.strip == 'om.'
 
             # @lines.last.elem['n'] = @lines[-2].elem['n'].to_i + 1
-            @lines.last.number = @lines[-2].elem['n'].to_i + 1
+            @lines.last.number=@lines[-2].elem['n'].to_i + 1
           else
 
             # For cases in which a new stanza was appended
             # @lines.last.elem['n'] = previous_line['n'] if previous_line and not previous_line.content.empty?
-            @lines.last.number = previous_line['n'] if previous_line and not previous_line.content.empty?
+            @lines.last.number=previous_line['n'] if previous_line and not previous_line.content.empty?
           end
         end
       end

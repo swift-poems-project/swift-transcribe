@@ -16,10 +16,10 @@ module SwiftPoemsProject
 
   class TeiLinkGroup
 
-    def initialize(poem, type)
+    def initialize(poem, type = 'notes')
 
       @poem = poem
-      @type = poem
+      @type = type
 
       @element = Nokogiri::XML::Node.new 'linkGrp', @poem.element.document
       @poem.element.add_previous_sibling @element
@@ -37,7 +37,7 @@ module SwiftPoemsProject
 
   class TeiPoem
 
-    attr_reader :id, :element
+    attr_reader :id, :element, :link_group
 
     def self.normalize(poem)
 
@@ -69,6 +69,8 @@ module SwiftPoemsProject
       @poem = @poem.gsub(/_{2,10}/, '_')
 
       @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
+
+      @link_group = TeiLinkGroup.new self
 
       @stanzas = [ TeiStanza.new(self, @work_type, 1, { :footnote_index => @footnote_index }) ]
     end

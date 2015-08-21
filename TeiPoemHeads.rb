@@ -4,12 +4,13 @@ module SwiftPoemsProject
 
   class TeiPoemHeads
 
-    attr_reader :elem
+    attr_reader :elem, :id
     attr_accessor :opened_tags
 
-    def initialize(elem, index, options = {})
+    def initialize(elem, id, index, options = {})
 
       @elem = elem
+      @id = id
       @document = elem.document
       @opened_tags = []
 

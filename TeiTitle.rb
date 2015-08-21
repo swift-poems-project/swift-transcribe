@@ -9,7 +9,7 @@ module SwiftPoemsProject
 
     def initialize(header, id, options = {})
 
-      @header = header.document
+      @header = header
       @document = @header.document
 
       @id = id

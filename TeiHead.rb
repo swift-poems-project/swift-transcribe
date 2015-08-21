@@ -7,7 +7,7 @@ module SwiftPoemsProject
     attr_reader :elem, :footnote_index
     attr_accessor :has_opened_tag, :current_leaf
 
-    def note_number=(number)
+    def note_number(number)
 
       @elem['n'] = number
 
@@ -15,7 +15,7 @@ module SwiftPoemsProject
       @elem['xml:id'] = @xml_id
     end
 
-    def line_group_number=(number, element = @current_leaf)
+    def line_group_number(number, element = @current_leaf)
 
       element['n'] = number
       @current_line_group_xml_id = "#{@xml_id}-line-group-#{number}"
@@ -23,7 +23,7 @@ module SwiftPoemsProject
       element['xml:id'] = @current_line_group_xml_id
     end
 
-    def line_number=(number, element = @current_leaf)
+    def line_number(number, element = @current_leaf)
 
       element['n'] = number
       @current_element_xml_id = "#{@current_line_group_xml_id}-line-#{number}"
@@ -38,16 +38,15 @@ module SwiftPoemsProject
 
       @elem = Nokogiri::XML::Node.new('head', @document)
       @elem['type'] = 'note'
-      # @elem['n'] = index
-      note_number = index
+
+      note_number index
       
       @poem.elem.add_child @elem
 
       # Insert handling for paragraphs within headnotes
       @current_leaf = @elem.add_child Nokogiri::XML::Node.new 'lg', @document
       @paragraph_index = 1
-      # @current_leaf['n'] = @paragraph_index
-      line_group_number = @paragraph_index
+      line_group_number @paragraph_index
 
       # Resolves SPP-244
       # @todo Refactor
@@ -56,8 +55,7 @@ module SwiftPoemsProject
       # Resolves SPP-243
       # @todo Refactor
       @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'l', @document
-      # @current_leaf['n'] = 1
-      line_number = 1
+      line_number 1
 
       @tokens = []
 
@@ -262,7 +260,7 @@ module SwiftPoemsProject
       if indexMatch
         
         # @elem['n'] = indexMatch.to_s.strip
-        note_number = indexMatch.to_s.strip
+        note_number indexMatch.to_s.strip
         token = token.sub /\s{3}(\d+)\s{2}/, ''
       end
       
@@ -287,7 +285,7 @@ module SwiftPoemsProject
       new_paragraph = Nokogiri::XML::Node.new 'lg', @document
       @paragraph_index += 1
       # new_paragraph['n'] = @paragraph_index
-      line_group_number = @paragraph_index, new_paragraph
+      line_group_number @paragraph_index, new_paragraph
 
       @current_leaf.add_child new_paragraph
 
@@ -301,7 +299,7 @@ module SwiftPoemsProject
       # @todo Refactor
       @current_leaf = @current_leaf.add_child Nokogiri::XML::Node.new 'l', @document
       # @current_leaf['n'] = 1
-      line_number = 1
+      line_number 1
 
       if not @poem.opened_tags.empty?
 

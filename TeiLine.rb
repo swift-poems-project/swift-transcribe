@@ -32,7 +32,6 @@ module SwiftPoemsProject
        # if @has_opened_tag
 
        # If there are opened tags...
-
        elem = @elem
 
        # debugOutput = @opened_tags.map { |tag| tag.to_xml }
@@ -90,12 +89,17 @@ module SwiftPoemsProject
        @elem['xml:id'] = @xml_id
      end
 
-     def number=(number)
+     def number(value)
 
-       @elem['n'] = number
+       @elem['n'] = value
 
        # Update the xml:id value
        mint_xml_id @elem['n']
+     end
+
+     def number=(value)
+
+       number(value)
      end
 
      # Add this as a text node for the current line element
@@ -116,26 +120,31 @@ module SwiftPoemsProject
 
            poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
            poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match # Isn't this redundant?
+
+           '1  '
            
            # Raise an exception if the transcript identifier cannot be parsed
            if poem_id_match
 
              poem_id = poem_id_match.to_s.strip
 
+
+
              # @todo Implement using TeiPoemIdError
              raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
 
              # @elem['n'] = poem_id
-             number = poem_id
+             number(poem_id)
+
              token = token.sub poem_id_match[0], ''
            elsif @elem.has_attribute? 'rend' # This handles cases in which the previous token contained a line number and a unary Nota Bene Delta
 
              # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
-             number = @stanza.lines[-2].elem['n'].to_i + 1
+             number( @stanza.lines[-2].elem['n'].to_i + 1)
            else
 
              # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
-             number = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
+             number( @stanza.lines[-2].elem['n'].to_i + 1) # Which cases are handled here?
            end
 
            
@@ -183,67 +192,6 @@ module SwiftPoemsProject
 
          single_tag = UnaryNotaBeneDelta.new(token, @teiDocument, @current_leaf)
        end
-     end
-
-     def pushTermTernaryToken(token, opened_tag)
-
-       # The initial tag for the ternary sequence
-       opened_init_tag = @stanza.opened_tags[1]
-
-       while not @stanza.opened_tags.empty? and NB_TERNARY_TOKEN_TEI_MAP.has_key? opened_init_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:secondary].has_key? opened_tag.name and NB_TERNARY_TOKEN_TEI_MAP[opened_init_tag][:terminal].has_key? token
-
-         raise NotImplementedError, "Terminal ternary token for #{token}"
-
-         # This reduces the total number of opened tags within the stanza
-         closed_tag = @stanza.opened_tags.shift
-
-         # Also, reduce the number of opened tags for this line
-         # @todo refactor
-         @opened_tags.shift
-
-         # logger.debug "Closing tag: #{closed_tag.name}..."
-
-         # Iterate through all of the markup and set the appropriate TEI attributes
-         attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
-         closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-
-         # One cannot resolve the tag name and attributes until both tags have been fully parsed
-         closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
-         
-         # Continue iterating throught the opened tags for the stanza
-         opened_tag = @stanza.opened_tags.first
-       end
-
-       # Once all of the stanza elements have been closed, retrieve the last closed tag for the line
-       @current_leaf = closed_tag.parent
-
-       @has_opened_tag = !@opened_tags.empty?
-     end
-
-     def pushSecondTernaryToken(token, opened_tag)
-       
-       closed_tag = @stanza.opened_tags.shift
-       # closed_tag = @stanza.opened_tags.first
-
-       # Also, reduce the number of opened tags for this line
-       # @todo refactor
-       @opened_tags.shift
-
-       # attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
-       # closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-       attribMap = NB_TERNARY_TOKEN_TEI_MAP[closed_tag.name][:secondary][token].values[0]
-       closed_tag[attribMap.keys[0]] = attribMap[attribMap.keys[0]]
-
-       # One cannot resolve the tag name and attributes until both tags have been fully parsed
-       # closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
-       closed_tag.name = NB_TERNARY_TOKEN_TEI_MAP[closed_tag.name][:secondary][token].keys[0]
-
-       @current_leaf = @current_leaf.next = Nokogiri::XML::Node.new token, @teiDocument
-       @has_opened_tag = true
-       @opened_tag = @current_leaf
-
-       @stanza.opened_tags.unshift @opened_tag
-       @opened_tags.unshift @opened_tag
      end
 
      def pushInitialToken(token)
@@ -358,17 +306,17 @@ module SwiftPoemsProject
 
          # Add more complexity for the footnotes
          # SPP-253
-         xml_id = "#{@stanza.poem.id}-footnote-#{@footnote_index}"
-         @current_leaf['xml:id'] = @footnote_index
+         footnote_xml_id = "#{@stanza.poem.id}-footnote-#{@footnote_index}"
+         @current_leaf['xml:id'] = footnote_xml_id
 
-         target = "##{xml_id}"
+         target = "##{footnote_xml_id}"
          source = "##{@xml_id}"
 
          # Add an inline <ref> element
          ref = Nokogiri::XML::Node.new 'ref', @teiDocument
          ref.content = @footnote_index
          ref['target'] = target
-         @current_leaf.add_previous_sibling ref
+         @current_leaf.element.add_previous_sibling ref
          
          # Add an element to <linkGrp>
          @stanza.poem.link_group.add_link source, target
@@ -511,7 +459,7 @@ module SwiftPoemsProject
 
          raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
 
-         # logger.debug "Appending text to the line: #{token}"
+         # puts "Appending text to the line: '#{token}'"
          
          pushText token
 

@@ -11,7 +11,7 @@ module SwiftPoemsProject
 
       @elem['n'] = number
 
-      @xml_id = "#{@poem.id}-headnote-#{number}"
+      @xml_id = "spp-#{@poem.id}-headnote-#{number}"
       @elem['xml:id'] = @xml_id
     end
 
@@ -94,8 +94,7 @@ module SwiftPoemsProject
             @current_leaf['n'] = @footnote_index
 
             # Extend for SPP-253
-            xml_id = "#{@poem.id}-footnote-#{@footnote_index}"
-#            xml_id = "#{@poem.id}-headnote-#{number}"
+            xml_id = "spp-#{@poem.id}-footnote-#{@footnote_index}"
             @current_leaf['xml:id'] = xml_id
 
             target = "##{xml_id}"

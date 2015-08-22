@@ -39,51 +39,57 @@ module SwiftPoemsProject
     #
     def mint_xml_id(line_number)
 
-      @xml_id = "#{@id}-title-#{line_number}"
+      @xml_id = "spp-#{@id}-title-#{line_number}"
       @elem['xml:id'] = @xml_id
     end
 
-    def number=(number)
+    def number(value, element)
 
-      @elem['n'] = number
+      element['n'] = value
 
       # Update the xml:id value
-      mint_xml_id @elem['n']
+      mint_xml_id value
+    end
+
+    def number=(value)
+
+      number value
     end
     
     def pushToken(token)
 
-=begin
-      if NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token
-
-        # One cannot resolve the tag name and attributes until both tags have been fully parsed
-        @current_leaf.name = NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary][token].keys[0]
-        @current_leaf = @current_leaf.parent
-
-        # Add a new child node to the current leaf
-        # Temporarily use the token itself as a tagname
-        newLeaf = Nokogiri::XML::Node.new token, @document
-        @current_leaf.add_child newLeaf
-        @current_leaf = newLeaf
-        @has_opened_tag = true
-        @header.opened_tags << @current_leaf
-=end
-
       # If this is the first line, or, if this tag must be closed...
-#      elsif NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
 
         # Does this seem to close the current leaf?
         if NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-
-          # puts 'trace36: ' + token
 
           # Implementing handling for footnote index generation
           # SPP-156
           if /^«FN1/.match @current_leaf.name and /»$/.match token
 
             @footnote_index += 1
-            @current_leaf['n'] = @footnote_index
+            # @current_leaf['n'] = @footnote_index
+            number @footnote_index, @current_leaf.element
+
+            # Link the footnotes to the lineGroup for the poem
+            # Add more complexity for the footnotes
+            # SPP-253
+            # @todo Refactor
+            footnote_xml_id = "spp-#{@id}-footnote-title-#{@footnote_index}"
+            @current_leaf.element['xml:id'] = footnote_xml_id
+
+            target = "##{footnote_xml_id}"
+            source = "##{@xml_id}"
+
+            # Add an inline <ref> element
+            ref = Nokogiri::XML::Node.new 'ref', @document
+            ref.content = @footnote_index
+            ref['target'] = target
+            @current_leaf.element.add_previous_sibling ref
+         
+            # Add an element to <linkGrp>
+            @header.poem.link_group.add_link target, source
           end
 
           # @todo Resolve
@@ -103,12 +109,6 @@ module SwiftPoemsProject
 
           @current_leaf = @current_leaf.parent
           @has_opened_tag = false
-          
-          # Recurse through previously opened tags
-          # raise NotImplementedError, @header.opened_tags if not @header.opened_tags.empty?
-
-          debug_opened_tags = @header.opened_tags.map { |tag| tag.to_xml }
-          # puts 'trace 23: ' + debug_opened_tags.to_s
           
           opened_tag = @header.opened_tags.first
 
@@ -170,10 +170,6 @@ module SwiftPoemsProject
         # Add a new child node to the current leaf
         # Temporarily use the token itself as a tagname
         # @todo Refactor
-#        newLeaf = Nokogiri::XML::Node.new token, @document
-#        @current_leaf.add_child newLeaf
-#        @current_leaf = newLeaf
-
         @current_leaf = BinaryNotaBeneDelta.new(token, @document, @current_leaf)
 
         @has_opened_tag = true
@@ -181,8 +177,6 @@ module SwiftPoemsProject
 
         
       end
-
-      # puts "\n" + @header.opened_tags.to_s + "\n"
 
       @tokens << token
     end
@@ -194,7 +188,8 @@ module SwiftPoemsProject
       indexMatch = /\s{3}(\d+)\s{2}/.match token
       if indexMatch
         
-        @elem['n'] = indexMatch.to_s.strip
+        # @elem['n'] = indexMatch.to_s.strip
+        number indexMatch.to_s.strip
         token = token.sub /\s{3}(\d+)\s{2}/, ''
       end
 

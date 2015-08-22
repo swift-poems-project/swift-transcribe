@@ -570,6 +570,11 @@ EOF
   def parse
 
     parseHeader
+
+    # This is necessary
+    @poem = TeiPoem.normalize(@poem)
+    @poem = TeiPoem.new(@poem, @poemID, @workType, @poemElem, @footnote_index)
+
     parseTitleAndHeadnote
     parsePoem
     parseFootNotes
@@ -1704,9 +1709,6 @@ EOF
 
    def parsePoem
 
-     @poem = TeiPoem.normalize(@poem)
-
-     poem = TeiPoem.new(@poem, @poemID, @workType, @poemElem, @footnote_index)
 
      poem.parse
 

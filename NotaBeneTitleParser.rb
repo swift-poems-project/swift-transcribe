@@ -9,12 +9,16 @@ module SwiftPoemsProject
 
     class TeiHeader
 
-      attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document
+      attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document, :poem
       # attr_accessor :opened_tags
 
       def initialize(parser, id, options = {})
 
         @elem = parser.element
+
+        # @todo Refactor
+        @poem = parser.poem
+
         @id = id
         @document = elem.document
         @sponsor = @elem.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)

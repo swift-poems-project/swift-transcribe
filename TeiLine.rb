@@ -85,7 +85,7 @@ module SwiftPoemsProject
      #
      def mint_xml_id(line_number)
 
-       @xml_id = "#{@stanza.poem.id}-#{line_number}"
+       @xml_id = "spp-#{@stanza.poem.id}-line-#{line_number}"
        @elem['xml:id'] = @xml_id
      end
 
@@ -121,14 +121,10 @@ module SwiftPoemsProject
            poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
            poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match # Isn't this redundant?
 
-           '1  '
-           
            # Raise an exception if the transcript identifier cannot be parsed
            if poem_id_match
 
              poem_id = poem_id_match.to_s.strip
-
-
 
              # @todo Implement using TeiPoemIdError
              raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
@@ -306,7 +302,7 @@ module SwiftPoemsProject
 
          # Add more complexity for the footnotes
          # SPP-253
-         footnote_xml_id = "#{@stanza.poem.id}-footnote-#{@footnote_index}"
+         footnote_xml_id = "spp-#{@stanza.poem.id}-footnote-#{@footnote_index}"
          @current_leaf['xml:id'] = footnote_xml_id
 
          target = "##{footnote_xml_id}"
@@ -319,7 +315,7 @@ module SwiftPoemsProject
          @current_leaf.element.add_previous_sibling ref
          
          # Add an element to <linkGrp>
-         @stanza.poem.link_group.add_link source, target
+         @stanza.poem.link_group.add_link target, source
 
          @current_leaf = @current_leaf.parent
          

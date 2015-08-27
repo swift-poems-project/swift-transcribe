@@ -45,7 +45,6 @@ module SwiftPoemsProject
       
       NB_BLOCK_LITERAL_PATTERNS.each do |pattern|
 
-        # poem = poem.sub Regexp.new(Regexp.escape pattern), '«UNCLEAR»'
         poem = poem.sub pattern, '«UNCLEAR»'
       end
 

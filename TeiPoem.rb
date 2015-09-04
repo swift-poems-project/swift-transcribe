@@ -67,7 +67,7 @@ module SwiftPoemsProject
       # Resolves SPP-230
       @poem = @poem.gsub(/_{2,10}/, '_')
 
-      @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|\n/
+      @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|\n/
 
       @link_group = TeiLinkGroup.new self
 

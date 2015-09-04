@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+require_relative 'EditorialTag'
+
 module SwiftPoemsProject
+
+  include EditorialMarkup
 
    class TeiLine
 
@@ -14,6 +18,9 @@ module SwiftPoemsProject
        # Refactor
        @has_opened_tag = options[:has_opened_tag] || false
        @opened_tags = options[:opened_tags] || []
+
+       @editorial_tags = options[:editorial_tags] || []
+       @substitution_tags = options[:substitution_tags] || []
 
        # Extending the Class in order to support footnote indexing
        # SPP-156
@@ -399,9 +406,95 @@ module SwiftPoemsProject
        end
      end
 
+     # \«MDUL»crossed·out«MDNM»·neithther\
+     # \«MDUL»overwritten«MDNM»·y\
+     def push_editorial(token)
+
+       # If this is an editorial token...
+       if EditorialMarkup::EDITORIAL_TOKENS.include? token
+
+         # Closes the tag
+         if not @editorial_tags.empty?
+
+           #         nil
+           #         editorial_tag = nil
+           editorial_tag = @editorial_tags.pop
+           @current_leaf = editorial_tag.parent
+         else # Open the tag
+
+#           editorial_class = EDITORIAL_TOKEN_CLASSES[token]
+#           editorial_tag = editorial_class.new token, @teiDocument, @current_leaf
+           editorial_tag = EditorialMarkup::EditorialTag.new token, @teiDocument, @current_leaf
+
+           @editorial_tags << editorial_tag
+           @current_leaf.add_child editorial_tag.element
+           @current_leaf = editorial_tag.element
+         end
+       else
+
+         raise NotImplementedError
+       end
+     end
+
+     def parse_substitution_text(token)
+
+       substitution_tag = @substitution_tags.pop
+       @editorial_tags.pop
+
+       substitution_tag.content = token
+       token
+     end
+
+     # Type the EditorialTag based upon the text content
+     def parse_editorial_text(token)
+
+       editorial_tag = @editorial_tags.pop
+       parent = editorial_tag.parent
+
+       if editorial_tag.is_a? EditorialMarkup::SubstitutionTag
+
+         # Normalize the text
+         token = token.gsub /^·/, ''
+
+         editorial_tag.del_element.content = token
+         token = ''
+
+=begin
+         @substitution_tags << editorial_tag.add_element
+         return token
+=end
+
+       elsif editorial_tag.is_a? EditorialMarkup::EditorialTag and EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token
+
+         editorial_tag.element.remove
+         editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token] )
+
+         editorial_tag = editorial_class.new token, @teiDocument, parent
+       end
+
+       @editorial_tags << editorial_tag
+       parent.add_child editorial_tag.element
+
+       if @current_leaf.is_a? NotaBeneDelta
+
+#         editorial_tag.element.add_child @current_leaf.element
+
+         # Need to close the tag, remove it, and add the value as a "reason"
+         editorial_tag.parse_reason token
+       else
+
+         # Normalize the text
+         token = token.gsub /^·/, ''
+
+         @current_leaf = editorial_tag.element
+       end
+
+       token
+     end
+
      def push(token)
        
-       # puts "Appending the following token to the line: #{token}"
+#       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
 
@@ -441,6 +534,10 @@ module SwiftPoemsProject
        elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
 
          pushSingleToken token
+
+       elsif EditorialMarkup::EDITORIAL_TOKENS.include? token
+
+         push_editorial token
        else
 
          # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag
@@ -454,6 +551,18 @@ module SwiftPoemsProject
          # @current_leaf needs to be updated
 
          raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
+
+         # Parse the substitution
+         if not @substitution_tags.empty?
+
+#           token = parse_substitution_text token
+         end
+
+         # Type the EditorialTag based upon the token
+         if not @editorial_tags.empty?
+
+           token = parse_editorial_text token
+         end
 
          # puts "Appending text to the line: '#{token}'"
          

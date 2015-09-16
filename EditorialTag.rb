@@ -13,6 +13,7 @@ module SwiftPoemsProject
       'word·scrawled·over' => 'EmptyDelTag',
       'caret·add' => 'AddTag',
       'add·caret' => 'AddTag',
+      'del' => 'DelTag',
     }
     
     # Base class for all editorial markup
@@ -84,6 +85,13 @@ module SwiftPoemsProject
          
          @name = 'del'
          super token, document, parent
+         @element.content = token
+       end
+
+       def parse_reason(token)
+
+         # No-Op
+         nil
        end
      end
 

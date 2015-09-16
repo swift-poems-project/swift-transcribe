@@ -469,7 +469,7 @@ module SwiftPoemsProject
        editorial_tag = @editorial_tags.pop
        parent = editorial_tag.parent
 
-       if editorial_tag.is_a? EditorialMarkup::AddTag
+       if editorial_tag.is_a? EditorialMarkup::AddTag or editorial_tag.is_a? EditorialMarkup::DelTag
 
          token = token.gsub /·/, ''
          editorial_tag.element.content = token

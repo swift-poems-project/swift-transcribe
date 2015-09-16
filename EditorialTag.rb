@@ -14,7 +14,12 @@ module SwiftPoemsProject
       'caret·add' => 'AddTag',
       'add·caret' => 'AddTag',
       'del' => 'DelTag',
+      #'blotted' => 'BlotTag',
     }
+
+    EDITORIAL_TOKEN_REASONS = [
+                               'large ink-blot'
+                              ]
     
     # Base class for all editorial markup
     #
@@ -58,8 +63,13 @@ module SwiftPoemsProject
       def parse_reason(reason)
 
         reason = reason.gsub /·/, ' '
-        @element['reason'] = reason
+        @element['reason'] = reason unless reason.empty?
       end
+      
+    end
+
+    class BlotTag < EditorialTag
+
       
     end
      

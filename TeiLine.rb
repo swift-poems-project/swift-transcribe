@@ -56,7 +56,6 @@ module SwiftPoemsProject
            # @todo Refactor
            if last_tag_name == opened_tag.name
 
-             # puts "TRACE: #{opened_tag.children}"
              elem.add_child opened_tag.children
            else
 
@@ -154,8 +153,6 @@ module SwiftPoemsProject
                  number(1)
                else
 
-                 # puts 'TRACE3'
-                 # puts @stanza.poem.stanzas.length
                  number( @stanza.poem.stanzas[-2].lines[-2].elem['n'].to_i + 1 )
                end
              else
@@ -351,18 +348,12 @@ module SwiftPoemsProject
          # @todo Reimplement; Resolve these anomalous cases
          @current_leaf.close '«MDNM»'
 
-           @stanza.opened_tags.shift
-           @opened_tags.shift
+         @stanza.opened_tags.shift
+         @opened_tags.shift
 
-           @current_leaf = @current_leaf.parent
+         @current_leaf = @current_leaf.parent
            
-           pushInitialToken(token)
-
-           # raise NotImplementedError.new "Cannot close the opened Modecode #{opened_tag.name} with the token: #{token}"
-         #else
-
-         #  raise NotImplementedError.new "Attempting to parse the footnote #{opened_tag.name} closed with the token #{token} as a standard line"
-         #end
+         pushInitialToken(token)
        else
 
          # First, retrieve last opened tag for the line
@@ -433,9 +424,14 @@ module SwiftPoemsProject
          # Closes the tag
          if not @editorial_tags.empty?
 
-           #         nil
-           #         editorial_tag = nil
            editorial_tag = @editorial_tags.pop
+
+           # Iterate through all child ('hi') tags
+           editorial_tag.element.children.each do |child|
+
+             child.remove if child.name == 'hi' and child.content.empty?
+           end
+
            @current_leaf = editorial_tag.parent
          else # Open the tag
 
@@ -486,12 +482,41 @@ module SwiftPoemsProject
          return token
 =end
 
-       elsif editorial_tag.is_a? EditorialMarkup::EditorialTag and EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token
+       elsif editorial_tag.is_a? EditorialMarkup::EditorialTag
 
-         editorial_tag.element.remove
-         editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token] )
+         # Clean the token
+         token = token.gsub /·/, ' '
 
-         editorial_tag = editorial_class.new token, @teiDocument, parent
+         if token.match(/^\s*blotted$/)
+
+           token = token.strip
+           editorial_tag.element['reason'] = token
+           token = ''
+         end
+
+         if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token
+
+           editorial_tag.element.remove
+           editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token] )
+
+           content = editorial_tag.element.content
+           reason = editorial_tag.element['reason']
+
+           editorial_tag = editorial_class.new token, @teiDocument, parent
+
+           if editorial_tag.is_a? EditorialMarkup::BlotTag
+
+             editorial_tag.element.content = reason + content
+           end
+         elsif EditorialMarkup::EDITORIAL_TOKEN_REASONS.include? token
+
+           editorial_tag.element['reason'] = token
+           # token = ''
+         else
+
+           editorial_tag.element.content += token
+           token = ''
+         end
        end
 
        @editorial_tags << editorial_tag
@@ -503,10 +528,8 @@ module SwiftPoemsProject
 
          # Need to close the tag, remove it, and add the value as a "reason"
          editorial_tag.parse_reason token
+         token = ''
        else
-
-         # puts 'TRACE2'
-         # puts token
 
          # Normalize the text
          #token = token.gsub /^·/, ''

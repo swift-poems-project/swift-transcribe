@@ -469,9 +469,11 @@ module SwiftPoemsProject
        editorial_tag = @editorial_tags.pop
        parent = editorial_tag.parent
 
-       # puts 'TRACE'
-       
-       if editorial_tag.is_a? EditorialMarkup::SubstitutionTag
+       if editorial_tag.is_a? EditorialMarkup::AddTag
+
+         token = token.gsub /·/, ''
+         editorial_tag.element.content = token
+       elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
          # Normalize the text
          token = token.gsub /^·/, ''

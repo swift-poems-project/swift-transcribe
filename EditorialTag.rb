@@ -11,6 +11,8 @@ module SwiftPoemsProject
       'overwritten' => 'SubstitutionTag',
       'character·obliterated' => 'EmptyDelTag',
       'word·scrawled·over' => 'EmptyDelTag',
+      'caret·add' => 'AddTag',
+      'add·caret' => 'AddTag',
     }
     
     # Base class for all editorial markup
@@ -54,6 +56,7 @@ module SwiftPoemsProject
 
       def parse_reason(reason)
 
+        reason = reason.gsub /·/, ' '
         @element['reason'] = reason
       end
       
@@ -68,6 +71,7 @@ module SwiftPoemsProject
          
          @name = 'add'
          super token, document, parent
+         @element.content = token
        end
      end
      

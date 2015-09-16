@@ -37,7 +37,7 @@ module SwiftPoemsProject
 
   class TeiPoem
 
-    attr_reader :id, :element, :link_group
+    attr_reader :id, :element, :link_group, :stanzas
 
     def self.normalize(poem)
 
@@ -119,7 +119,7 @@ module SwiftPoemsProject
              
           raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
         end
-        
+
         @stanzas.last.push stanza_tokens.shift unless stanza_tokens.empty?
       end
     end
@@ -230,10 +230,13 @@ module SwiftPoemsProject
 
             if elements.empty?
 
-              puts @element.to_xml
+              xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n='#{sorted_indices[i]}']"
+              # raise NotImplementedError.new "No Elements found using #{xpath}\n#{@element.to_xml}"
               raise NotImplementedError.new "No Elements found using #{xpath}"
             elsif elements.length > 1
 
+              xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n='#{sorted_indices[i]}']"
+              # raise NotImplementedError.new "Multiple Elements found using #{xpath}\n#{@element.to_xml}"
               raise NotImplementedError.new "Multiple Elements found using #{xpath}"
             else
               

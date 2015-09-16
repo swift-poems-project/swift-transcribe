@@ -9,6 +9,8 @@ module SwiftPoemsProject
     EDITORIAL_TOKEN_CLASSES = {
       'crossed·out' => 'SubstitutionTag',
       'overwritten' => 'SubstitutionTag',
+      'character·obliterated' => 'EmptyDelTag',
+      'word·scrawled·over' => 'EmptyDelTag',
     }
     
     # Base class for all editorial markup
@@ -78,6 +80,28 @@ module SwiftPoemsProject
          
          @name = 'del'
          super token, document, parent
+       end
+     end
+
+     class EmptyDelTag < DelTag
+       
+       def initialize(token, document, parent)
+
+         super token, document, parent
+
+         # Create the element
+         gap = Nokogiri::XML::Node.new 'gap', @document
+         token = token.gsub /·/, ' '
+         gap['reason'] = token
+         
+         # Append to the <del>
+         @element.add_child gap
+       end
+
+       def parse_reason(token)
+
+         # No-Op
+         nil
        end
      end
      

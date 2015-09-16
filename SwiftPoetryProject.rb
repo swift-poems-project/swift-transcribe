@@ -1709,9 +1709,7 @@ EOF
 
    def parsePoem
 
-
      poem.parse
-
      poem.correct
    end
 

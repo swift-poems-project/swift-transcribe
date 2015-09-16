@@ -133,6 +133,11 @@ module SwiftPoemsProject
 
              poem_id = poem_id_match.to_s.strip
 
+             #if //.match token
+             #  puts "TRACE: #{token}"
+             #  puts "TRACE: #{poem_id}"
+             #end
+
              # @todo Implement using TeiPoemIdError
              raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
 
@@ -142,15 +147,27 @@ module SwiftPoemsProject
              token = token.sub poem_id_match[0], ''
            elsif @elem.has_attribute? 'rend' # This handles cases in which the previous token contained a line number and a unary Nota Bene Delta
 
-             # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
-             number( @stanza.lines[-2].elem['n'].to_i + 1)
-           else
+             if @stanza.lines.length == 1
+
+               if @stanza.poem.stanzas.length == 1
+
+                 number(1)
+               else
+
+                 # puts 'TRACE3'
+                 # puts @stanza.poem.stanzas.length
+                 number( @stanza.poem.stanzas[-2].lines[-2].elem['n'].to_i + 1 )
+               end
+             else
+
+               # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
+               number( @stanza.lines[-2].elem['n'].to_i + 1)
+             end
+           elsif not @elem.has_attribute? 'n'
 
              # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
              number( @stanza.lines[-2].elem['n'].to_i + 1) # Which cases are handled here?
            end
-
-           
          end
 
          # Transform triplet indicators for the stanza
@@ -424,6 +441,7 @@ module SwiftPoemsProject
 
 #           editorial_class = EDITORIAL_TOKEN_CLASSES[token]
 #           editorial_tag = editorial_class.new token, @teiDocument, @current_leaf
+
            editorial_tag = EditorialMarkup::EditorialTag.new token, @teiDocument, @current_leaf
 
            @editorial_tags << editorial_tag
@@ -451,6 +469,8 @@ module SwiftPoemsProject
        editorial_tag = @editorial_tags.pop
        parent = editorial_tag.parent
 
+       # puts 'TRACE'
+       
        if editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
          # Normalize the text
@@ -483,8 +503,14 @@ module SwiftPoemsProject
          editorial_tag.parse_reason token
        else
 
+         # puts 'TRACE2'
+         # puts token
+
          # Normalize the text
-         token = token.gsub /^·/, ''
+         #token = token.gsub /^·/, ''
+         token = ''
+
+         # puts token
 
          @current_leaf = editorial_tag.element
        end

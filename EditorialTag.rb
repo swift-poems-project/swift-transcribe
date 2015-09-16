@@ -14,12 +14,12 @@ module SwiftPoemsProject
       'caret·add' => 'AddTag',
       'add·caret' => 'AddTag',
       'del' => 'DelTag',
-      #'blotted' => 'BlotTag',
       'inserted' => 'AddTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [
-                               'large ink-blot'
+                               'large ink-blot',
+                               'overwriting'
                               ]
     
     # Base class for all editorial markup
@@ -65,15 +65,9 @@ module SwiftPoemsProject
 
         reason = reason.gsub /·/, ' '
         @element['reason'] = reason unless reason.empty?
-      end
-      
+      end      
     end
 
-    class BlotTag < EditorialTag
-
-      
-    end
-     
     # Class for all textual insertions
     # Case 1: "\add xxx\"
     #

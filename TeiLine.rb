@@ -476,12 +476,6 @@ module SwiftPoemsProject
 
          editorial_tag.del_element.content = token
          token = ''
-
-=begin
-         @substitution_tags << editorial_tag.add_element
-         return token
-=end
-
        elsif editorial_tag.is_a? EditorialMarkup::EditorialTag
 
          # Clean the token
@@ -508,10 +502,10 @@ module SwiftPoemsProject
 
              editorial_tag.element.content = reason + content
            end
-         elsif EditorialMarkup::EDITORIAL_TOKEN_REASONS.include? token
+         elsif EditorialMarkup::EDITORIAL_TOKEN_REASONS.include? token.strip
 
+           token = token.strip
            editorial_tag.element['reason'] = token
-           # token = ''
          else
 
            editorial_tag.element.content += token

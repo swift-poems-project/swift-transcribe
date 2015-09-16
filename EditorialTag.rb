@@ -15,6 +15,7 @@ module SwiftPoemsProject
       'add·caret' => 'AddTag',
       'del' => 'DelTag',
       #'blotted' => 'BlotTag',
+      'inserted' => 'AddTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [

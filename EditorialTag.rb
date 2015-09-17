@@ -15,6 +15,8 @@ module SwiftPoemsProject
       'add·caret' => 'AddTag',
       'del' => 'DelTag',
       'inserted' => 'AddTag',
+      'apparently overwriting' => 'OverwritingTag',
+      'overwriting' => 'OverwritingTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [
@@ -141,7 +143,11 @@ module SwiftPoemsProject
          @element.add_child @del_element
          @element.add_child @add_element
        end
-       
+     end
+
+     # Case: \has·«MDUL»overwriting«MDNM»·had\
+     class OverwritingTag < SubstitutionTag
+
      end
      
      class UnreadableTag < EditorialTag

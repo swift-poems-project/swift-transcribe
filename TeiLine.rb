@@ -469,11 +469,16 @@ module SwiftPoemsProject
 
          token = token.gsub /·/, ''
          editorial_tag.element.content = token
+       elsif editorial_tag.is_a? EditorialMarkup::OverwritingTag
+
+         # Normalize the text
+         token = token.gsub /·/, ' '
+         editorial_tag.add_element.content = token
+         token = ''
        elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
          # Normalize the text
-         token = token.gsub /^·/, ''
-
+         token = token.gsub /·/, ' '
          editorial_tag.del_element.content = token
          token = ''
        elsif editorial_tag.is_a? EditorialMarkup::EditorialTag
@@ -488,19 +493,20 @@ module SwiftPoemsProject
            token = ''
          end
 
-         if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token
+         if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
+
 
            editorial_tag.element.remove
-           editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token] )
+           editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token.strip] )
 
            content = editorial_tag.element.content
            reason = editorial_tag.element['reason']
 
            editorial_tag = editorial_class.new token, @teiDocument, parent
 
-           if editorial_tag.is_a? EditorialMarkup::BlotTag
+           if editorial_tag.is_a? EditorialMarkup::OverwritingTag
 
-             editorial_tag.element.content = reason + content
+             editorial_tag.del_element.content = content
            end
          elsif EditorialMarkup::EDITORIAL_TOKEN_REASONS.include? token.strip
 
@@ -518,19 +524,16 @@ module SwiftPoemsProject
 
        if @current_leaf.is_a? NotaBeneDelta
 
-#         editorial_tag.element.add_child @current_leaf.element
+         # editorial_tag.element.add_child @current_leaf.element
 
          # Need to close the tag, remove it, and add the value as a "reason"
-         editorial_tag.parse_reason token
+         editorial_tag.parse_reason token.strip
          token = ''
        else
 
          # Normalize the text
          #token = token.gsub /^·/, ''
          token = ''
-
-         # puts token
-
          @current_leaf = editorial_tag.element
        end
 
@@ -580,7 +583,7 @@ module SwiftPoemsProject
 
          pushSingleToken token
 
-       elsif EditorialMarkup::EDITORIAL_TOKENS.include? token
+       elsif EditorialMarkup::EDITORIAL_TOKENS.include? token # This opens the parsing of editorial tokens
 
          push_editorial token
        else

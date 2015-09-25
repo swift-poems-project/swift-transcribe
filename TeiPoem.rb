@@ -135,7 +135,7 @@ module SwiftPoemsProject
     # Retrieve unnumbered lines within all stanzas
     def unnumbered_stanza_lines
 
-      xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l"
+      xpath = "//TEI:lg[@type='#{@lg_type}' or @type='triplet']/TEI:l"
       l_elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
     end
 
@@ -144,10 +144,10 @@ module SwiftPoemsProject
 
       if line_number.nil?
 
-        xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n]"
+        xpath = "//TEI:lg[@type='#{@lg_type}' or @type='triplet']/TEI:l[@n]"
       else
 
-        xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n='#{line_number}']"
+        xpath = "//TEI:lg[@type='#{@lg_type}' or @type='triplet']/TEI:l[@n='#{line_number}']"
       end
 
       l_elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
@@ -167,8 +167,6 @@ module SwiftPoemsProject
       # Find all <l> or <p> elements missing @n attributes, and provide the index
       l_elements = stanza_lines
       
-#      return if l_elements.empty?
-
       indices = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? }
       indices.each do |element|
 
@@ -177,6 +175,9 @@ module SwiftPoemsProject
 
       # Reorder elements
       indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'].to_i }
+
+      raise NotImplementedError.new "No ordered elements found!\n\n#{@lg_type}\n\n#{@element.to_xml}" if indices.empty?
+
       sorted_indices = indices.sort
       valid_range = (sorted_indices.first..sorted_indices.last).to_a
 

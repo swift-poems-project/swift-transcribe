@@ -14,6 +14,7 @@ module SwiftPoemsProject
       'caret·add' => 'AddTag',
       'add·caret' => 'AddTag',
       'del' => 'DelTag',
+      'add' => 'AddTag',
       'inserted' => 'AddTag',
       'apparently overwriting' => 'OverwritingTag',
       'overwriting' => 'OverwritingTag',
@@ -29,10 +30,11 @@ module SwiftPoemsProject
     # @todo Refactor by abstracting with the NotaBeneDelta Class
     class EditorialTag
       
-      attr_reader :parent, :element, :name
+      attr_reader :tag, :parent, :element, :name
       
       def initialize(token, document, parent)
         
+        @tag = token
         @document = document
         @parent = parent
         

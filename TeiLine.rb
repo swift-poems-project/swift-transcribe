@@ -390,12 +390,20 @@ module SwiftPoemsProject
        end
      end
 
+     # Pushes a line break
+     #
+     # @param [String] the line break token
+     # @return [Object] the current leaf node of the document tree (can be instances of Nokogiri::XML::Node or NotaBenaDelta)
      def push_line_break(line_break)
 
        line_break_elem = Nokogiri::XML::Node.new 'lb', @teiDocument
        @current_leaf.add_child line_break_elem
      end
 
+     # Pushes a line indentation
+     #
+     # @param [String] the line indentation token
+     # @return [Object] the current leaf node of the document tree (can be instances of Nokogiri::XML::Node or NotaBenaDelta)
      def push_line_indent(indent = '|')
 
        rend = @current_leaf['rend']
@@ -414,8 +422,10 @@ module SwiftPoemsProject
        end
      end
 
-     # \«MDUL»crossed·out«MDNM»·neithther\
-     # \«MDUL»overwritten«MDNM»·y\
+     # Pushes an editorial markup token
+     #
+     # @param token [String] the token string
+     # @return [Object] the current leaf node of the document tree (can be instances of Nokogiri::XML::Node or NotaBenaDelta)
      def push_editorial(token)
 
        # If this is an editorial token...
@@ -449,17 +459,11 @@ module SwiftPoemsProject
          raise NotImplementedError
        end
      end
-
-     def parse_substitution_text(token)
-
-       substitution_tag = @substitution_tags.pop
-       @editorial_tags.pop
-
-       substitution_tag.content = token
-       token
-     end
-
-     # Type the EditorialTag based upon the text content
+     
+     # (Continue to) Parse a sequence of tokens structured within editorial markup
+     #
+     # @param [String] the token within the editorial markup delimiters
+     # @return [String] the token (after it has been tranformed)
      def parse_editorial_text(token)
 
        editorial_tag = @editorial_tags.pop
@@ -468,7 +472,37 @@ module SwiftPoemsProject
        if editorial_tag.is_a? EditorialMarkup::AddTag or editorial_tag.is_a? EditorialMarkup::DelTag
 
          token = token.gsub /·/, ''
-         editorial_tag.element.content = token
+
+         # Extend the handling here for sequences of (potentially, unescaped) markup tokens
+         if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
+
+           klass = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token.strip] )
+           new_tag = klass.new token, @teiDocument, parent
+
+           # For these cases, the @reason attribute is not specified within the sequence
+#           editorial_tag.element.delete 'reason'
+           editorial_tag = new_tag
+         else
+
+           editorial_tag.element.content = token
+
+           if not @current_leaf.is_a? NotaBeneDelta
+
+             # Don't swap the ordering of the elements
+             # @todo Refactor
+             editorial_tag.element.delete 'reason'
+             @editorial_tags << editorial_tag
+
+             # Normalize the text
+             token = ''
+
+             return token
+           else
+
+             # editorial_tag.element.content = token
+             @current_leaf = editorial_tag.element
+           end
+         end
        elsif editorial_tag.is_a? EditorialMarkup::OverwritingTag
 
          # Normalize the text
@@ -494,7 +528,6 @@ module SwiftPoemsProject
          end
 
          if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
-
 
            editorial_tag.element.remove
            editorial_class = EditorialMarkup.const_get( EditorialMarkup::EDITORIAL_TOKEN_CLASSES[token.strip] )
@@ -522,6 +555,7 @@ module SwiftPoemsProject
        @editorial_tags << editorial_tag
        parent.add_child editorial_tag.element
 
+       # Typically, the contents of a Nota Bene Delta within editorial markup contains a value appropriate for the @reason attribute
        if @current_leaf.is_a? NotaBeneDelta
 
          # editorial_tag.element.add_child @current_leaf.element
@@ -532,11 +566,23 @@ module SwiftPoemsProject
        else
 
          # Normalize the text
-         #token = token.gsub /^·/, ''
          token = ''
          @current_leaf = editorial_tag.element
        end
 
+       token
+     end
+
+     # Parses text for a <tei:subst> Element
+     #
+     # @param [String] the token of the substituted text
+     # @return the token of the substituted text
+     def parse_substitution_text(token)
+
+       substitution_tag = @substitution_tags.pop
+       @editorial_tags.pop
+
+       substitution_tag.content = token
        token
      end
 
@@ -601,10 +647,10 @@ module SwiftPoemsProject
          raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
 
          # Parse the substitution
-         if not @substitution_tags.empty?
+#         if not @substitution_tags.empty?
 
 #           token = parse_substitution_text token
-         end
+#         end
 
          # Type the EditorialTag based upon the token
          if not @editorial_tags.empty?

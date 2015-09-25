@@ -512,8 +512,16 @@ module SwiftPoemsProject
        elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
          # Normalize the text
+         token = token.gsub /^·/, ''
          token = token.gsub /·/, ' '
-         editorial_tag.del_element.content = token
+
+         if not editorial_tag.del_element.content.empty?
+
+           editorial_tag.add_element.content = token
+         else
+           editorial_tag.del_element.content = token
+         end
+
          token = ''
        elsif editorial_tag.is_a? EditorialMarkup::EditorialTag
 
@@ -539,7 +547,10 @@ module SwiftPoemsProject
 
            if editorial_tag.is_a? EditorialMarkup::OverwritingTag
 
-             editorial_tag.del_element.content = content
+             editorial_tag.del_element.content = content.strip
+           elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
+
+             editorial_tag.del_element.content = content.strip
            end
          elsif EditorialMarkup::EDITORIAL_TOKEN_REASONS.include? token.strip
 

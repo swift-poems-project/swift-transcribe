@@ -9,6 +9,7 @@ module SwiftPoemsProject
     EDITORIAL_TOKEN_CLASSES = {
       'crossed·out' => 'SubstitutionTag',
       'overwritten' => 'SubstitutionTag',
+      'deleted, inserting' => 'SubstitutionTag',
       'character·obliterated' => 'EmptyDelTag',
       'word·scrawled·over' => 'EmptyDelTag',
       'caret·add' => 'AddTag',

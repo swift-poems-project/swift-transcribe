@@ -21,6 +21,7 @@ module SwiftPoemsProject
       'del' => 'DelTag',
       'add' => 'AddTag',
       'inserted' => 'AddTag',
+      'inserted (as alternative?)' => 'AddTag',
       'apparently overwriting' => 'OverwritingTag',
       'overwriting' => 'OverwritingTag',
       'written above deleted' => 'OverwritingTag',

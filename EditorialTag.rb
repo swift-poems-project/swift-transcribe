@@ -5,6 +5,10 @@ module SwiftPoemsProject
   module EditorialMarkup
 
     EDITORIAL_TOKENS = ['\\']
+
+    EDITORIAL_TOKEN_PATTERNS = [
+                                /(written above deleted)\s(.+)/,
+                               ]
     
     EDITORIAL_TOKEN_CLASSES = {
       'crossed·out' => 'SubstitutionTag',
@@ -19,6 +23,7 @@ module SwiftPoemsProject
       'inserted' => 'AddTag',
       'apparently overwriting' => 'OverwritingTag',
       'overwriting' => 'OverwritingTag',
+      'written above deleted' => 'OverwritingTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [
@@ -149,8 +154,21 @@ module SwiftPoemsProject
      end
 
      # Case: \has·«MDUL»overwriting«MDNM»·had\
-     class OverwritingTag < SubstitutionTag
+     class OverwritingTag < EditorialTag
 
+       attr_reader :del_element, :add_element
+
+       def initialize(token, document, parent)
+         
+         @name = 'subst'
+         super token, document, parent
+
+         @add_element = Nokogiri::XML::Node.new 'add', @document
+         @del_element = Nokogiri::XML::Node.new 'del', @document
+
+         @element.add_child @add_element
+         @element.add_child @del_element
+       end
      end
      
      class UnreadableTag < EditorialTag

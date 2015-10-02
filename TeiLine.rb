@@ -507,7 +507,15 @@ module SwiftPoemsProject
 
          # Normalize the text
          token = token.gsub /·/, ' '
-         editorial_tag.add_element.content = token
+
+         puts 'TRACE'
+         puts editorial_tag.element.to_xml
+
+         if not editorial_tag.add_element.content.empty?
+           editorial_tag.del_element.content = token
+         else
+           editorial_tag.add_element.content = token
+         end
          token = ''
        elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
@@ -535,6 +543,18 @@ module SwiftPoemsProject
            token = ''
          end
 
+         # For more complex parsing of editorial token patterns
+         # In these cases, the editorial markup keywords (e. g. \clad·[...]written·above·deleted·"drest"[...]\) cannot be separated from the marked up terms (e. g. written·above·deleted·"drest")
+         content_tail = ''
+         EditorialMarkup::EDITORIAL_TOKEN_PATTERNS.each do |editorial_token_pattern|
+
+           if m = editorial_token_pattern.match( token.strip )
+
+             token = m[1]
+             content_tail = m[2]
+           end
+         end
+
          if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
 
            editorial_tag.element.remove
@@ -545,9 +565,14 @@ module SwiftPoemsProject
 
            editorial_tag = editorial_class.new token, @teiDocument, parent
 
+           # Type-based handling must be undertaken here
+           # It may be the case that this is the last substring before the markup is closed
+           # As such, certain elements of the tag must be restructured
+           #
            if editorial_tag.is_a? EditorialMarkup::OverwritingTag
 
-             editorial_tag.del_element.content = content.strip
+             editorial_tag.add_element.content = content.strip
+             editorial_tag.del_element.content = content_tail.strip
            elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
 
              editorial_tag.del_element.content = content.strip

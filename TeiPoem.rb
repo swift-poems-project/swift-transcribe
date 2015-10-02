@@ -213,7 +213,16 @@ module SwiftPoemsProject
 
           # Treat the previous element as a header
           l_element = stanza_line(index)
+
+          # If the index already exists, raise an error
+          raise NotImplementedError.new "Duplicate lines found for #{index - 1}\n#{@element.document}" unless stanza_line(index - 1).nil?
+
           l_element['n'] = "#{index - 1}"
+          xml_id = "spp-#{@id}-line-#{index - 1}"
+          l_element['xml:id'] = xml_id
+
+          # puts 'trace'
+          # exit
 
           l_element.add_previous_sibling new_header_element
         end

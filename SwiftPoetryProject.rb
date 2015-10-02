@@ -577,7 +577,7 @@ EOF
 
     parseTitleAndHeadnote
     parsePoem
-    parseFootNotes
+    # parseFootNotes
   end
 
   def parseHeader
@@ -1711,6 +1711,7 @@ EOF
 
      poem.parse
      poem.correct
+     @teiDocument
    end
 
    def stripNotaBeneTokens(str)
@@ -1913,8 +1914,6 @@ EOF
 
      str = ''
 
-     # puts 'trace5: ' + searchStr.nil?
-
      text = stripNotaBeneTokens(searchStr)
      text = Regexp.escape(text)
 
@@ -1973,21 +1972,7 @@ EOF
 
                elems |= Nokogiri::XML::NodeSet.new(@teiDocument, [e])
              end
-=begin
-               # If the phrase occurs 3 times
-               if strs.length > 2
-
-                 elems |= Nokogiri::XML::NodeSet.new(@teiDocument, [Nokogiri::XML::Text.new(strs[0], @teiDocument), e, Nokogiri::XML::Text.new(strs[2], @teiDocument)])
-               else # If the phrase occurs 2 times
-
-                 elems |= Nokogiri::XML::NodeSet.new(@teiDocument, [Nokogiri::XML::Text.new(strs[0], @teiDocument), e])
-               end
-             else # If the phrase occurs 1 time
-               
-               elems |= Nokogiri::XML::NodeSet.new(@teiDocument, [e])
-             end
-=end
-             end
+           end
          else # Just add the text element
 
            elems |= Nokogiri::XML::NodeSet.new(@teiDocument, [child])
@@ -2050,16 +2035,15 @@ EOF
                next
              end
 
-             s.split(/(?= \d.+\[)/)
-               .each { |_s|
-               
+             s.split(/(?= \d.+\[)/).each { |_s|
+
                # HN1 some data 01
                # 2 some data 02
                # 1 pleases [so 07S1]
 
                m = /(H?N?\d+ \D+)\d/.match(s)
                if not m
-
+                 
                  s = _s
                  m = /(H?N?\d+ \D+)\d/.match(s)
                end
@@ -2070,37 +2054,12 @@ EOF
 
                  raise NotImplementedError.new "Could not parse the following \"sic\" comment \"#{sicField}\""
                end
-             
-               # For parsing <sic> markup
-
-=begin
-               if /\[.+\]/.match(s)
-               
-                 sicLineNumber = parseSicRecord(s, sicLineNumber)
-               else
-
-                 while m
-                   
-                   sicValue = m[1]
-                   sicLineNumber = parseSicRecord(sicValue, sicLineNumber)
-                   s.sub!(sicValue, '')
-                   m = /(\d+ \D+\]?)\d/.match(s)             
-                 end
-                 
-                 if s
-                   
-                   s.strip!
-                   sicLineNumber = parseSicRecord(s, sicLineNumber)
-                 end
-               end
-=end
              }
            }
          else
 
            if sicField.match(/   /)
 
-             #sicField.split(/   /).each do |s|
              sicField.split(/(?= \d+ \w+)/).each do |s|
 
                s.strip!
@@ -2142,48 +2101,6 @@ EOF
                results = parseSicNote(targetElem, sicPhrase) if targetElem
              end
            end
-
-=begin
-         if sicField.match(/\[.+\]/)
-         
-           sicField
-             .each { |s| s.sub!('[', '') }
-             .sub!(/$/, ']')
-             .each { |s|
-
-             puts "TRACE6: " + s
-
-           # HN1 some data 01
-           # 2 some data 02
-           # 1 pleases [so 07S1]
-
-             m = /(H?N?\d+ \D+)\d/.match(s)
-             
-             if /\[.+\]/.match(s)
-               
-               parseSicRecord(s)             
-             else
-
-               while m
-                 
-                 sicValue = m[1]
-                 
-                 puts "TRACE7: " + m[1]
-                 
-                 parseSicRecord(sicValue)
-                 s.sub!(sicValue, '')
-                 m = /(\d+ \D+\]?)\d/.match(s)             
-               end
-               
-               if s
-                 
-                 s.strip!
-                 parseSicRecord(s)
-               end
-             end
-           }
-=end
-
          end
        end
      end

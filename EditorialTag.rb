@@ -24,6 +24,7 @@ module SwiftPoemsProject
       'apparently overwriting' => 'OverwritingTag',
       'overwriting' => 'OverwritingTag',
       'written above deleted' => 'OverwritingTag',
+      'overwriting something else' => 'UnclearOverwritingTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [
@@ -168,6 +169,17 @@ module SwiftPoemsProject
 
          @element.add_child @add_element
          @element.add_child @del_element
+       end
+     end
+
+     class UnclearOverwritingTag < OverwritingTag
+
+       def initialize(token, document, parent)
+
+         super token, document, parent
+
+         unclear_element = Nokogiri::XML::Node.new 'unclear', @document
+         @del_element.add_child unclear_element
        end
      end
      

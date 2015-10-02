@@ -503,15 +503,20 @@ module SwiftPoemsProject
              @current_leaf = editorial_tag.element
            end
          end
+       elsif editorial_tag.is_a? EditorialMarkup::UnclearOverwritingTag
+
+         # Normalize the text
+         token = token.gsub /·/, ' '
+         editorial_tag.add_element.content = token
+         token = ''
+
        elsif editorial_tag.is_a? EditorialMarkup::OverwritingTag
 
          # Normalize the text
          token = token.gsub /·/, ' '
 
-         puts 'TRACE'
-         puts editorial_tag.element.to_xml
-
          if not editorial_tag.add_element.content.empty?
+
            editorial_tag.del_element.content = token
          else
            editorial_tag.add_element.content = token
@@ -569,11 +574,15 @@ module SwiftPoemsProject
            # It may be the case that this is the last substring before the markup is closed
            # As such, certain elements of the tag must be restructured
            #
-           if editorial_tag.is_a? EditorialMarkup::OverwritingTag
+           case editorial_tag.class
+           when EditorialMarkup::UnclearOverwritingTag
+
+             editorial_tag.add_element.content = content_tail.strip
+           when EditorialMarkup::OverwritingTag
 
              editorial_tag.add_element.content = content.strip
              editorial_tag.del_element.content = content_tail.strip
-           elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
+           when EditorialMarkup::SubstitutionTag
 
              editorial_tag.del_element.content = content.strip
            end

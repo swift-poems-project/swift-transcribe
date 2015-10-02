@@ -469,9 +469,12 @@ module SwiftPoemsProject
        editorial_tag = @editorial_tags.pop
        parent = editorial_tag.parent
 
-       if editorial_tag.is_a? EditorialMarkup::AddTag or editorial_tag.is_a? EditorialMarkup::DelTag
+       # Normalize the text
+       token = token.gsub /^·/, ''
+       token = token.gsub /·/, ' '
 
-         token = token.gsub /·/, ''
+       case editorial_tag
+       when EditorialMarkup::AddTag, EditorialMarkup::DelTag
 
          # Extend the handling here for sequences of (potentially, unescaped) markup tokens
          if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
@@ -484,7 +487,7 @@ module SwiftPoemsProject
            editorial_tag = new_tag
          else
 
-           editorial_tag.element.content = token
+           editorial_tag.element.content = token.strip
 
            if not @current_leaf.is_a? NotaBeneDelta
 
@@ -503,17 +506,25 @@ module SwiftPoemsProject
              @current_leaf = editorial_tag.element
            end
          end
-       elsif editorial_tag.is_a? EditorialMarkup::UnclearOverwritingTag
+       when EditorialMarkup::UnclearOverwritingTag
 
-         # Normalize the text
-         token = token.gsub /·/, ' '
          editorial_tag.add_element.content = token
          token = ''
+       when EditorialMarkup::AltReadingTag
 
-       elsif editorial_tag.is_a? EditorialMarkup::OverwritingTag
+         if not editorial_tag.rdg_u_element.content.empty?
 
-         # Normalize the text
-         token = token.gsub /·/, ' '
+           editorial_tag.rdg_v_element.content = token
+         else
+           editorial_tag.rdg_u_element.content = token
+         end
+         token = ''
+
+         # Remove the @reason value
+         editorial_tag.element.delete 'reason'
+
+         # @todo Extend handling for information in relation to witnesses?
+       when EditorialMarkup::OverwritingTag
 
          if not editorial_tag.add_element.content.empty?
 
@@ -522,11 +533,7 @@ module SwiftPoemsProject
            editorial_tag.add_element.content = token
          end
          token = ''
-       elsif editorial_tag.is_a? EditorialMarkup::SubstitutionTag
-
-         # Normalize the text
-         token = token.gsub /^·/, ''
-         token = token.gsub /·/, ' '
+       when EditorialMarkup::SubstitutionTag
 
          if not editorial_tag.del_element.content.empty?
 
@@ -536,10 +543,7 @@ module SwiftPoemsProject
          end
 
          token = ''
-       elsif editorial_tag.is_a? EditorialMarkup::EditorialTag
-
-         # Clean the token
-         token = token.gsub /·/, ' '
+       when EditorialMarkup::EditorialTag
 
          if token.match(/^\s*blotted$/)
 
@@ -560,6 +564,8 @@ module SwiftPoemsProject
            end
          end
 
+         # Type the editorial markup class
+         # If no class has been defined, it remains encoded as <unclear>
          if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
 
            editorial_tag.element.remove
@@ -574,10 +580,14 @@ module SwiftPoemsProject
            # It may be the case that this is the last substring before the markup is closed
            # As such, certain elements of the tag must be restructured
            #
-           case editorial_tag.class
+           case editorial_tag
            when EditorialMarkup::UnclearOverwritingTag
 
              editorial_tag.add_element.content = content_tail.strip
+           when EditorialMarkup::AltReadingTag
+
+             editorial_tag.rdg_u_element.content = content.strip
+             editorial_tag.rdg_v_element.content = content_tail.strip
            when EditorialMarkup::OverwritingTag
 
              editorial_tag.add_element.content = content.strip

@@ -8,6 +8,7 @@ module SwiftPoemsProject
 
     EDITORIAL_TOKEN_PATTERNS = [
                                 /(written above deleted)\s(.+)/,
+#                                /(alt above)\s(.+)/,
                                ]
     
     EDITORIAL_TOKEN_CLASSES = {
@@ -21,10 +22,11 @@ module SwiftPoemsProject
       'del' => 'DelTag',
       'add' => 'AddTag',
       'inserted' => 'AddTag',
-      'inserted (as alternative?)' => 'AddTag',
+      'inserted (as alternative?)' => 'AltReadingTag',
       'apparently overwriting' => 'OverwritingTag',
       'overwriting' => 'OverwritingTag',
       'written above deleted' => 'OverwritingTag',
+      'alt above' => 'AltReadingTag',
       'overwriting something else' => 'UnclearOverwritingTag',
     }
 
@@ -191,7 +193,23 @@ module SwiftPoemsProject
          @name = 'unclear'
          super token, document, parent
        end
-       
+     end
+
+     class AltReadingTag < EditorialTag
+       attr_reader :rdg_u_element, :rdg_v_element
+
+       def initialize(token, document, parent)
+         
+         @name = 'app'
+         super token, document, parent
+
+         # @todo Implement support for @wit values
+         @rdg_u_element = Nokogiri::XML::Node.new 'rdg', @document
+         @rdg_v_element = Nokogiri::XML::Node.new 'rdg', @document
+
+         @element.add_child @rdg_u_element
+         @element.add_child @rdg_v_element
+       end
      end
      
      class SicTag < EditorialTag

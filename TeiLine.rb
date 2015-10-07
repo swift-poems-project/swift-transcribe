@@ -585,8 +585,11 @@ module SwiftPoemsProject
 
              if not content_tail.empty?
                editorial_tag.add_element.content = content_tail.strip
-             else
+             elsif not content.empty?
                editorial_tag.add_element.content = content.strip
+             else
+               unclear_element = Nokogiri::XML::Node.new 'unclear', @teiDocument
+               editorial_tag.add_element.add_child unclear_element
              end
            when EditorialMarkup::AltReadingTag
 

@@ -29,6 +29,7 @@ module SwiftPoemsProject
       'alt above' => 'AltReadingTag',
       'overwriting something else' => 'UnclearOverwritingTag',
       'a later correction overwriting ?' => 'UnclearOverwritingTag',
+      'over something else erased' => 'UnclearOverwritingTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [

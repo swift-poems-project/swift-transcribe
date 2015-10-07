@@ -364,7 +364,8 @@ module SwiftPoemsProject
         previous_stanza_index = @elem['n'].to_i - 1
       end
 
-      previous_lines = @poemElem.xpath("tei:lg[@type='#{@elem['type']}' and @n='#{previous_stanza_index}']/tei:l[@n]", TEI_NS)
+      # previous_lines = @poemElem.xpath("tei:lg[@type='#{@elem['type']}' and @n='#{previous_stanza_index}']/tei:l[@n]", TEI_NS)
+      previous_lines = @poemElem.xpath("tei:lg[ (@type='#{@elem['type']}' or @type='triplet') and @n='#{previous_stanza_index}']/tei:l[@n]", TEI_NS)
       previous_line = previous_lines.last
     end
 

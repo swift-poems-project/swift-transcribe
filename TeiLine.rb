@@ -583,7 +583,11 @@ module SwiftPoemsProject
            case editorial_tag
            when EditorialMarkup::UnclearOverwritingTag
 
-             editorial_tag.add_element.content = content_tail.strip
+             if not content_tail.empty?
+               editorial_tag.add_element.content = content_tail.strip
+             else
+               editorial_tag.add_element.content = content.strip
+             end
            when EditorialMarkup::AltReadingTag
 
              editorial_tag.rdg_u_element.content = content.strip

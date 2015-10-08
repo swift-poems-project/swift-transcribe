@@ -474,7 +474,7 @@ module SwiftPoemsProject
        token = token.gsub /·/, ' '
 
        case editorial_tag
-       when EditorialMarkup::AddTag, EditorialMarkup::DelTag
+       when EditorialMarkup::AddTag, EditorialMarkup::DelTag, EditorialMarkup::CaretAddTag
 
          # Extend the handling here for sequences of (potentially, unescaped) markup tokens
          if EditorialMarkup::EDITORIAL_TOKEN_CLASSES.has_key? token.strip
@@ -487,7 +487,11 @@ module SwiftPoemsProject
            editorial_tag = new_tag
          else
 
-           editorial_tag.element.content = token.strip
+           if not editorial_tag.element.content.empty?
+             editorial_tag.element.children.select { |node| node.text? }.first.content = token.strip
+           else
+             editorial_tag.element.content = token.strip
+           end
 
            if not @current_leaf.is_a? NotaBeneDelta
 
@@ -505,6 +509,9 @@ module SwiftPoemsProject
              # editorial_tag.element.content = token
              @current_leaf = editorial_tag.element
            end
+
+
+
          end
        when EditorialMarkup::UnclearOverwritingTag
 
@@ -713,6 +720,8 @@ module SwiftPoemsProject
        elsif EditorialMarkup::EDITORIAL_TOKENS.include? token # This opens the parsing of editorial tokens
 
          push_editorial token
+
+
        else
 
          # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag

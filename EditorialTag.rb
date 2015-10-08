@@ -18,8 +18,8 @@ module SwiftPoemsProject
       'deleted, inserting' => 'SubstitutionTag',
       'character·obliterated' => 'EmptyDelTag',
       'word·scrawled·over' => 'EmptyDelTag',
-      'caret·add' => 'AddTag',
-      'add·caret' => 'AddTag',
+      'caret add' => 'CaretAddTag',
+      'add caret' => 'CaretAddTag',
       'del' => 'DelTag',
       'add' => 'AddTag',
       'inserted' => 'AddTag',
@@ -96,6 +96,24 @@ module SwiftPoemsProject
          @name = 'add'
          super token, document, parent
          @element.content = token
+       end
+     end
+
+     class CaretAddTag < AddTag
+
+       def initialize(token, document, parent)
+
+         super token, document, parent
+         figure = Nokogiri::XML::Node.new 'figure', @document
+         fig_desc = Nokogiri::XML::Node.new 'figDesc', @document
+
+         # Following the Shakespeare Quartos Archive
+         # See http://www.quartos.org/info/encoding.html#two-1-1
+         #
+         fig_desc.content = 'caret'
+
+         figure.add_child fig_desc
+         @element.add_child figure
        end
      end
      

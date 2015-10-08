@@ -1334,6 +1334,8 @@ EOF
         # @todo Refactor
         title_parser = NotaBeneTitleParser.new(self, @poemID, line, nil, { :footnote_index => @footnote_index })
         title_parser.parse
+        title_parser.correct
+
         @footnote_index = title_parser.footnote_index
       else
         headnote_parser.footnote_index = @footnote_index

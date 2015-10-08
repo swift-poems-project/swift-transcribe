@@ -11,7 +11,7 @@ module SwiftPoemsProject
 
       @elem['n'] = number
 
-      @xml_id = "spp-#{@poem.id}-headnote-#{number}"
+      @xml_id = "spp-#{@heads.id}-headnote-#{number}"
       @elem['xml:id'] = @xml_id
     end
 
@@ -31,17 +31,18 @@ module SwiftPoemsProject
       element['xml:id'] = @current_element_xml_id
     end
     
-    def initialize(document, poem, index, options = {})
+    def initialize(document, heads, index, options = {})
       
       @document = document
-      @poem = poem
-
+      # @poem = heads.parser.poem
+      @heads = heads
+      
       @elem = Nokogiri::XML::Node.new('head', @document)
       @elem['type'] = 'note'
 
       note_number index
       
-      @poem.elem.add_child @elem
+      @heads.elem.add_child @elem
 
       # Insert handling for paragraphs within headnotes
       @current_leaf = @elem.add_child Nokogiri::XML::Node.new 'lg', @document
@@ -94,21 +95,20 @@ module SwiftPoemsProject
             @current_leaf['n'] = @footnote_index
 
             # Extend for SPP-253
-            xml_id = "spp-#{@poem.id}-footnote-#{@footnote_index}"
+            xml_id = "spp-#{@heads.id}-footnote-#{@footnote_index}"
             @current_leaf['xml:id'] = xml_id
 
             target = "##{xml_id}"
             source = "##{@current_leaf_xml_id}"
 
             # Add an inline <ref> element
-            ref = Nokogiri::XML::Node.new 'ref', @teiDocument
+            ref = Nokogiri::XML::Node.new 'ref', @document
             ref.content = @footnote_index
             ref['target'] = target
             @current_leaf.add_previous_sibling ref
          
             # Add an element to <linkGrp>
-            @poem.link_group.add_link source, target
-
+            @heads.parser.poem.link_group.add_link source, target
           end
 
           # Iterate through all of the markup and set the appropriate TEI attributes
@@ -121,11 +121,11 @@ module SwiftPoemsProject
          
           @has_opened_tag = false
           
-          opened_tag = @poem.opened_tags.first
+          opened_tag = @heads.opened_tags.first
 
           while not opened_tag.nil? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
-            closed_tag = @poem.opened_tags.shift
+            closed_tag = @heads.opened_tags.shift
 
             closed_tag_name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
 
@@ -136,7 +136,7 @@ module SwiftPoemsProject
             end
             closed_tag.name = closed_tag_name
 
-            opened_tag = @poem.opened_tags.first
+            opened_tag = @heads.opened_tags.first
           end
 
           # Work-around for "overridden" Nota Bene Deltas
@@ -149,7 +149,7 @@ module SwiftPoemsProject
             @current_leaf = newLeaf
             @has_opened_tag = true
 
-            @poem.opened_tags.unshift @current_leaf
+            @heads.opened_tags.unshift @current_leaf
           end
 
         elsif NB_MARKUP_TEI_MAP.has_key? token
@@ -161,7 +161,7 @@ module SwiftPoemsProject
           @current_leaf = newLeaf
           @has_opened_tag = true
 
-          @poem.opened_tags.unshift @current_leaf
+          @heads.opened_tags.unshift @current_leaf
         elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
 
           newLeaf = Nokogiri::XML::Node.new token, @document
@@ -227,7 +227,7 @@ module SwiftPoemsProject
         @has_opened_tag = true
 
 
-        @poem.opened_tags.unshift @current_leaf
+        @heads.opened_tags.unshift @current_leaf
         # @footnote_opened = /«FN?/.match(token)
 
 =begin
@@ -300,9 +300,9 @@ module SwiftPoemsProject
       # @current_leaf['n'] = 1
       line_number 1
 
-      if not @poem.opened_tags.empty?
+      if not @heads.opened_tags.empty?
 
-        prev_opened_tag = @poem.opened_tags.first
+        prev_opened_tag = @heads.opened_tags.first
         current_opened_tag = Nokogiri::XML::Node.new prev_opened_tag.name, @document
 
         @current_leaf.add_child current_opened_tag
@@ -310,7 +310,7 @@ module SwiftPoemsProject
       end
 
       # Implement handling for opened tags
-      # puts 'trace3: ' + @poem.opened_tags.to_s
+      # puts 'trace3: ' + @heads.opened_tags.to_s
       # puts 'currently opened tag: ' + @current_leaf.parent.to_xml
     end
     
@@ -321,7 +321,7 @@ module SwiftPoemsProject
         # 
         pushParagraph
 
-        # puts 'trace2: ' + @poem.opened_tags.to_s
+        # puts 'trace2: ' + @heads.opened_tags.to_s
 
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
           (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or

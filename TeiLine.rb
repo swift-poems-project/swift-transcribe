@@ -311,7 +311,10 @@ module SwiftPoemsProject
        # This closes a footnote
        if /^«FN1/.match opened_tag.name and /»$/.match token
 
-         @current_leaf.close token
+         if @current_leaf.is_a? NotaBeneDelta
+
+           @current_leaf.close token
+         end
 
          @stanza.opened_tags.shift
          @opened_tags.shift
@@ -333,7 +336,14 @@ module SwiftPoemsProject
          ref = Nokogiri::XML::Node.new 'ref', @teiDocument
          ref.content = @footnote_index
          ref['target'] = target
-         @current_leaf.element.add_previous_sibling ref
+
+         if @current_leaf.is_a? NotaBeneDelta
+
+           @current_leaf.element.add_previous_sibling ref
+         else
+
+           @current_leaf.add_previous_sibling ref
+         end
          
          # Add an element to <linkGrp>
          @stanza.poem.link_group.add_link target, source

@@ -257,7 +257,9 @@ module SwiftPoemsProject
               if previous_element.nil?
 
                 # Retrieve the previous stanza
-                previous_stanza = element.parent.previous_element
+                # previous_stanza = element.parent.previous_element
+                previous_stanza_index = element.parent['n'].to_i - 1
+                previous_stanza = element.parent.parent.xpath("TEI:lg[(@type='#{@lg_type}' or @type='triplet') and @n='#{previous_stanza_index}']", 'TEI' => 'http://www.tei-c.org/ns/1.0')
 
                 xpath = 'TEI:l' + '[@n]'
                 previous_stanza_lines = previous_stanza.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
@@ -284,9 +286,6 @@ module SwiftPoemsProject
       nota_bene_delta_map = {'«MDUL»' => { 'hi' => { 'rend' => 'underline' } } }
 
       # Ensure that all Nota Bene deltas have been cleaned
-      
-      
-      # xpath = "//TEI:#{nota_bene_delta}"
       xpath = "//TEI:l/*"
       elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
 

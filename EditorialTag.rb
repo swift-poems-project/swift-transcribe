@@ -9,6 +9,7 @@ module SwiftPoemsProject
     EDITORIAL_TOKEN_PATTERNS = [
                                 /(written above deleted)\s(.+)/,
 #                                /(alt above)\s(.+)/,
+#                                /(overwriting something erased and)\s(.+)/,
                                ]
     
     EDITORIAL_TOKEN_CLASSES = {
@@ -30,6 +31,7 @@ module SwiftPoemsProject
       'overwriting something else' => 'UnclearOverwritingTag',
       'a later correction overwriting ?' => 'UnclearOverwritingTag',
       'over something else erased' => 'UnclearOverwritingTag',
+      'overwriting something erased and' => 'InsertionOverwritingTag',
     }
 
     EDITORIAL_TOKEN_REASONS = [
@@ -179,12 +181,25 @@ module SwiftPoemsProject
 
      class UnclearOverwritingTag < OverwritingTag
 
+       attr_reader :add_elements
+
        def initialize(token, document, parent)
 
          super token, document, parent
 
          unclear_element = Nokogiri::XML::Node.new 'unclear', @document
          @del_element.add_child unclear_element
+       end
+     end
+
+     # @todo Refactor with UnclearOverwritingTag
+     class InsertionOverwritingTag < OverwritingTag
+
+       def initialize(token, document, parent)
+
+         super token, document, parent
+
+         @element['reason'] = token
        end
      end
      

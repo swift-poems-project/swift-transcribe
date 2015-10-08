@@ -523,7 +523,20 @@ module SwiftPoemsProject
          # Remove the @reason value
          editorial_tag.element.delete 'reason'
 
-         # @todo Extend handling for information in relation to witnesses?
+       # @todo Extend handling for information in relation to witnesses?
+       when EditorialMarkup::InsertionOverwritingTag
+
+         if @current_leaf.is_a? NotaBeneDelta
+
+           editorial_tag.element.children[-2]['place'] = token
+         else
+           unclear_element = Nokogiri::XML::Node.new 'unclear', @teiDocument
+           editorial_tag.del_element.add_child unclear_element
+
+           add_element = Nokogiri::XML::Node.new 'add', @teiDocument
+           add_element.content = token
+           editorial_tag.element.add_child add_element
+         end
        when EditorialMarkup::OverwritingTag
 
          if not editorial_tag.add_element.content.empty?
@@ -620,11 +633,17 @@ module SwiftPoemsProject
        # Typically, the contents of a Nota Bene Delta within editorial markup contains a value appropriate for the @reason attribute
        if @current_leaf.is_a? NotaBeneDelta
 
-         # editorial_tag.element.add_child @current_leaf.element
+         case editorial_tag
+         when EditorialMarkup::InsertionOverwritingTag
 
-         # Need to close the tag, remove it, and add the value as a "reason"
-         editorial_tag.parse_reason token.strip
-         token = ''
+           token = ''
+           @current_leaf = editorial_tag.element
+         else
+
+           # Need to close the tag, remove it, and add the value as a "reason"
+           editorial_tag.parse_reason token.strip
+           token = ''
+         end
        else
 
          # Normalize the text

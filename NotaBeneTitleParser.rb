@@ -109,6 +109,7 @@ module SwiftPoemsProject
       @text = @text.gsub('The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».«MDNM»', 'The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».')
 
       @text = @text.gsub(DECORATOR_PATTERN, '')
+      @text = @text.gsub(/«MDNM».«MDNM»/, '«MDNM»')
     end
 
     # Parse the text and append the TEI element to the document

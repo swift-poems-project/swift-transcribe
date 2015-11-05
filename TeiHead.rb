@@ -95,9 +95,6 @@ module SwiftPoemsProject
       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN./.match(token)
 
         if NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token
-
-          # puts 'trace6: closing a ternary tag'
-
           # One cannot resolve the tag name and attributes until both tags have been fully parsed
           
           # Set the name of the current token from the map
@@ -107,6 +104,7 @@ module SwiftPoemsProject
           newLeaf = Nokogiri::XML::Node.new token, @document
           @current_leaf.add_child newLeaf
           @current_leaf = newLeaf
+
         elsif NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token # If this token closes the currently opened token
 
           if /^«FN/.match @current_leaf.name and /»/.match token
@@ -140,6 +138,9 @@ module SwiftPoemsProject
           @current_leaf = @current_leaf.parent
          
           @has_opened_tag = false
+
+          # @todo Refactor
+          @heads.opened_tags.shift
           
           opened_tag = @heads.opened_tags.first
 
@@ -160,10 +161,9 @@ module SwiftPoemsProject
           end
 
           # Work-around for "overridden" Nota Bene Deltas
-          if not( /^«FN/.match @current_leaf.name and /»/.match token) and token != '«MDNM»'
+          if not( /^«FN/.match @current_leaf.name and /»/.match token) and token != '«MDNM»' and not /\.»/.match token
             
             # Add the cloned token
-            
             newLeaf = Nokogiri::XML::Node.new token, @document
             @current_leaf.add_child newLeaf
             @current_leaf = newLeaf
@@ -173,7 +173,7 @@ module SwiftPoemsProject
           end
 
         elsif NB_MARKUP_TEI_MAP.has_key? token
-
+          
           # Add a new child node to the current leaf
           # Temporarily use the token itself as a tagname
           newLeaf = Nokogiri::XML::Node.new token, @document
@@ -199,19 +199,17 @@ module SwiftPoemsProject
           # @flush_right_opened = /«LD ?»/.match(token)
           @flush_left_opened = false
           @flush_right_opened = false
-
         else
           
           raise NotImplementedError.new "Unhandled token: #{token}"
         end
 
       elsif @flush_right_opened or @flush_left_opened or @footnote_opened # @todo Refactor
-
+        
         # Add a new child node to the current leaf
         # Temporarily use the token itself as a tagname
         newLeaf = Nokogiri::XML::Node.new token, @document
 
-        # newLeaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
         @current_leaf.name = NB_SINGLE_TOKEN_TEI_MAP[token].keys[0]
 
         @current_leaf.add_child newLeaf
@@ -246,10 +244,9 @@ module SwiftPoemsProject
         @current_leaf = newLeaf
         @has_opened_tag = true
 
-
         @heads.opened_tags.unshift @current_leaf
       end
-      
+
       @tokens << token
     end
     
@@ -315,21 +312,32 @@ module SwiftPoemsProject
         @current_leaf.add_child current_opened_tag
         @current_leaf = current_opened_tag
       end
-
-      # Implement handling for opened tags
-      # puts 'trace3: ' + @heads.opened_tags.to_s
-      # puts 'currently opened tag: ' + @current_leaf.parent.to_xml
     end
     
     def push(token)
 
-      if token == '_'
+      # This handles anomalous cases in which the editor did not properly encode a Nota Bene modecode sequence
+      # e. g. [...]«MDUL» of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails, worn for some Years past. «MDUL»November«MDNM» 1738.»[...]
+      # ...where «MDNM» should close before «FN1· is opened
+      # Resolves SPP-559
+      if token == '«MDNM»' and /«FN./.match(@current_leaf.name) and @heads.opened_tags.length >= 2
 
-        # 
+        # @todo Refactor
+        closed_tag_name = NB_MARKUP_TEI_MAP[@heads.opened_tags[1].name][token].keys[0]
+
+        # @todo Integrate Nota Bene Delta Objects
+        NB_MARKUP_TEI_MAP[@heads.opened_tags[1].name][token][closed_tag_name].each_pair do |attrib_name, attrib_value|
+
+          @heads.opened_tags[1][attrib_name] = attrib_value
+        end
+        @heads.opened_tags[1].name = closed_tag_name
+
+        @heads.opened_tags[0].remove
+        @heads.opened_tags[1].parent.add_child @heads.opened_tags[0]
+        @heads.opened_tags.delete_at(1)
+
+      elsif token == '_' # Open a new paragraph for the '_' operator
         pushParagraph
-
-        # puts 'trace2: ' + @heads.opened_tags.to_s
-
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
           (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or
           (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or

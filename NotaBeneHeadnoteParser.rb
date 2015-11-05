@@ -102,6 +102,9 @@ module SwiftPoemsProject
       line = line.gsub /([a-z\.]\d+?)»/, '\\1.»'
       line = line.gsub /([a-z\\])»/, '\\1.»'
 
+      # This resolves SPP-559
+      line = line.gsub(/«FN1·«MDNM»/, '«MDNM»«FN1·')
+
       # For cleaning extraneous MDNM mode codes
       # @todo Refactor into a CSV file for parsing (original line, cleaned line)
       #

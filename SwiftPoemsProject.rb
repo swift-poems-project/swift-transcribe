@@ -10,7 +10,7 @@ module SwiftPoemsProject
   # Regular expression for extracting poem ID's
   POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}\d+\s/
 
-  DECORATOR_PATTERN = /«MD[SUNMD]{2}»\*(«MDNM»$)?/
+  DECORATOR_PATTERN = /«MD[SUNMD]{2}»\*(«MDNM»)?/
 
   # Nota Bene toke maps
   NB_TERNARY_TOKEN_TEI_MAP = {

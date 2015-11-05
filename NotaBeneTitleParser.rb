@@ -59,20 +59,6 @@ module SwiftPoemsProject
             @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
           end
         end
-
-#
-        # Close the opened tags
-        # Does this seem to close the current leaf?
-        # if TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token
-#        if @titles.last.elem.has_opened_tag
-
-          # One cannot resolve the tag name and attributes until both tags have been fully parsed
-#          @current_leaf.name = TeiParser::NB_MARKUP_TEI_MAP[@current_leaf.name][token].keys[0]
-#          @current_leaf = @current_leaf.parent
-
-#          @has_opened_tag = false
-#        end
-
       end
 
       def push(token)
@@ -121,6 +107,8 @@ module SwiftPoemsProject
 
       @text = @text.gsub('P«MDSD»ULTENEY«MDUL»', 'P«MDSD»ULTENEY«MDNM»«MDUL»')
       @text = @text.gsub('The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».«MDNM»', 'The «MDBO»Tale«MDNM» of «MDBO»Ay«MDNM» and «MDBO»No«MDNM».')
+
+      @text = @text.gsub(DECORATOR_PATTERN, '')
     end
 
     # Parse the text and append the TEI element to the document

@@ -108,6 +108,7 @@ module SwiftPoemsProject
                                       :footnote_index => @stanzas.last.footnote_index,
                                       :current_line_number => @current_line_number
                                     })
+
           token = @tokens.shift
         end
 

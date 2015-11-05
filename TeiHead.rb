@@ -30,6 +30,25 @@ module SwiftPoemsProject
 
       element['xml:id'] = @current_element_xml_id
     end
+
+    def add_element(element)
+
+      # Retrieve the last <head>
+      xpath = "//TEI:head[@type='note']"
+      head_elements = @heads.elem.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
+
+      if head_elements.empty?
+
+        # Ensure that this is the first element
+        if @heads.elem.children.empty?
+          @heads.elem.add_child element
+        else
+          @heads.elem.children.first.add_previous_sibling element
+        end
+      else
+        head_elements.last.add_next_sibling element
+      end
+    end
     
     def initialize(document, heads, index, options = {})
       
@@ -41,8 +60,9 @@ module SwiftPoemsProject
       @elem['type'] = 'note'
 
       note_number index
-      
-      @heads.elem.add_child @elem
+
+#      @heads.elem.add_child @elem
+      add_element(@elem)
 
       # Insert handling for paragraphs within headnotes
       @current_leaf = @elem.add_child Nokogiri::XML::Node.new 'lg', @document

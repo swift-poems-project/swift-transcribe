@@ -5,6 +5,8 @@ require 'nokogiri'
 require 'open-uri'
 require 'logger'
 
+require_relative 'SwiftPoemsProject'
+
 require_relative 'TeiPoemHeads'
 require_relative 'TeiHead'
 require_relative 'TeiTitle'
@@ -447,6 +449,7 @@ EOF
 
       lines = clean(lines)
 
+=begin
       # Decorator literal handling
       #
       [
@@ -478,6 +481,7 @@ EOF
           # lineElem.add_child blockLiteralElem
         end
       end
+=end
 
       # Remove the poem ID (and trailing whitespace)
       # Now this is being used for newline detection

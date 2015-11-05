@@ -67,60 +67,57 @@ module SwiftPoemsProject
       # Resolves SPP-230
       @poem = @poem.gsub(/_{2,10}/, '_')
 
-      @tokens = @poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|\n/
-
+      @tokens = tokenize(@poem)
       @link_group = TeiLinkGroup.new self
 
-      @stanzas = [ TeiStanza.new(self, @work_type, 1, { :footnote_index => @footnote_index }) ]
+      @current_line_number = 1
+
+      @stanzas = [ TeiStanza.new(self, @work_type, 1, {
+                                   :footnote_index => @footnote_index,
+                                   :current_line_number => @current_line_number
+                                 }) ]
+    end
+
+    def tokenize(poem)
+
+      # Handling for the decorator literals
+      poem = poem.gsub /«MD[SUNMD]{2}»\*(«MDNM»)?/, ''
+
+      # This splits for each Nota Bene mode code
+      tokens = poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
+
+      # This splits for each new stanza
     end
 
     def parse
 
       # Classify our tokens
-      @tokens.each do |initialToken|
+      while not @tokens.empty?
 
-        raise NotImplementedError, initialToken if initialToken if /──────»/.match initialToken
-        
-        # Extend the handling for poems by addressing cases in which "_" characters encode new paragraphs within footnotes
-        
+        token = @tokens.shift
+
         # Create a new stanza
-        stanza_tokens = initialToken.split(/_/)
+        # There are apparently stanzas within footnotes; We ignore these
+        if /_+/.match token and @stanzas.last.opened_tags.empty?
 
-        while stanza_tokens.length > 1
-             
-          # Ensure that every stanza is prepended with an empty <l>
-          # SPP-213
-          @stanzas.last.pushEmptyLine unless @stanzas.empty? or not @stanzas.last.opened_tags.empty?
+          # Append the new stanza to the poem body
+          @current_line_number += 1
 
-          stanza_token = stanza_tokens.shift
-
-          # This is where the additional empty line is created
-          # This is also where empty @n attributes are created
-          # @stanzas.last.push stanza_token
-
-          if not @stanzas.last.opened_tags.last.nil? and
-              /^«/.match( @stanzas.last.opened_tags.last.name )
-
-            @stanzas.last.push_line_break stanza_token
-          else
-
-            # Append the new stanza to the poem body
-            @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
-                                        :opened_tags => @stanzas.last.opened_tags,
-                                        :footnote_index => @stanzas.last.footnote_index
-                                      })
-          end
+          @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
+                                      :opened_tags => @stanzas.last.opened_tags,
+                                      :footnote_index => @stanzas.last.footnote_index,
+                                      :current_line_number => @current_line_number
+                                    })
+          token = @tokens.shift
         end
-        
+
         # Solution implemented for SPP-86
         #
         # @todo Refactor
-        if initialToken.match /^[^«].+?»$/
-             
-          raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{initialToken}"
+        if token.match /^[^«].+?»$/
+          raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{token}"
         end
-
-        @stanzas.last.push stanza_tokens.shift unless stanza_tokens.empty?
+        @current_line_number = @stanzas.last.push token
       end
     end
 
@@ -166,6 +163,7 @@ module SwiftPoemsProject
       
       # Find all <l> or <p> elements missing @n attributes, and provide the index
       l_elements = stanza_lines
+      # puts l_elements
       
       indices = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? }
       indices.each do |element|
@@ -174,7 +172,7 @@ module SwiftPoemsProject
       end
 
       # Reorder elements
-      indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'].to_i }
+      indices = l_elements.select { |element| element.has_attribute?('n') && !element['n'].empty? }.map { |element| element['n'].to_i }
 
       raise NotImplementedError.new "No ordered elements found!\n\n#{@lg_type}\n\n#{@element.to_xml}" if indices.empty?
 
@@ -182,6 +180,9 @@ module SwiftPoemsProject
       valid_range = (sorted_indices.first..sorted_indices.last).to_a
 
       if sorted_indices.length > valid_range.length
+
+        puts @element.to_xml
+        raise NotImplementedError.new "Duplicate lines found"
 
         # Handling for duplicated line numbers
         # Using the following example...
@@ -191,6 +192,7 @@ module SwiftPoemsProject
         # 207-06G1   44  Conceal a fatal armed force;
         # Hence, the second segment of the broken line, must then, have its index removed
         duplicated_indices = sorted_indices.select{ |index| sorted_indices.count(index) > 1 }.uniq
+
         duplicated_indices.each do |index|
 
           prev_l_element = stanza_line(index - 1)
@@ -221,9 +223,6 @@ module SwiftPoemsProject
           xml_id = "spp-#{@id}-line-#{index - 1}"
           l_element['xml:id'] = xml_id
 
-          # puts 'trace'
-          # exit
-
           l_element.add_previous_sibling new_header_element
         end
       else
@@ -246,8 +245,8 @@ module SwiftPoemsProject
             elsif elements.length > 1
 
               xpath = "//TEI:lg[@type='#{@lg_type}']/TEI:l[@n='#{sorted_indices[i]}']"
-              # raise NotImplementedError.new "Multiple Elements found using #{xpath}\n#{@element.to_xml}"
-              raise NotImplementedError.new "Multiple Elements found using #{xpath}"
+              raise NotImplementedError.new "Multiple Elements found using #{xpath}\n#{@element.to_xml}"
+              # raise NotImplementedError.new "Multiple Elements found using #{xpath}"
             else
               
               element = elements.shift
@@ -283,10 +282,14 @@ module SwiftPoemsProject
         end
       end
 
-      nota_bene_delta_map = {'«MDUL»' => { 'hi' => { 'rend' => 'underline' } } }
+      nota_bene_delta_map = {
+        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
+        '«/DECORATOR»' => { 'ab' => { 'type' => 'typography' } }
+      }
 
       # Ensure that all Nota Bene deltas have been cleaned
-      xpath = "//TEI:l/*"
+      ["//TEI:l/*", "//TEI:note/*"].each do |xpath|
+      # xpath = "//TEI:l/*"
       elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
 
       elements.each do |nota_bene_element|
@@ -295,7 +298,7 @@ module SwiftPoemsProject
 
           nota_bene_delta = nota_bene_element.name
 
-          raise NotImplementedError.new unless nota_bene_delta_map.has_key? nota_bene_delta
+          raise NotImplementedError.new "Could not parse the delta #{nota_bene_element.name}" unless nota_bene_delta_map.has_key? nota_bene_delta
           
           corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
           corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
@@ -333,6 +336,7 @@ module SwiftPoemsProject
           nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
         end
       end
+    end
     end
   end
 end

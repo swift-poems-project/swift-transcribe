@@ -152,51 +152,59 @@ module SwiftPoemsProject
       }
 
       # Ensure that all Nota Bene deltas have been cleaned
-      xpath = "//TEI:title/*"
+      ["//TEI:title/*", "//TEI:title/TEI:hi/*"].each do |xpath|
+
+      # xpath = "//TEI:title/*"
       elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
 
-      elements.each do |nota_bene_element|
-
-        if /«.+»/.match nota_bene_element.name
-
-          nota_bene_delta = nota_bene_element.name
-
-          raise NotImplementedError.new unless nota_bene_delta_map.has_key? nota_bene_delta
+        elements.each do |nota_bene_element|
           
-          corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
-          corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
-
-          corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
-          corrected_attribs.each_pair do |attrib_name, attrib_value|
-
-            corrected_element[attrib_name] = attrib_value
+          if /«.+»/.match nota_bene_element.name
+            
+            nota_bene_delta = nota_bene_element.name
+            
+            raise NotImplementedError.new unless nota_bene_delta_map.has_key? nota_bene_delta
+            
+            corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
+            corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
+            
+            corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
+            corrected_attribs.each_pair do |attrib_name, attrib_value|
+              
+              corrected_element[attrib_name] = attrib_value
+            end
+            
+            if nota_bene_element.children.empty?
+              
+              corrected_element.remove
+              nota_bene_element.remove
+            else
+              
+              corrected_element.add_child nota_bene_element.children
+              nota_bene_element.swap corrected_element
+              nota_bene_element.remove
+            end
           end
 
-          if nota_bene_element.children.empty?
-
-            corrected_element.remove
-            nota_bene_element.remove
-          else
-
-            corrected_element.add_child nota_bene_element.children
-            nota_bene_element.swap corrected_element
-            nota_bene_element.remove
-          end
-        end
-
-        if /\|/.match nota_bene_element.content
-
-          indent_count = nota_bene_element.content.count('|')
-
-          if nota_bene_element.parent.key? 'rend'
-
-            nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
-          else
-
-            nota_bene_element.parent['rend'] = "indent(#{indent_count})"
+          if /\|/.match nota_bene_element.content
+            
+            indent_count = nota_bene_element.content.count('|')
+            
+            if nota_bene_element.parent.key? 'rend'
+              
+              nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
+            else
+              
+              nota_bene_element.parent['rend'] = "indent(#{indent_count})"
+            end
+            
+            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
           end
 
-          nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
+          if /«.{4}?»/.match nota_bene_element.content
+
+            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/«.{4}?»/, '') }
+          end
         end
       end
     end

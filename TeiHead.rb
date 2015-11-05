@@ -228,20 +228,6 @@ module SwiftPoemsProject
 
 
         @heads.opened_tags.unshift @current_leaf
-        # @footnote_opened = /«FN?/.match(token)
-
-=begin
-      else
-        
-        # Add a new child node to the current leaf
-        # Temporarily use the token itself as a tagname
-        # @todo Refactor
-        newLeaf = Nokogiri::XML::Node.new token, @document
-        @current_leaf.add_child newLeaf
-        @current_leaf = newLeaf
-        @has_opened_tag = true
-      end
-=end
       end
       
       @tokens << token
@@ -250,7 +236,8 @@ module SwiftPoemsProject
     # Add this as a text node for the current line element
     def pushText(token)
 
-      # puts 'appending the following text token: ' + token
+      # @todo Remove and refactor
+      token = token.gsub(/«.{4}?»/, '')
 
       raise NotImplementedError.new "Failure to parse the following token within a headnote: #{token}" if /«.{2}/.match token
 

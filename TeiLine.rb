@@ -26,6 +26,9 @@ module SwiftPoemsProject
        # SPP-156
        @footnote_index = options[:footnote_index] || 0
 
+       @number = options.fetch :number, 1
+       @line_number_parsed = false
+
        @teiDocument = stanza.document
 
        # @lineElemName = @workType == POEM ? 'l' : 'p'
@@ -33,6 +36,9 @@ module SwiftPoemsProject
 
        # Set the current leaf of the tree being constructed to be the root node itself
        @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
+       @elem['n'] = @number.to_s
+       mint_xml_id(@number.to_s)
+
        stanza.elem.add_child @elem
 
        # If there is an open tag...
@@ -95,7 +101,12 @@ module SwiftPoemsProject
        @elem['xml:id'] = @xml_id
      end
 
-     def number(value)
+     def number(value = nil)
+
+       return @elem['n'] if value.nil?
+
+#       puts "Applying the poem number: #{value}"
+#       puts @elem
 
        @elem['n'] = value
 
@@ -106,6 +117,14 @@ module SwiftPoemsProject
      def number=(value)
 
        number(value)
+     end
+
+     def self.is_a_line?(node)
+       return node.is_a?(Nokogiri::XML::Element) && ['l','p'].include?(node.name)
+     end
+
+     def self.is_numbered?(node)
+       return node.is_a?(Nokogiri::XML::Element) && node.has_attribute?('n') && !node['n'].empty?
      end
 
      # Add this as a text node for the current line element
@@ -119,53 +138,6 @@ module SwiftPoemsProject
        if not @current_leaf.is_a? NotaBeneDelta
 
          # @todo Refactor
-         if not(@current_leaf.is_a? Nokogiri::XML::Element and @current_leaf.has_attribute? 'n' and not @current_leaf['n'].empty?)
-
-           # Remove the 8 character identifier from the beginning of the line
-           poem_id_match = /\s*(\d+)\s+/.match token
-
-           poem_id_match = /([0-9A-Z\!\-]{8})   /.match(token) if not poem_id_match
-           poem_id_match = /([0-9A-Z]{8})   /.match(token) if not poem_id_match # Isn't this redundant?
-
-           # Raise an exception if the transcript identifier cannot be parsed
-           if poem_id_match
-
-             poem_id = poem_id_match.to_s.strip
-
-             #if //.match token
-             #  puts "TRACE: #{token}"
-             #  puts "TRACE: #{poem_id}"
-             #end
-
-             # @todo Implement using TeiPoemIdError
-             raise NotImplementedError.new "Could not extract the Poem ID from #{token}" if poem_id.empty?
-
-             # @elem['n'] = poem_id
-             number(poem_id)
-
-             token = token.sub poem_id_match[0], ''
-           elsif @elem.has_attribute? 'rend' # This handles cases in which the previous token contained a line number and a unary Nota Bene Delta
-
-             if @stanza.lines.length == 1
-
-               if @stanza.poem.stanzas.length == 1
-
-                 number(1)
-               else
-
-                 number( @stanza.poem.stanzas[-2].lines[-2].elem['n'].to_i + 1 )
-               end
-             else
-
-               # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1
-               number( @stanza.lines[-2].elem['n'].to_i + 1)
-             end
-           elsif not @elem.has_attribute? 'n'
-
-             # @elem['n'] = @stanza.lines[-2].elem['n'].to_i + 1 # Which cases are handled here?
-             number( @stanza.lines[-2].elem['n'].to_i + 1) # Which cases are handled here?
-           end
-         end
 
          # Transform triplet indicators for the stanza
          if /\s3\}$/.match token
@@ -176,14 +148,14 @@ module SwiftPoemsProject
 
          # Transform pipes into @rend values
          if /\|/.match token
-           
+
            indentations = token.split(/\|/).select {|s| s.empty? }
            indentations.each do |indent|
 
              push_line_indent indent
            end
 
-           token = token.sub /\|+/, ''
+           token = token.gsub /\|+/, ''
          end
        end
        
@@ -217,17 +189,9 @@ module SwiftPoemsProject
        @has_opened_tag = true
        @opened_tag = @current_leaf
 
-       # puts "Opening a tag: #{@opened_tag.parent}"
-
-       # @stanza.opened_tags << @opened_tag
-       
        # Add the opened tag for the stanza and line
        # @todo refactor
        @stanza.opened_tags.unshift @opened_tag
-       # @opened_tags.unshift @opened_tag
-
-       # If the tag is not specified within the markup map, raise an exception
-       #
      end
 
      # Deprecated
@@ -242,12 +206,6 @@ module SwiftPoemsProject
 
          # Also, reduce the number of opened tags for this line
          # @todo refactor
-         # @opened_tags.shift
-
-         # closed_tag = @opened_tags.shift
-         # @stanza.opened_tags.shift
-
-         # puts "Closing tag for line: #{closed_tag.name}..."
 
          # Iterate through all of the markup and set the appropriate TEI attributes
          attribMap = NB_MARKUP_TEI_MAP[closed_tag.name][token].values[0]
@@ -256,13 +214,6 @@ module SwiftPoemsProject
          # One cannot resolve the tag name and attributes until both tags have been fully parsed
          closed_tag.name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
          
-         # logger.debug "Closed tag: #{closed_tag.name}"
-         # logger.debug "Updated element: #{closed_tag.to_xml}"
-
-         # @current_leaf = opened_tag.parent
-         # @opened_tag = @stanza.opened_tags.first
-         # @has_opened_tag = false
-             
          # Continue iterating throught the opened tags for the stanza
          opened_tag = @stanza.opened_tags.first
        end
@@ -271,12 +222,6 @@ module SwiftPoemsProject
      end
 
      def closeStanza(token, opened_tag, closed_tag = nil)
-
-=begin
-       debugOutput = @stanza.opened_tags.map {|tag| tag.name }
-       puts "Terminating a sequence #{debugOutput}"
-       puts @stanza.elem.to_xml
-=end
 
        # For terminal tokens, ensure that both the current line and preceding lines are closed by it
        # Hence, iterate through all matching opened tags within the stanza
@@ -292,13 +237,6 @@ module SwiftPoemsProject
 
          closed_tag.close(token)
          
-         # logger.debug "Closed tag: #{closed_tag.name}"
-         # logger.debug "Updated element: #{closed_tag.to_xml}"
-
-         # @current_leaf = opened_tag.parent
-         # @opened_tag = @stanza.opened_tags.first
-         # @has_opened_tag = false
-             
          # Continue iterating throught the opened tags for the stanza
          opened_tag = @stanza.opened_tags.first
        end
@@ -370,33 +308,11 @@ module SwiftPoemsProject
          # In all cases where there are opened tags on previous lines, there is an opened tag on the existing line
          #
          
-         # puts "Current opened tags in the stanza: #{@stanza.opened_tags}" # @todo Refactor
-         
-         # @stanza.opened_tags << @opened_tag
-         
-         # @stanza.opened_tags = []
-         # @has_opened_tag = false
-         # @current_leaf = @stanza.opened_tags.last.parent
-         
-         # More iterative approach
-         
-         # opened_tag = @stanza.opened_tags.shift
-         
-         # closed_tag = close(token, opened_tag)
-         # closeStanza(token, opened_tag, closed_tag)
          closed_tag = closeStanza(token, opened_tag)
          
-         # puts @teiDocument
-         # puts closed_tag
-         
          # Once all of the stanza elements have been closed, retrieve the last closed tag for the line
-         
          @current_leaf = closed_tag.parent
-         # @opened_tag = @stanza.opened_tags.first
-         
-         # @has_opened_tag = false
          @has_opened_tag = !@opened_tags.empty?
-         
        end
      end
 
@@ -519,9 +435,6 @@ module SwiftPoemsProject
              # editorial_tag.element.content = token
              @current_leaf = editorial_tag.element
            end
-
-
-
          end
        when EditorialMarkup::UnclearOverwritingTag
 
@@ -685,7 +598,7 @@ module SwiftPoemsProject
      end
 
      def push(token)
-       
+
 #       puts "Appending the following token to the line: #{token}"
 
        # If there is an opened tag...
@@ -730,13 +643,7 @@ module SwiftPoemsProject
        elsif EditorialMarkup::EDITORIAL_TOKENS.include? token # This opens the parsing of editorial tokens
 
          push_editorial token
-
-
        else
-
-         # puts NB_MARKUP_TEI_MAP.has_key? @opened_tag.name if @opened_tag
-         # puts NB_MARKUP_TEI_MAP[@opened_tag.name].has_key? token.strip if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
-         # puts NB_MARKUP_TEI_MAP[@opened_tag.name].keys if @opened_tag and NB_MARKUP_TEI_MAP.has_key? @opened_tag.name
 
          # Terminal tokens are not being properly parsed
          # e. g. previous line had a token MDUL, terminal token MDNM present in the following
@@ -746,27 +653,21 @@ module SwiftPoemsProject
 
          raise NotImplementedError, "Failed to parse the following as a token: #{token}" if /«/.match token
 
-         # Parse the substitution
-#         if not @substitution_tags.empty?
-
-#           token = parse_substitution_text token
-#         end
-
          # Type the EditorialTag based upon the token
          if not @editorial_tags.empty?
 
            token = parse_editorial_text token
          end
 
-         # puts "Appending text to the line: '#{token}'"
-         
          pushText token
-
-         debugOutput = @opened_tags.map { |tag| tag.name }
-         # puts "Updated tags for the line: #{debugOutput}"
 
          raise NotImplementedError, "Failure to close a tag likely detected: #{@teiDocument.to_xml}" if @opened_tags.length > 16
        end
+
+       # Return the line number
+
+       return @elem['n'].to_i
+       
      end
    end
  end

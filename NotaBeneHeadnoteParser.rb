@@ -67,8 +67,6 @@ module SwiftPoemsProject
           
         line = line.gsub /#{Regexp.escape("HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, S«MDSD»T. «MDNM»P«MDSD»ATRICK'S«MDNM».")}/, "HN1 At the D«MDSD»EANRY «MDNM»H«MDSD»OUSE, ST. «MDNM»P«MDSD»ATRICK'S«MDNM»."
           
-        # line = line.gsub /#{Regexp.escape("HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, 'HN2 «MDBU»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J. S. D. S. P. D«MDUL». who writ it, as well as several other Copies of Verses of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»'
-
         # Work around for witnesses of the same apparatus (?)
         # @todo Resolve
         line = line.gsub /#{Regexp.escape("Years ago«MDNM».«MDNM»")}/, 'Years ago.«MDNM»'
@@ -82,24 +80,20 @@ module SwiftPoemsProject
         # @todo Resolve this fully by implementing SPP-125
         line = line.gsub /#{Regexp.escape("«MDBU»Your most faithfull friend_&_Humble Serv«MDSU»t«MDBU» 08.__Will Livingston«MDNM»")}/, "«MDBU»Your most faithfull friend_&_Humble Serv«MDNM»«MDSU»t«MDNM»«MDBU» 08.__Will Livingston«MDNM»"
 
-        # line = line.gsub /#{Regexp.escape("HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.")}/, "HN2 «MDRV»T«MDUL»HE Author of the following Poem is said to be Dr. «MDNM»J.S. D.S.P.D.«MDUL» who writ it, as well as several other Copies of Verse of the like Kind, by Way of Amusement, in the Family of an honourable Gentleman in the North of «MDNM»Ireland«MDUL», where he spent a Summer about two or three Years ago.«MDNM»"
         line = line.gsub /#{Regexp.escape("«MDNM»HN3 «MDUL»")}/, "HN3 «MDUL»"
-
-        # line = line.gsub /#{Regexp.escape("of wearing Scarlet and Gold, with what they call «FN1·«MDNM»Wigs with long black Tails, worn for some Years Past.")}/, "of wearing Scarlet and Gold, with what they call«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past."
-        
-        # ???
-        # @todo Identify the source of this
-        # @todo Refactor
-        # line = line.gsub /#{Regexp.escape("«MDUL»November«MDNM» 1738.«MDUL»» ")}/, "«MDUL»November«MDNM» 1738.» «MDUL»"
-        # line = line.gsub /#{Regexp.escape("wearing Scarlet and Gold, with what they call «FN1·")}/, "wearing Scarlet and Gold, with what they call«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past."
-
+       
         line = line.gsub /#{Regexp.escape("HN4  «MDRV»T«MDUL»HE author of the following poem is said to be Dr «MDNM»J. S. D. S. P. D«MDUL» who writ it, as well as several other copies of verses of the like kind, by way of amusement, in the family of an Honourable gentleman in the north of Ireland, where he spent a summer about two or three years ago. _|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.«MDUL»», then in that kingdom, having heard much of this poem, obtained a copy from the gentleman, or, as some say, the lady, in whose house it was written; from whence, I know not by what accident, several other copies were transcribed, full of errors. As I have a great respect for the supposed author, I have procured a true copy of the poem; the publication whereof can do him less injury than printing any of those incorrect ones which ran about in manuscript, and would infallibly be soon in the press, if not thus prevented._|Some expressions being peculiar to Ireland, I have prevailed on a gentleman of that kingdom to explain them, and I have put the several explanations in their proper places«MDNM».")}/, "HN4  «MDRV»T«MDUL»HE author of the following poem is said to be Dr «MDNM»J. S. D. S. P. D«MDUL» who writ it, as well as several other copies of verses of the like kind, by way of amusement, in the family of an Honourable gentleman in the north of Ireland, where he spent a summer about two or three years ago. _|A certain very great person«FN1·John Lord Carteret, then Lord Lieutenant of Ireland, afterwards Earl of Granville in right of his mother.», then in that kingdom, having heard much of this poem, obtained a copy from the gentleman, or, as some say, the lady, in whose house it was written; from whence, I know not by what accident, several other copies were transcribed, full of errors. As I have a great respect for the supposed author, I have procured a true copy of the poem; the publication whereof can do him less injury than printing any of those incorrect ones which ran about in manuscript, and would infallibly be soon in the press, if not thus prevented._|Some expressions being peculiar to Ireland, I have prevailed on a gentleman of that kingdom to explain them, and I have put the several explanations in their proper places«MDNM»."
 
         line = line.gsub(/#{Regexp.escape("«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past.Wigs with long black Tails, worn for some Years past. «MDUL»November«MDNM» 1738.» Toupees")}/, "«MDNM» «FN1·Wigs with long black Tails, worn for some Years Past.Wigs with long black Tails, worn for some Years past. «MDUL»November«MDNM» 1738.» «MDUL»Toupees")      
+
+        line = line.gsub(/#{Regexp.escape("«MDNM»W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")}/, "W«MDSD»RITTEN«MDNM» in the Y«MDSD»EAR«MDNM» 1729.")
     end
 
     # Refactor
     def parse(line)
+
+      # Handling for the decorator patterns
+      line = line.gsub /«MD[SUNMD]{2}»\*(«MDNM»)?/, ''
 
       line = line.gsub /──»/, '──.»'
 

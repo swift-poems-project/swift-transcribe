@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require_relative '../spec_helper'
 
 describe 'TeiParser' do
@@ -8,29 +9,90 @@ describe 'TeiParser' do
     @nb_store_path = '/var/lib/spp/master'
   end
 
-  @nb_store_path = '/var/lib/spp/master'
-  
-  Dir.glob("#{@nb_store_path}/FOXON/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path)and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) and not /ANOTHER/.match(path) and not /Z725740L/.match(path) and not /Smythe of Barbavilla\.doc/.match(path) }.each do |file_path|
+  describe 'parsing all sources' do
 
-  # Dir.glob("#{@nb_store_path}/FOXON/250-S813").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path)and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) and not /ANOTHER/.match(path) and not /Z725740L/.match(path) and not /Smythe of Barbavilla\.doc/.match(path) }.each do |file_path|
+    source = 'FOXON'
+    source_dir = File.join(File.dirname(__FILE__), '../../xml', source)
+    @nb_store_path = '/var/lib/spp/master'
 
-    it "parses the Nota Bene document #{file_path}" do
+    coll_path = "#{@nb_store_path}/#{source}"
+    Dir.glob("#{coll_path}/*").each_index do |file_index|
+#    [0].each_index do |file_index|
 
-      expect {
+      describe "parsing the source #{coll_path}" do
 
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        puts results = @parser.parse.to_xml
+        [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
+#        [ "/var/lib/spp/master/FOXON/545-S886" ].each do |file_path|
+          
+          before :each do
 
-      }.to_not raise_error
-    end
+            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+          end
 
-    it "parses all tokens within the Nota Bene document #{file_path}" do
+          after :each do
 
-      expect {
+            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+            @results = @parser.parse.to_xml
+            Dir.mkdir source_dir unless Dir.exist? source_dir
+            File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write @results }
+          end
 
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        expect(@parser.parse.to_xml).not_to match(/«.+»/)
-      }.to_not raise_error
+          it "parses the transcript #{file_path} without error" do
+
+            expect {
+
+              @results = @parser.parse.to_xml
+#              puts @results
+            }.to_not raise_error
+          end
+
+          it "parses all Nota Bene tokens within the transcript #{file_path}" do
+
+            results = @parser.parse.to_xml
+
+            expect(results).not_to match(/«.+»/)
+            expect(results).not_to match(/\|/)
+          end
+
+          context "excluding empty <l> or <p> elements preceding new <lg> elements" do
+
+            it "generates TEI Documents with <l> or <p> elements bearing @n attribute values for the transcript #{file_path}" do
+
+              expect {
+
+                tei_doc = @parser.parse
+
+                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
+                invalid_elements = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? and not /\-a$/.match(element['xml:id']) }.map { |element| element.to_xml }
+                expect(invalid_elements).to be_empty
+              }.to_not raise_error
+            end
+
+            it "generates TEI Documents with <l> or <p> elements bearing ordered, unique @n attribute values for the transcript #{file_path}" do
+
+              expect {
+
+                tei_doc = @parser.parse
+#                puts tei_doc.to_xml
+
+                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
+                indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'] }.select { |index| not /\d+[a-z]$/.match(index) }
+
+                unless indices.empty?
+
+                  sorted_indices = indices.map { |index| index.to_i }.sort
+                  indices = indices.map { |index| index.to_i }
+
+                  valid_range = (sorted_indices.first..sorted_indices.last)
+
+                  expect(indices).to eq(valid_range.to_a)
+                end
+              }.to_not raise_error
+            end
+          end
+        end
+      end
     end
   end
 end
+

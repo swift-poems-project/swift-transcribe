@@ -293,15 +293,21 @@ module SwiftPoemsProject
          # Throw an exception if this is not a "MDNM" Modecode
          # if opened_tag.name != '«FN1' # Redundant
 
-         # @todo Reimplement; Resolve these anomalous cases
-         @current_leaf.close '«MDNM»'
+         if @current_leaf.is_a? Nokogiri::XML::Element
 
-         @stanza.opened_tags.shift
-         @opened_tags.shift
+           pushInitialToken(token)
+         else
 
-         @current_leaf = @current_leaf.parent
+           # @todo Reimplement; Resolve these anomalous cases
+           @current_leaf.close '«MDNM»'
+
+           @stanza.opened_tags.shift
+           @opened_tags.shift
+
+           @current_leaf = @current_leaf.parent
            
-         pushInitialToken(token)
+           pushInitialToken(token)
+         end
        else
 
          # First, retrieve last opened tag for the line

@@ -164,7 +164,6 @@ module SwiftPoemsProject
       
       # Find all <l> or <p> elements missing @n attributes, and provide the index
       l_elements = stanza_lines
-      # puts l_elements
       
       indices = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? }
       indices.each do |element|
@@ -285,59 +284,75 @@ module SwiftPoemsProject
 
       nota_bene_delta_map = {
         '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
-        '«/DECORATOR»' => { 'ab' => { 'type' => 'typography' } }
+        '«/DECORATOR»' => { 'ab' => { 'type' => 'typography' } },
+        '«FN1·' => { 'note' => { 'rend' => 'foot' } },
       }
 
       # Ensure that all Nota Bene deltas have been cleaned
       ["//TEI:l/*", "//TEI:note/*"].each do |xpath|
-      # xpath = "//TEI:l/*"
       elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
 
       elements.each do |nota_bene_element|
 
-        if /«.+»/.match nota_bene_element.name
+          # Handle unencoded indentation markup
+          if /\|/.match nota_bene_element.content
 
-          nota_bene_delta = nota_bene_element.name
+            indent_count = nota_bene_element.content.count('|')
 
-          raise NotImplementedError.new "Could not parse the delta #{nota_bene_element.name}" unless nota_bene_delta_map.has_key? nota_bene_delta
+            if nota_bene_element.parent.key? 'rend'
+
+              nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
+            else
+
+              nota_bene_element.parent['rend'] = "indent(#{indent_count})"
+            end
+
+            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
+          end
+
+          # Handle unencoded stanza markup
+          if /_/.match nota_bene_element.content
+
+            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/_/, '') }
+          end
+
+          # If this element is an unencoded Nota Bene delta...
+          if /«.+»?/.match nota_bene_element.name
+
+            nota_bene_delta = nota_bene_element.name
+
+            raise NotImplementedError.new "Could not parse the delta #{nota_bene_element.name}" unless nota_bene_delta_map.has_key? nota_bene_delta
           
-          corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
-          corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
+            corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
+            corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
 
-          corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
-          corrected_attribs.each_pair do |attrib_name, attrib_value|
+            # Add the attributes
+            corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
+            corrected_attribs.each_pair do |attrib_name, attrib_value|
 
-            corrected_element[attrib_name] = attrib_value
+              corrected_element[attrib_name] = attrib_value
+            end
+
+            # Override the added attributes with existing attributes
+            nota_bene_element.attributes do |attrib_name, attrib_value|
+
+              corrected_element[attrib_name] = attrib_value
+            end
+
+            if nota_bene_element.children.empty?
+
+              corrected_element.remove
+              nota_bene_element.remove
+            else
+
+              corrected_element.add_child nota_bene_element.children
+              nota_bene_element.swap corrected_element
+              nota_bene_element.remove
+            end
           end
 
-          if nota_bene_element.children.empty?
-
-            corrected_element.remove
-            nota_bene_element.remove
-          else
-
-            corrected_element.add_child nota_bene_element.children
-            nota_bene_element.swap corrected_element
-            nota_bene_element.remove
-          end
-        end
-
-        if /\|/.match nota_bene_element.content
-
-          indent_count = nota_bene_element.content.count('|')
-
-          if nota_bene_element.parent.key? 'rend'
-
-            nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
-          else
-
-            nota_bene_element.parent['rend'] = "indent(#{indent_count})"
-          end
-
-          nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
         end
       end
-    end
     end
   end
 end

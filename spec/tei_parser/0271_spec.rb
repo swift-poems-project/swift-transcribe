@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require_relative '../spec_helper'
 
 describe 'TeiParser' do
@@ -8,27 +9,99 @@ describe 'TeiParser' do
     @nb_store_path = '/var/lib/spp/master'
   end
 
-  @nb_store_path = '/var/lib/spp/master'
+  describe 'parsing all sources' do
 
-  Dir.glob("#{@nb_store_path}/0271/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) }.each do |file_path|
-  # Dir.glob("#{@nb_store_path}/0271/601-0271").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) }.each do |file_path|
+    source = '0271'
+    source_dir = File.join(File.dirname(__FILE__), '../../xml', source)
+    @nb_store_path = '/var/lib/spp/master'
 
-    it "parses the Nota Bene document #{file_path}" do
+    coll_path = "#{@nb_store_path}/#{source}"
+    Dir.glob("#{coll_path}/*").each_index do |file_index|
+#    [0].each_index do |file_index|
 
-      expect {
+      describe "parsing the source #{coll_path}" do
 
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        @parser.parse.to_xml
-      }.to_not raise_error
-    end
+        [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
+        [ "/var/lib/spp/master/0271/521-0271",
+          "/var/lib/spp/master/0271/069-0271",
+          "/var/lib/spp/master/0271/298-0271",
+          "/var/lib/spp/master/0271/875-0271",
+          "/var/lib/spp/master/0271/848-0271",
+          "/var/lib/spp/master/0271/X35A0271",
+          "/var/lib/spp/master/0271/866-0271",
+          "/var/lib/spp/master/0271/348-0271"].each do |file_path|
+        end
 
-    it "parses the tokens within the Nota Bene document #{file_path}" do
+#        [ "/var/lib/spp/master/0271/521-0271"].each do |file_path|
+          before :each do
 
-      expect {
+            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+          end
 
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        expect(@parser.parse.to_xml).not_to match(/«MD..»/)
-      }.to_not raise_error
+          after :each do
+
+            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+            @results = @parser.parse.to_xml
+            Dir.mkdir source_dir unless Dir.exist? source_dir
+            File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write @results }
+          end
+
+          it "parses the transcript #{file_path} without error" do
+
+            expect {
+
+              @results = @parser.parse.to_xml
+#              puts @results
+            }.to_not raise_error
+          end
+
+          it "parses all Nota Bene tokens within the transcript #{file_path}" do
+
+            results = @parser.parse.to_xml
+
+            expect(results).not_to match(/«.+»/)
+            expect(results).not_to match(/\|/)
+          end
+
+          context "excluding empty <l> or <p> elements preceding new <lg> elements" do
+
+            it "generates TEI Documents with <l> or <p> elements bearing @n attribute values for the transcript #{file_path}" do
+
+              expect {
+
+                tei_doc = @parser.parse
+
+                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
+                invalid_elements = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? and not /\-a$/.match(element['xml:id']) }.map { |element| element.to_xml }
+                expect(invalid_elements).to be_empty
+              }.to_not raise_error
+            end
+
+            it "generates TEI Documents with <l> or <p> elements bearing ordered, unique @n attribute values for the transcript #{file_path}" do
+
+              expect {
+
+                tei_doc = @parser.parse
+#                puts tei_doc.to_xml
+
+                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
+                indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'] }.select { |index| not /\d+[a-z]$/.match(index) }
+
+                unless indices.empty?
+
+                  sorted_indices = indices.map { |index| index.to_i }.sort
+                  indices = indices.map { |index| index.to_i }
+
+                  valid_range = (sorted_indices.first..sorted_indices.last)
+
+                  expect(indices).to eq(valid_range.to_a)
+                end
+              }.to_not raise_error
+            end
+          end
+        end
+      end
     end
   end
 end
+

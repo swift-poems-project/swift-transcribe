@@ -146,9 +146,11 @@ module SwiftPoemsProject
         '«MDRV»' => { 'hi' => { 'rend' => 'display-initial' } },
         '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
         '«MDSU»' => { 'hi' => { 'rend' => 'sup' } },
+        '«FN1·' => { 'note' => { 'place' => 'foot' } },
       }
 
       e.children.select {|c| c.is_a? Nokogiri::XML::Element }.each do |nota_bene_element|
+
 
         if /«.+»/.match nota_bene_element.name
           nota_bene_delta = nota_bene_element.name
@@ -191,6 +193,11 @@ module SwiftPoemsProject
           end
               
           nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
+        end
+
+        # Remove the trailing footnote operators
+        if /\.»/.match nota_bene_element.content
+          nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\.»/, '') }
         end
             
         if /«.{4}?»/.match nota_bene_element.content

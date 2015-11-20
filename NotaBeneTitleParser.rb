@@ -139,8 +139,13 @@ module SwiftPoemsProject
 
       nota_bene_delta_map = {
         '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
-        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
+        '«MDBO»' => { 'hi' => { 'rend' => 'black-letter' } },
         '«MDBR»' => { 'hi' => { 'rend' => 'SMALL-CAPS-ITALICS' } },
+        '«MDBU»' => { 'hi' => { 'rend' => 'black-letter' } },
+        '«MDDN»' => { 'hi' => { 'rend' => 'strikethrough' } },
+        '«MDRV»' => { 'hi' => { 'rend' => 'display-initial' } },
+        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
+        '«MDSU»' => { 'hi' => { 'rend' => 'sup' } },
       }
 
       e.children.select {|c| c.is_a? Nokogiri::XML::Element }.each do |nota_bene_element|

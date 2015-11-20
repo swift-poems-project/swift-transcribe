@@ -132,69 +132,78 @@ module SwiftPoemsProject
       @footnote_index = header.footnote_index
     end
 
-    # @todo Refactor
-    def correct
+    #
+    #
+    #
+    def correct_element(e)
 
       nota_bene_delta_map = {
         '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
-        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
+        '«MDBR»' => { 'hi' => { 'rend' => 'SMALL-CAPS-ITALICS' } },
       }
 
-      # Ensure that all Nota Bene deltas have been cleaned
-      ["//TEI:title/*", "//TEI:title/TEI:hi/*"].each do |xpath|
+      e.children.select {|c| c.is_a? Nokogiri::XML::Element }.each do |nota_bene_element|
 
-      # xpath = "//TEI:title/*"
-      elements = @element.xpath(xpath, 'TEI' => 'http://www.tei-c.org/ns/1.0')
-
-        elements.each do |nota_bene_element|
+        if /«.+»/.match nota_bene_element.name
+          nota_bene_delta = nota_bene_element.name
           
-          if /«.+»/.match nota_bene_element.name
-            
-            nota_bene_delta = nota_bene_element.name
-            
-            raise NotImplementedError.new unless nota_bene_delta_map.has_key? nota_bene_delta
-            
-            corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
-            corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
-            
-            corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
-            corrected_attribs.each_pair do |attrib_name, attrib_value|
+          raise NotImplementedError.new("Failed to parse the following unencoded token: #{nota_bene_delta}\n#{@element.document}") unless nota_bene_delta_map.has_key? nota_bene_delta
               
-              corrected_element[attrib_name] = attrib_value
-            end
-            
-            if nota_bene_element.children.empty?
+          corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
+          corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
               
-              corrected_element.remove
-              nota_bene_element.remove
-            else
+          corrected_attribs = nota_bene_delta_map[nota_bene_delta][corrected_name]
+          corrected_attribs.each_pair do |attrib_name, attrib_value|
+                
+            corrected_element[attrib_name] = attrib_value
+          end
               
-              corrected_element.add_child nota_bene_element.children
-              nota_bene_element.swap corrected_element
-              nota_bene_element.remove
-            end
+          if nota_bene_element.children.empty?
+                
+            corrected_element.remove
+            nota_bene_element.remove
+          else
+              
+            corrected_element.add_child nota_bene_element.children
+            nota_bene_element.swap corrected_element
+            nota_bene_element.remove
           end
 
-          if /\|/.match nota_bene_element.content
-            
-            indent_count = nota_bene_element.content.count('|')
-            
-            if nota_bene_element.parent.key? 'rend'
-              
-              nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
-            else
-              
-              nota_bene_element.parent['rend'] = "indent(#{indent_count})"
-            end
-            
-            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
-          end
-
-          if /«.{4}?»/.match nota_bene_element.content
-
-            nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/«.{4}?»/, '') }
-          end
+          nota_bene_element = corrected_element
         end
+        
+        if /\|/.match nota_bene_element.content
+              
+          indent_count = nota_bene_element.content.count('|')
+              
+          if nota_bene_element.parent.key? 'rend'
+                
+            nota_bene_element.parent['rend'] = nota_bene_element.parent['rend'] + " indent(#{indent_count})"
+          else
+                
+            nota_bene_element.parent['rend'] = "indent(#{indent_count})"
+          end
+              
+          nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/\|/, '') }
+        end
+            
+        if /«.{4}?»/.match nota_bene_element.content
+          
+          nota_bene_element.children.select { |element| element.text? }.map { |element| element.content = element.content.gsub(/«.{4}?»/, '') }
+        end
+
+        correct_element(nota_bene_element)
+      end
+    end
+
+    # @todo Refactor
+    def correct
+
+#      current_element = @element
+#      current_element.children.each do |child_element|
+      @element.children.each do |child_element|
+        correct_element child_element
       end
     end
   end

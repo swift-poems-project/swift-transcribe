@@ -22,8 +22,7 @@ describe 'TeiParser' do
       describe "parsing the source #{coll_path}" do
 
         [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
-#        [ "/var/lib/spp/master/FOXON/545-S886" ].each do |file_path|
-          
+#        [ "/var/lib/spp/master/FOXON/132-S936" ].each do |file_path|
           before :each do
 
             @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"

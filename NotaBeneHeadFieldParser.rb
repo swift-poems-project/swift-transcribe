@@ -9,7 +9,7 @@ module SwiftPoemsProject
     def initialize(teiParser, id, text, docTokens = nil, options = {})
 
       @teiParser = teiParser
-      @poem = teiParser.poem
+#      @poem = teiParser.poem
 
       @id = id
       @text = text

@@ -14,27 +14,6 @@ module SwiftPoemsProject
   class TeiIndexError < StandardError; end
   class TeiPoemIdError < StandardError; end
 
-  class TeiLinkGroup
-
-    def initialize(poem, type = 'notes')
-
-      @poem = poem
-      @type = type
-
-      @element = Nokogiri::XML::Node.new 'linkGrp', @poem.element.document
-      @poem.element.add_previous_sibling @element
-      @element['type'] = @type
-    end
-
-    def add_link(source, target)
-
-      link = Nokogiri::XML::Node.new 'link', @poem.element
-      link['target'] = "#{source} #{target}"
-
-      @element.add_child link
-    end
-  end
-
   class TeiPoem
 
     attr_reader :id, :element, :link_group, :stanzas
@@ -68,7 +47,7 @@ module SwiftPoemsProject
       @poem = @poem.gsub(/_{2,10}/, '_')
 
       @tokens = tokenize(@poem)
-      @link_group = TeiLinkGroup.new self
+      @link_group = TeiLinkGroup.new @element
 
       @current_line_number = 1
 

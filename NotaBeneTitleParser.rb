@@ -24,7 +24,7 @@ module SwiftPoemsProject
         @sponsor = @element.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
         @opened_tags = []
 
-        @footnote_index = options[:footnote_index] || 0
+        @footnote_index = options[:footnote_index] || 1
         
         @titles = [ SwiftPoemsProject::TeiTitle.new(self, @id, { :footnote_index => @footnote_index }) ]
       end
@@ -44,12 +44,6 @@ module SwiftPoemsProject
         if @titles.last.has_opened_tag
 
           @opened_tags.unshift last_title.current_leaf
-
-          # Work-around
-          if /^«/.match last_title.current_leaf.name
-
-            # last_title.current_leaf.name = 'hi'
-          end
 
           if not last_title.tokens.empty?
 
@@ -86,12 +80,10 @@ module SwiftPoemsProject
       end
 
       def close(token)
-        
+
         token = token.sub /\r/, ''
         @titles.last.push token
         pushTitle
-
-        # @titles.map { |title| title.elem }
       end
     end
 
@@ -151,12 +143,12 @@ module SwiftPoemsProject
 
       e.children.select {|c| c.is_a? Nokogiri::XML::Element }.each do |nota_bene_element|
 
+        if /«.+»?/.match nota_bene_element.name
 
-        if /«.+»/.match nota_bene_element.name
           nota_bene_delta = nota_bene_element.name
-          
+
           raise NotImplementedError.new("Failed to parse the following unencoded token: #{nota_bene_delta}\n#{@element.document}") unless nota_bene_delta_map.has_key? nota_bene_delta
-              
+
           corrected_name = nota_bene_delta_map[nota_bene_delta].keys.first
           corrected_element = Nokogiri::XML::Node.new corrected_name, @element.document
               
@@ -165,6 +157,44 @@ module SwiftPoemsProject
                 
             corrected_element[attrib_name] = attrib_value
           end
+
+          # Extended handling for unencoded footnotes
+          if /«FN1·/.match nota_bene_delta
+
+            # Retrieve the parent <tei:title> element
+            footnote_element = nota_bene_element
+            title_element = nota_bene_element.at_xpath('../tei:title', SwiftPoetryProject::TeiParser::TEI_NS)
+
+            while title_element.nil?
+              footnote_element = nota_bene_element.parent
+              title_element = footnote_element.at_xpath('../tei:title', SwiftPoetryProject::TeiParser::TEI_NS)
+            end
+
+            corrected_element['n'] = @footnote_index
+            
+            # Create the xml:id for the footnote
+            footnote_xml_id = "spp-#{@poem.id}-footnote-title-#{@footnote_index}"
+
+            # Add a Link Group for each title
+            link_group = TeiLinkGroup.new title_element
+
+            target = "##{footnote_xml_id}"
+            source = "##{title_element['xml:id']}"
+
+            # Add an inline <ref> element
+            ref = Nokogiri::XML::Node.new 'ref', @element.document
+            ref.content = @footnote_index
+            ref['target'] = target
+
+            nota_bene_element.add_previous_sibling ref
+
+            # Add an element to <linkGrp>
+            link_group.add_link target, source
+
+            # Increment the footnote index
+            @footnote_index += 1
+          end
+
               
           if nota_bene_element.children.empty?
                 

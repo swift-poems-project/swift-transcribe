@@ -2,16 +2,20 @@
 
 module SwiftPoemsProject
 
-
   class TeiStanza
 
     attr_reader :poem, :document, :elem, :footnote_index, :lines
     attr_accessor :opened_tags
 
-    def initialize(poem, workType, index, options = {})
+    def initialize(poem, content, work_type, index, options = {})
 
+      @content = content
+      # Legacy attribute
       @poem = poem
-      @workType = workType
+
+      @work_type = work_type
+      # Legacy attribute
+      @workType = @work_type
        
       @poemElem = poem.element
       @teiDocument = @poemElem.document
@@ -32,13 +36,33 @@ module SwiftPoemsProject
 
       @poemElem.add_child(@elem)
 
-      @current_line_number = options.fetch :current_line_number, 1
+      @current_line_number = options.fetch :current_line_number, 0
 
       # If there is an open tag...
       # if not @opened_tags.empty?
       lineElem = TeiLine.new @workType, self, { :footnote_index => @footnote_index, :number => @current_line_number }
 
       @lines = [ lineElem ]
+    end
+
+    def tokenize(line)
+      line.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
+    end
+
+    def parse
+      @content.each_line do |line|
+
+        line = line.sub POEM_ID_PATTERN, ''
+        # line = line.lstrip
+
+        if @lines.length > 1 or not @lines.last.content.empty?
+          push_new_line
+        end
+
+        tokenize(line).each do |token|
+          @current_line_number = push token
+        end
+      end
     end
 
     # Push an empty <l> element without an @n attribute value
@@ -51,7 +75,7 @@ module SwiftPoemsProject
 
     # Push a new line into the stanza
     #
-    def pushLine
+    def push_new_line
 
       @current_line_number += 1
       @footnote_index = @lines.last.footnote_index
@@ -105,6 +129,19 @@ module SwiftPoemsProject
 
     def push(token)
 
+      # Parse for the line number
+      if @lines.last.number.nil?
+
+        line_number_m = /^(\d{1,3})/.match token
+        if line_number_m
+
+          line_number = line_number_m[1]
+          @lines.last.number line_number
+          token = token.sub line_number, ''
+          token = token.lstrip
+        end
+      end
+
       # Work-around for completely empty lines
       if @lines.length == 1 and @lines.last.elem.content.empty?
 
@@ -112,17 +149,6 @@ module SwiftPoemsProject
         @current_line_number = @lines.last.push token
       else
 
-        # Note: There are not indices larger than 999
-        token_is_index = /^\d{1,3}$/.match token.strip
-
-        # Trigger a new line
-        # @todo Refactor with a single regular expression
-        if POEM_ID_PATTERN.match token
-
-          token = token.sub POEM_ID_PATTERN, ''
-          pushLine unless token.strip.empty? or token_is_index
-        end
-        
         token = token.sub /\r/, ''
         token = token.sub(/^[0-9A-Z\!\-]{8}/, '').strip if token.sub(/^[0-9A-Z\!\-]{8}/, '').strip.empty?
 

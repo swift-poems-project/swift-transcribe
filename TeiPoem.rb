@@ -14,7 +14,7 @@ module SwiftPoemsProject
   class TeiIndexError < StandardError; end
   class TeiPoemIdError < StandardError; end
 
-  class TeiPoem
+  class Poem
 
     attr_reader :id, :element, :link_group, :stanzas
 
@@ -30,9 +30,12 @@ module SwiftPoemsProject
       return poem
     end
 
-    def initialize(poem, id, work_type, element, footnote_index = 0)
+    def initialize(content, id, work_type, element, footnote_index = 0)
 
-      @poem = poem
+      @content = content
+      # Legacy attribute
+      @poem = @content
+
       @id = id
       @work_type = work_type
       @lg_type = @work_type == POEM ? 'stanza' : 'verse-paragraph'
@@ -49,12 +52,16 @@ module SwiftPoemsProject
       @tokens = tokenize(@poem)
       @link_group = TeiLinkGroup.new @element
 
-      @current_line_number = 1
+      @current_line_number = 0
 
-      @stanzas = [ TeiStanza.new(self, @work_type, 1, {
-                                   :footnote_index => @footnote_index,
-                                   :current_line_number => @current_line_number
-                                 }) ]
+#      @stanzas = [ TeiStanza.new(self, @work_type, 1, {
+#                                   :footnote_index => @footnote_index,
+#                                   :current_line_number => @current_line_number
+#                                 }) ]
+
+      @stanzas = []
+      @opened_tags = []
+      
     end
 
     def tokenize(poem)
@@ -63,12 +70,30 @@ module SwiftPoemsProject
       poem = poem.gsub /«MD[SUNMD]{2}»\*(«MDNM»)?/, ''
 
       # This splits for each Nota Bene mode code
-      tokens = poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
+#      tokens = poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
 
       # This splits for each new stanza
+      tokens = poem.split /_/
+    end
+    
+    def parse
+      @tokens.each do |stanza_content|
+
+        stanza_options = {
+          :opened_tags => @opened_tags,
+          :footnote_index => @footnote_index,
+          :current_line_number => @current_line_number
+        }
+
+        @stanzas << TeiStanza.new(self, stanza_content, @work_type, @stanzas.size + 1, )
+        @stanzas.last.parse
+
+        @opened_tags = @stanzas.last.opened_tags
+        @footnote_index = @stanzas.last.footnote_index
+      end
     end
 
-    def parse
+    def parse_deprecated
 
       # Classify our tokens
       while not @tokens.empty?
@@ -77,19 +102,22 @@ module SwiftPoemsProject
 
         # Create a new stanza
         # There are apparently stanzas within footnotes; We ignore these
-        if /_+/.match token and @stanzas.last.opened_tags.empty?
+#        if /_+/.match token and @stanzas.last.opened_tags.empty?
 
-          # Append the new stanza to the poem body
-          @current_line_number += 1
+#          # Append the new stanza to the poem body
+#          @current_line_number += 1
 
-          @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
-                                      :opened_tags => @stanzas.last.opened_tags,
-                                      :footnote_index => @stanzas.last.footnote_index,
-                                      :current_line_number => @current_line_number
-                                    })
+#          @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
+#                                      :opened_tags => @stanzas.last.opened_tags,
+#                                      :footnote_index => @stanzas.last.footnote_index,
+#                                      :current_line_number => @current_line_number
+#                                    })
 
-          token = @tokens.shift
-        end
+#          token = @tokens.shift
+#        end
+
+        # For each stanza...
+        @stanzas.last.parse
 
         # Solution implemented for SPP-86
         #
@@ -97,7 +125,10 @@ module SwiftPoemsProject
         if token.match /^[^«].+?»$/
           raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{token}"
         end
-        @current_line_number = @stanzas.last.push token
+
+        # @current_line_number = @stanzas.last.push token
+
+        
       end
     end
 

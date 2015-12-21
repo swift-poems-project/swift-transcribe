@@ -8,7 +8,7 @@ module SwiftPoemsProject
   LETTER = 'letter'
 
   # Regular expression for extracting poem ID's
-  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}\d+\s/
+#  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}\d+\s/
 
   DECORATOR_PATTERN = /«MD[SUNMD]{2}»\*(«MDNM»)?/
 
@@ -340,6 +340,10 @@ module SwiftPoemsProject
       # @termToken = nil
       # @poem = @body.poem
 
+      # Initialize the legacy attributes
+      @id = parse_id
+      @poemID = @id
+
       # This deprecates "titleAndHeadnote"
       @heading = Heading.new self, lines.shift
       if @heading.content.match(/letter/i)
@@ -357,9 +361,6 @@ module SwiftPoemsProject
         raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript: doesn't have a body and footer"
       end
 
-      # Initialize the legacy attributes
-      @id = parse_id
-      @poemID = @id
 
       @body = Body.new self, lines.shift
 
@@ -676,12 +677,12 @@ module SwiftPoemsProject
       # Set the identifier
       @transcript.tei.poemElement['n'] = @transcript.poemID
 
-      # @poem = TeiPoem.new(@content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
+      # @poem = Poem.new(@content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
 
       # Legacy
       # @todo Refactor so that the above becomes valid
-      normal_content = TeiPoem.normalize(@content)
-      @poem = TeiPoem.new(normal_content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
+      normal_content = SwiftPoemsProject::Poem.normalize(@content)
+      @poem = SwiftPoemsProject::Poem.new(normal_content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
       @poem.parse
     end
   end
@@ -782,11 +783,15 @@ EOF
 
     class Document
 
+      attr_reader :document
+
       # Legacy attributes
       attr_reader :teiDocument, :headerElement, :textElem, :bookElem, :poemElem, :poemElement
 
       def initialize()
-        @teiDocument = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
+        @document = Nokogiri::XML(TEI_P5_DOC, &:noblanks)
+        # Legacy attribute
+        @teiDocument = @document
 
         # Should resolve issues related to the parsing of certain unicode characters
         @teiDocument.encoding = 'utf-8'
@@ -844,7 +849,7 @@ EOF
   end
 
   # Module for handling SPP-specific formatting
-  module Poem
+  module SwiftPoemsProjectPoem
 
     # The Class for the identifier within a given poem/letter
     class ID

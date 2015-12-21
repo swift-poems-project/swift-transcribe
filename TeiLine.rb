@@ -8,7 +8,7 @@ module SwiftPoemsProject
 
    class TeiLine
 
-     attr_reader :elem, :has_opened_tag, :opened_tag, :opened_tags, :footnote_index
+     attr_reader :elem, :has_opened_tag, :opened_tag, :opened_tags, :footnote_index, :element
 
      def initialize(workType, stanza, options = {})
 
@@ -35,9 +35,11 @@ module SwiftPoemsProject
        @lineElemName = 'l'
 
        # Set the current leaf of the tree being constructed to be the root node itself
-       @elem = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
-       @elem['n'] = @number.to_s
-       mint_xml_id(@number.to_s)
+       # Legacy attribute
+       @element = Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
+       @elem = @element
+#       @elem['n'] = @number.to_s
+#       mint_xml_id(@number.to_s)
 
        stanza.elem.add_child @elem
 
@@ -91,6 +93,10 @@ module SwiftPoemsProject
        end
 
        @tokens = []
+     end
+
+     def content
+       @element.content
      end
 
      # Mint the unique line identifier

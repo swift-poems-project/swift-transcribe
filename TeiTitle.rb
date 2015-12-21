@@ -2,17 +2,17 @@
 
 module SwiftPoemsProject
 
-  class TeiTitle
+  class Title
 
     attr_reader :elem, :tokens, :footnote_index
     attr_accessor :has_opened_tag, :current_leaf
 
-    def initialize(header, id, options = {})
+    def initialize(header, poem_id, options = {})
 
       @header = header
       @document = @header.document
 
-      @id = id
+      @id = poem_id
 
       @headerElement = header.elem
 
@@ -195,31 +195,29 @@ module SwiftPoemsProject
 
       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
       NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-        
         token = token.gsub(nbCharTokenPattern, utf8Char)
       end
 
+      # Obviously this cannot handle multiple line breaks (!)
       # if token == '_|'
       if /_?\|/.match token
-
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
-      else
-        
-        @current_leaf.add_child Nokogiri::XML::Text.new token, @document
+        token = token.sub(/\|/, '')
+        token = token.lstrip
       end
+      
+      @current_leaf.add_child Nokogiri::XML::Text.new token, @document
     end
     
     def push(token)
 
-      # puts "Adding the following token to title: " + token
-      # puts 'trace 38: ' + NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?('«MDNM»').to_s if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name
-
-      if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or NB_MARKUP_TEI_MAP.has_key? token
-        
+      # For the purposes of legibility
+      is_a_closing_ternary_token = NB_TERNARY_TOKEN_TEI_MAP.has_key?(@current_leaf.name) && NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key?(token)
+      is_a_closing_token = NB_MARKUP_TEI_MAP.has_key?(@current_leaf.name) && NB_MARKUP_TEI_MAP[@current_leaf.name].has_key?(token)
+      
+      if NB_SINGLE_TOKEN_TEI_MAP.has_key? token or is_a_closing_ternary_token or is_a_closing_token or NB_MARKUP_TEI_MAP.has_key? token
         pushToken token
-
       else
-        
         pushText token
       end
     end

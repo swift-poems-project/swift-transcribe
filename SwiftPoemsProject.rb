@@ -294,11 +294,13 @@ module SwiftPoemsProject
   # The XML TEI namespace
   TEI_NS = {'tei' => 'http://www.tei-c.org/ns/1.0'}
 
+  POEM_ID_PATTERN = /^[0-9A-Z\!\-]{8}\s+/
+
   # This models the functionality unique to Swift Poems Project Transcripts (i. e. Nota Bene Documents)
   # All tokenization is to be refactored here
   class Transcript
 
-    attr_reader :tei
+    attr_reader :tei, :nota_bene, :id
 
     # Legacy attributes
     attr_reader :poemID, :teiDocument, :documentTokens, :headerElement, :poemElem, :workType
@@ -356,6 +358,18 @@ module SwiftPoemsProject
       end
 
       # Initialize the legacy attributes
+      @id = parse_id
+      @poemID = @id
+
+      @body = Body.new self, lines.shift
+
+
+      @footer = Footer.new self, lines.pop
+    end
+
+    # Legacy functionality
+    # @todo Refactor
+    def parse_id
 
       # Extract the poem ID
       m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(@nota_bene.content)
@@ -371,13 +385,7 @@ module SwiftPoemsProject
 
       raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
 
-      @poemID = m[1]
-
-
-      @body = Body.new self, lines.shift
-
-
-      @footer = Footer.new self, lines.pop
+      m[1]
     end
   end
 
@@ -395,10 +403,8 @@ module SwiftPoemsProject
   # (These are blocks of text which contain SPP Transcript metadata, formatted in a manner which is unique to the project)
   class Header < Element
 
-
     def initialize(transcript, content)
       super(transcript,content)
-
 
       @content.each_line do |line|
         
@@ -521,44 +527,143 @@ module SwiftPoemsProject
       headnote_parser = NotaBeneHeadnoteParser.new @transcript, @transcript.poemID, @content, nil, { :footnote_index => @transcript.footnote_index }
 
       # For each line containing the title and head-note fields...
-      @content.each_line do |line|
-        
-        # ...remove the poem ID
+
+      # Split the content on the first occurrence of the sequence "HN1"
+
+      lines = @content.split(/.(?=HN1)/)
+      if lines.length != 2
+        raise NotImplementedError.new "Failed to parse for titles and headnotes within #{@transcript.id}"
+      end
+
+      title_content = lines.shift
+      headnotes_content = lines.shift
+
+      titles = TitleSet.new(self, @content, @transcript.headerElement, @transcript.poemID, { :footnote_index => @transcript.footnote_index })
+      title_content.each_line do |line|        
+
         line.chomp!
-        line.sub!(POEM_ID_PATTERN, '')
+
+        # ...remove the poem ID
+        # @todo This should be refactored into <tei:title>
+        line = line.sub(POEM_ID_PATTERN, '')
+
         line.strip!
         
         # ...continue to the next line if the line is empty or simply consists of the string "--"
         if line == '' or line == '--'
-          
           next
         end
+
+        tokens = @transcript.nota_bene.tokenize_titles(line)
+
+        # As there exists no actual terminating character for titles, the index within the array must be used in order to generate the note
+        tokens[0..-2].each do |token|
+          titles.push token
+        end
+
+        titles.close tokens.last
+
+        @transcript.footnote_index = titles.footnote_index
+      end
         
-        # Omit lines containing HN and -- for Headnote values
-        # (These values do not map to any Element within a given TEI schema
+      # Omit lines containing HN and -- for Headnote values
+      # (These values do not map to any Element within a given TEI schema
         
-        # This needs to be extended for header content which spans multiple lines
+      headnotes_content.each_line do |line|
+
+        # ...remove the poem ID
+        # @todo This should be refactored into <tei:title>
+        line = line.sub(POEM_ID_PATTERN, '')
         
-        if not @transcript.headnote_open and not /HN\d+/.match(line)
+        headnote_parser.footnote_index = @transcript.footnote_index
           
-          # @todo Refactor
-          title_parser = NotaBeneTitleParser.new(self, @transcript.poemID, line, nil, { :footnote_index => @transcript.footnote_index })
-          title_parser.parse
-          title_parser.correct
+        # Work-around
+        # @todo Refactor
+        @transcript.headnote_open = true
+
+        headnote_parser.parse line
+        @transcript.footnote_index = headnote_parser.footnote_index
+      end
+    end
+  end
+  
+  # For Titles within the Swift Poems Project
+  class TitleSet < Element
+
+    attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document, :poem    
+
+    def initialize(transcript, content, element, poem_id, options = {})
+      super(transcript,content)
+
+      @element = element
+
+      # Legacy attribute
+      @poem = @content
+
+      @poem_id = poem_id
+
+      # Legacy attribute
+      @id = @poem_id
+
+      @document = @element.document
+      @sponsor = @element.at_xpath('tei:fileDesc/tei:titleStmt/tei:sponsor', TEI_NS)
+      @opened_tags = []
+
+      @footnote_index = options[:footnote_index] || 1
+        
+      @titles = [ SwiftPoemsProject::Title.new(self, @id, { :footnote_index => @footnote_index }) ]
+    end
+
+    # Syntactic sugar
+    # @todo Refactor
+    def length
+      @titles.length
+    end
+
+    # Syntactic sugar
+    # @todo Refactor
+    def last
+      @titles.last
+    end
+
+    # This is likely deprecated and should be removed
+    def pushTitle
+        
+      last_title = @titles.last
+
+      # Add additional tokens
+      @sponsor.add_previous_sibling @titles.last.elem
+
+      @footnote_index = @titles.last.footnote_index
+
+      @titles << SwiftPoemsProject::Title.new(self, @id, { :footnote_index => @titles.last.footnote_index })
+      @titles.last.has_opened_tag = last_title.has_opened_tag
+
+      if @titles.last.has_opened_tag
+
+        @opened_tags.unshift last_title.current_leaf
+
+        if not last_title.tokens.empty?
           
-          @transcript.footnote_index = title_parser.footnote_index
+          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.tokens.last, @document
         else
-          headnote_parser.footnote_index = @transcript.footnote_index
-          
-          # Work-around
-          # @todo Refactor
-          @transcript.headnote_open = true
-          
-          #  /HN\d/.match(line) # Create the header element
-          headnote_parser.parse line
-          @transcript.footnote_index = headnote_parser.footnote_index
+
+          @titles.last.current_leaf = @titles.last.elem.add_child Nokogiri::XML::Node.new last_title.elem.children.last.name, @document
         end
       end
+    end
+
+    def push(token)
+      # All lines of the title *must* be inserted into a single <title> Element
+      @titles.last.push token
+    end
+
+    def close(token)
+
+      token = token.sub /\r/, ''
+      
+      @titles.last.push token
+      pushTitle
     end
   end
   
@@ -607,8 +712,11 @@ module SwiftPoemsProject
         # This splits for each Nota Bene mode code
         @tokens = @content.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
       end
-    end
 
+      def tokenize_titles(content)
+        content.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
+      end
+    end
   end
 
   module TEI
@@ -697,7 +805,10 @@ EOF
         @poemElement = @poemElem
 
         @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
+      end
 
+      def to_xml
+        @teiDocument.to_xml
       end
 
     end

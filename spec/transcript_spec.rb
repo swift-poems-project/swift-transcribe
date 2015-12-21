@@ -23,5 +23,11 @@ describe 'Transcript' do
         SwiftPoemsProject::Transcript.new @nota_bene
       }.to_not raise_error
     end
+
+    it "parses the titles for #{@file_path} without error" do
+      
+      transcript = SwiftPoemsProject::Transcript.new @nota_bene
+      puts transcript.tei.to_xml
+    end
   end
 end

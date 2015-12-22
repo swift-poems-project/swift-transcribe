@@ -67,9 +67,19 @@ describe 'Transcript' do
                    '/var/lib/spp/master/04M2/686-04M2']
 
     @file_paths.each do |file_path|
+      source = file_path.split('/')[-2]
+      source_dir = File.join(File.dirname(__FILE__), '../../xml', source)
 
       before :each do
         @nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+      end
+
+      after :all do
+        nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+        transcript = SwiftPoemsProject::Transcript.new nota_bene
+        output = transcript.tei.document.to_xml
+        Dir.mkdir source_dir unless Dir.exist? source_dir
+        File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write output }
       end
 
       it "parses the transcript #{file_path} without error" do

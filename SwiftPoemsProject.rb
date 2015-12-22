@@ -228,8 +228,11 @@ module SwiftPoemsProject
     },
 
     'om.' => {
-
       'gap' => {}
+    },
+
+    '^' => {
+      'lb' => {}
     },
   }
 

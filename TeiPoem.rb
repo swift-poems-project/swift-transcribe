@@ -50,7 +50,7 @@ module SwiftPoemsProject
       # Resolves SPP-230
       @poem = @poem.gsub(/_{2,10}/, '_')
 
-      @tokens = tokenize(@poem)
+      @tokens = tokenize(@content)
 #      @link_group = TeiLinkGroup.new @element
       @link_group = transcript.tei.link_group
 
@@ -74,8 +74,42 @@ module SwiftPoemsProject
       # This splits for each Nota Bene mode code
 #      tokens = poem.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
 
+      normal_content = []
+
+      # Need to clean on a line by line basis
+      # This replaces the (rare) cases where line breaks within footnotes are found and encoded using the "_" character
+      # These must be replaced with the "^" character (in order to distinguish these from line breaks within the text, which are encoded differently in TEI)
+      poem.each_line do |line|
+
+        # In order to improve legibility
+        line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('»')
+
+        if line_has_footnote_lb
+          while line_has_footnote_lb and line.index('«FN') < line.index('_') and line.index('_') < line.index('»')
+            line = line.sub('_', '^')
+            line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('»')
+          end
+        end
+
+        line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('»')
+
+        if line_has_footnote_indent
+          while line_has_footnote_indent and line.index('«FN') < line.index('|') and line.index('|') < line.index('»')
+            
+            # This is anomalous, and is actually cleaning data
+            line = line.sub('|', '^')
+            line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('»')
+          end
+        end
+
+        normal_content << line
+      end
+
+      normal_content = normal_content.join("\n")
+
       # This splits for each new stanza
-      tokens = poem.split /_/
+      tokens = normal_content.split /_/
+#      tokens = poem.split /(?<=_)/
     end
     
     def parse

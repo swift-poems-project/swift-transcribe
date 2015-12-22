@@ -30,8 +30,9 @@ module SwiftPoemsProject
       return poem
     end
 
-    def initialize(content, id, work_type, element, footnote_index = 0)
-
+    def initialize(transcript, content, id, work_type, element, footnote_index = 0)
+      
+      @transcript = transcript
       @content = content
       # Legacy attribute
       @poem = @content
@@ -50,7 +51,8 @@ module SwiftPoemsProject
       @poem = @poem.gsub(/_{2,10}/, '_')
 
       @tokens = tokenize(@poem)
-      @link_group = TeiLinkGroup.new @element
+#      @link_group = TeiLinkGroup.new @element
+      @link_group = transcript.tei.link_group
 
       @current_line_number = 0
 

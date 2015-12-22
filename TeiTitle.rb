@@ -89,7 +89,8 @@ module SwiftPoemsProject
             @current_leaf.element.add_previous_sibling ref
          
             # Add an element to <linkGrp>
-            @header.poem.link_group.add_link target, source
+#            @header.poem.link_group.add_link target, source
+            @header.transcript.tei.link_group.add_link target, source
           end
 
           # @todo Resolve

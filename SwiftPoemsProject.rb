@@ -361,9 +361,7 @@ module SwiftPoemsProject
         raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript: doesn't have a body and footer"
       end
 
-
       @body = Body.new self, lines.shift
-
 
       @footer = Footer.new self, lines.pop
     end
@@ -392,7 +390,7 @@ module SwiftPoemsProject
 
   class Element
     
-    attr_reader :content
+    attr_reader :content, :transcript
 
     def initialize(transcript, content)
       @transcript = transcript
@@ -533,7 +531,10 @@ module SwiftPoemsProject
 
       lines = @content.split(/.(?=HN1)/)
       if lines.length != 2
-        raise NotImplementedError.new "Failed to parse for titles and headnotes within #{@transcript.id}"
+        
+        # Handling for cases in which the headnotes aren't delimited using the "HN" sequence
+        # Please see SPP-606
+        lines = [ @content.split(/\n/)[0], @content.split(/\n/)[1..-1].join("\n") ]
       end
 
       title_content = lines.shift
@@ -593,13 +594,13 @@ module SwiftPoemsProject
 
     attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document, :poem    
 
-    def initialize(transcript, content, element, poem_id, options = {})
-      super(transcript,content)
+    def initialize(heading, content, element, poem_id, options = {})
+      super(heading.transcript,content)
 
       @element = element
 
       # Legacy attribute
-      @poem = @content
+      @poem = content
 
       @poem_id = poem_id
 
@@ -682,7 +683,7 @@ module SwiftPoemsProject
       # Legacy
       # @todo Refactor so that the above becomes valid
       normal_content = SwiftPoemsProject::Poem.normalize(@content)
-      @poem = SwiftPoemsProject::Poem.new(normal_content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
+      @poem = SwiftPoemsProject::Poem.new(@transcript, normal_content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
       @poem.parse
     end
   end
@@ -783,7 +784,7 @@ EOF
 
     class Document
 
-      attr_reader :document
+      attr_reader :document, :link_group
 
       # Legacy attributes
       attr_reader :teiDocument, :headerElement, :textElem, :bookElem, :poemElem, :poemElement
@@ -809,6 +810,9 @@ EOF
         @poemElem = @bookElem.at_xpath('tei:div', TEI_NS)
         @poemElement = @poemElem
 
+        # Link Group
+        @link_group = TeiLinkGroup.new @poemElem
+
         @headerElement = @teiDocument.at_xpath('tei:TEI/tei:teiHeader', TEI_NS)
       end
 
@@ -818,6 +822,8 @@ EOF
 
     end
   end
+
+  
 
   class TeiHeader
     

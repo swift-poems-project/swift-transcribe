@@ -113,7 +113,7 @@ module SwiftPoemsProject
             @current_leaf['n'] = @footnote_index
 
             # Extend for SPP-253
-            xml_id = "spp-#{@heads.id}-footnote-#{@footnote_index}"
+            xml_id = "spp-#{@heads.id}-footnote-headnote-#{@footnote_index}"
             @current_leaf['xml:id'] = xml_id
 
             target = "##{xml_id}"
@@ -126,7 +126,7 @@ module SwiftPoemsProject
             @current_leaf.add_previous_sibling ref
          
             # Add an element to <linkGrp>
-            @heads.parser.poem.link_group.add_link source, target
+            @heads.transcript.tei.link_group.add_link source, target
           end
 
           # Iterate through all of the markup and set the appropriate TEI attributes

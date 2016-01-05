@@ -4,12 +4,15 @@ module SwiftPoemsProject
 
   class NotaBeneHeadFieldParser
 
+    attr_reader :transcript
+
+    # Legacy attributes
     attr_reader :teiParser, :document, :footnote_index, :element, :poem
 
-    def initialize(teiParser, id, text, docTokens = nil, options = {})
+    def initialize(transcript, id, text, docTokens = nil, options = {})
 
-      @teiParser = teiParser
-#      @poem = teiParser.poem
+      @transcript = transcript
+      @teiParser = @transcript
 
       @id = id
       @text = text

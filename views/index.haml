@@ -1,18 +1,30 @@
 !!! 5
 
 %h1
-  The Swift Poems Project
+  Swift Encode
 %h2
-  Swift Poem Annotation Collections
+  Encoding Engine for the Swift Poems Project
+%h3
+  Sources
 - Dir.foreach(appPath) do |collId|
-
+  %ul
   - if collId != '.' and collId != '..' and File.directory? "#{appPath}/#{collId}" and not ignoredDirs.include? collId
-    %h3=collId
-    %ul
+    %li
+      %a(title=collId){:href => "##{collId}"}=collId
+- Dir.foreach(appPath) do |collId|
+  - if collId != '.' and collId != '..' and File.directory? "#{appPath}/#{collId}" and not ignoredDirs.include? collId
+    %h4
+      %a(name=collId)=collId
+    %table
+      %tr
+        %th Transcript ID
+        %th TEI
+        %th HTML
       - Dir.foreach("#{appPath}/#{collId}") do |docId|
-
         - if docId != '.' and docId != '..' and not File.directory? "#{appPath}/#{collId}/#{docId}" and not ignoredFiles.include? docId
-          %li
-            %a(title=docId){:href => "/spp/#{collId}/#{docId}"} #{docId} (TEI P5)
-          %li
-            %a(title=docId){:href => "/spp/xhtml/#{collId}/#{docId}"} #{docId} (XHTML 1.1)
+          %tr
+            %td=docId
+            %td
+              %a(title=docId){:href => "encode/#{collId}/#{docId}"} Download
+            %td
+              %a(title=docId){:href => "encode/#{collId}/#{docId}/html"} View

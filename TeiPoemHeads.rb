@@ -4,12 +4,18 @@ module SwiftPoemsProject
 
   class TeiPoemHeads
 
-    attr_reader :elem, :id, :parser
+    attr_reader :elem, :id, :transcript
+
+    # Legacy attributes
+    attr_reader :parser
     attr_accessor :opened_tags
 
-    def initialize(parser, elem, id, index, options = {})
+    def initialize(transcript, elem, id, index, options = {})
 
-      @parser = parser
+      @transcript = transcript
+
+      # Legacy attributes
+      @parser = @transcript
 
       @elem = elem
       @id = id

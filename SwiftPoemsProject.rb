@@ -389,6 +389,11 @@ module SwiftPoemsProject
 
       m[1]
     end
+
+    def to_html(xslt_file_path = 'xslt/tei_xhtml.xslt')
+      xslt = Nokogiri::XSLT(File.read(xslt_file_path))
+      xslt.transform(@tei.document)
+    end
   end
 
   class Element

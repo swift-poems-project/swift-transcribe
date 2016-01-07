@@ -81,31 +81,36 @@ module SwiftPoemsProject
       # These must be replaced with the "^" character (in order to distinguish these from line breaks within the text, which are encoded differently in TEI)
       poem.each_line do |line|
 
+
         # In order to improve legibility
-        line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('»')
+        line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('.»')
 
         if line_has_footnote_lb
-          while line_has_footnote_lb and line.index('«FN') < line.index('_') and line.index('_') < line.index('»')
+          while line_has_footnote_lb and line.index('«FN') < line.index('_') and line.index('_') < line.index('.»')
             line = line.sub('_', '^')
-            line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('»')
+            line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('.»')
           end
         end
 
-        line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('»')
+        line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('.»')
 
         if line_has_footnote_indent
-          while line_has_footnote_indent and line.index('«FN') < line.index('|') and line.index('|') < line.index('»')
+          while line_has_footnote_indent and line.index('«FN') < line.index('|') and line.index('|') < line.index('.»')
             
             # This is anomalous, and is actually cleaning data
             line = line.sub('|', '^')
-            line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('»')
+            line_has_footnote_indent = line.index('«FN') && line.index('|') && line.index('.»')
           end
         end
+
+
 
         normal_content << line
       end
 
       normal_content = normal_content.join("\n")
+
+
 
       # This splits for each new stanza
       tokens = normal_content.split /_/
@@ -227,7 +232,6 @@ module SwiftPoemsProject
 
       if sorted_indices.length > valid_range.length
 
-        puts @element.to_xml
         raise NotImplementedError.new "Duplicate lines found"
 
         # Handling for duplicated line numbers

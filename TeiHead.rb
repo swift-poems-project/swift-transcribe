@@ -337,7 +337,11 @@ module SwiftPoemsProject
         @heads.opened_tags.delete_at(1)
 
       elsif token == '_' # Open a new paragraph for the '_' operator
-        pushParagraph
+
+        # Resolves SPP-620
+        # pushParagraph
+        @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or
           (NB_TERNARY_TOKEN_TEI_MAP.has_key? @current_leaf.name and NB_TERNARY_TOKEN_TEI_MAP[@current_leaf.name][:secondary].has_key? token) or
           (NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and NB_MARKUP_TEI_MAP[@current_leaf.name].has_key? token) or

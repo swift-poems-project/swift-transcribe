@@ -10,6 +10,9 @@ gem 'rspec'
 gem 'activemdb'
 gem 'rails'
 gem 'fastercsv'
+gem 'daemons'
+gem 'listen', '~> 3.0'
+gem 'thor'
 
 group :development, :staging do
 

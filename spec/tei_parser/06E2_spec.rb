@@ -16,78 +16,45 @@ describe 'TeiParser' do
     @nb_store_path = '/var/lib/spp/master'
 
     coll_path = "#{@nb_store_path}/#{source}"
-    Dir.glob("#{coll_path}/*").each_index do |file_index|
-#    [0].each_index do |file_index|
+#    Dir.glob("#{coll_path}/*").each_index do |file_index|
+    [0].each_index do |file_index|
 
       describe "parsing the source #{coll_path}" do
 
-        [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
-#        [ "/var/lib/spp/master/36L-/444-36L-" ].each do |file_path|
+#        [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
+        [ "/var/lib/spp/master/06E2/366-06E2" ].each do |file_path|
           
           before :each do
-
-            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
+            @nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
           end
 
-          after :each do
-
-            @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-            @results = @parser.parse.to_xml
+          after :all do
+            nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+            transcript = SwiftPoemsProject::Transcript.new nota_bene
+            output = transcript.tei.document.to_xml
             Dir.mkdir source_dir unless Dir.exist? source_dir
-            File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write @results }
+            File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write output }
           end
-
+          
           it "parses the transcript #{file_path} without error" do
-
             expect {
-
-              @results = @parser.parse.to_xml
-              puts @results
+              transcript = SwiftPoemsProject::Transcript.new @nota_bene
             }.to_not raise_error
           end
-
-          it "parses all Nota Bene tokens within the transcript #{file_path}" do
-
-            results = @parser.parse.to_xml
-
-            expect(results).not_to match(/«.+»/)
-            expect(results).not_to match(/\|/)
-          end
-
-          context "excluding empty <l> or <p> elements preceding new <lg> elements" do
-
-            it "generates TEI Documents with <l> or <p> elements bearing @n attribute values for the transcript #{file_path}" do
-
-              expect {
-
-                tei_doc = @parser.parse
-
-                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
-                invalid_elements = l_elements.select { |element| not element.has_attribute? 'n' and not element.next_element.nil? and not /\-a$/.match(element['xml:id']) }.map { |element| element.to_xml }
-                expect(invalid_elements).to be_empty
-              }.to_not raise_error
+          
+          context "ensuring that the transcripts can be encoded" do
+            
+            before :each do
+              @transcript = SwiftPoemsProject::Transcript.new @nota_bene
             end
+            
+            it "parses all Nota Bene tokens within the transcript #{file_path}" do
+              results = @transcript.tei.document.to_xml
+              
+              expect(results).not_to match(/«.+»/)
+              expect(results).not_to match(/\|/)
 
-            it "generates TEI Documents with <l> or <p> elements bearing ordered, unique @n attribute values for the transcript #{file_path}" do
-
-              expect {
-
-                tei_doc = @parser.parse
-#                puts tei_doc.to_xml
-
-                l_elements = tei_doc.xpath('//TEI:lg[@type="stanza" or @type="verse-paragraph" or @type="triplet"]/TEI:l', 'TEI' => 'http://www.tei-c.org/ns/1.0')
-                indices = l_elements.select { |element| element.has_attribute? 'n' }.map { |element| element['n'] }.select { |index| not /\d+[a-z]$/.match(index) }
-
-                unless indices.empty?
-
-                  sorted_indices = indices.map { |index| index.to_i }.sort
-                  indices = indices.map { |index| index.to_i }
-
-                  valid_range = (sorted_indices.first..sorted_indices.last)
-
-                  expect(indices).to eq(valid_range.to_a)
-                end
-              }.to_not raise_error
+              puts results
             end
           end
         end
@@ -95,4 +62,3 @@ describe 'TeiParser' do
     end
   end
 end
-

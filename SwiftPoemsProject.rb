@@ -319,7 +319,7 @@ module SwiftPoemsProject
       # Parsing the header
       # @todo Refactor the exception if a header, body, and footer isn't present
       if lines.length != 2
-        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript: doesn't have a header"
+        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript #{@nota_bene.file_path}: doesn't have a header"
       end
 
       @header = Header.new self, lines.shift
@@ -329,7 +329,7 @@ module SwiftPoemsProject
       # Parsing the heading
       # @todo Refactor the exception
       if lines.length != 2
-        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript: doesn't have a heading"
+        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript #{@nota_bene.file_path}: doesn't have a heading"
       end
 
       # Legacy attributes for the state of the transcript
@@ -361,7 +361,7 @@ module SwiftPoemsProject
       lines = lines.last.split(/%%\r?\n?/)
       # @todo Refactor the exception
       if lines.length != 2
-        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript: doesn't have a body and footer"
+        raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript #{@nota_bene.file_path}: doesn't have a body and footer"
       end
 
       @body = Body.new self, lines.shift
@@ -703,11 +703,14 @@ module SwiftPoemsProject
 
     class Document
 
-      attr_reader :content, :tokens
+      attr_reader :content, :tokens, :file_path
 
       def initialize(file_path)
 
-        @filePath = file_path
+        @file_path = file_path
+
+        # Legacy attribute
+        @filePath = @file_path
 
         # Read the file and convert the CP437 encoding into UTF-8
         @content = File.read(@filePath, :encoding => 'cp437:utf-8')

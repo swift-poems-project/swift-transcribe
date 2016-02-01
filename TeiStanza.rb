@@ -76,7 +76,6 @@ module SwiftPoemsProject
     # Push a new line into the stanza
     #
     def push_new_line
-
       @current_line_number += 1
       @footnote_index = @lines.last.footnote_index
       newLine = TeiLine.new @workType, self, { :footnote_index => @footnote_index, :number => @current_line_number }
@@ -128,7 +127,6 @@ module SwiftPoemsProject
     end
 
     def push(token)
-
       # Parse for the line number
       if @lines.last.number.nil?
 

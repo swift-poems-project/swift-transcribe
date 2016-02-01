@@ -89,7 +89,6 @@ module SwiftPoemsProject
     end
     
     def pushToken(token)
-
       # Hard-coding support for footnote parsing
       # @todo Refactor
       if NB_MARKUP_TEI_MAP.has_key? @current_leaf.name and not /«FN./.match(token)

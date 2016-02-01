@@ -1,18 +1,21 @@
 #!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
-
-require "#{File.dirname(__FILE__)}/SwiftPoetryProject"
 require 'sinatra'
 require 'sinatra/cross_origin'
 require 'tilt/haml'
+require 'listen'
+require 'logger'
+
+require "#{File.dirname(__FILE__)}/SwiftPoetryProject"
 
 require 'parseconfig'
 config = ParseConfig.new(File.join(File.dirname(__FILE__), 'config/server.conf').chomp)
 set :bind, config['host']
 set :port, config['port']
-set :fileStorePath, config['file_store_path']
+set :file_store_path, config['file_store_path']
 
 NB_STORE_PATH = config['nb_store_path']
+FILE_STORE_PATH = config['file_store_path']
 
 IGNORED_DIRS = [
                 'TEI-samp',
@@ -59,38 +62,67 @@ IGNORED_FILES = [
                  'SOURCES'
                 ]
 
-get '/:collId/:docId' do
+set :haml, :format => :html5
+
+::Logger.class_eval { alias :write :'<<' }
+access_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)), 'log', 'access.log')
+$access_logger = ::Logger.new(access_log)
+error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)), 'log', 'error.log'), "a+")
+error_logger.sync = true
+
+before do
+  env["rack.errors"] =  error_logger
+end
+
+# Support for the TEI P5 MIME type within a production environment
+configure do
+  enable :logging
+  use ::Rack::CommonLogger, $access_logger
+  mime_type :tei, 'application/tei+xml'
+  enable :cross_origin
+end
+
+def logger
+  $access_logger
+end
+
+get '/poems/:source_id/:poem_id' do
   content_type :tei
-  file_path = "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
+  file_path = "#{NB_STORE_PATH}/#{params[:source_id]}/#{params[:poem_id]}"
   nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
   transcript = SwiftPoemsProject::Transcript.new nota_bene
+
+  # Create the source directory if it doesn't already exist
+  Dir.mkdir( "#{settings.file_store_path}/#{params[:source_id]}" ) unless File.exists?( "settings.file_store_path/#{params[:source_id]}" )
+
+  File.write( "#{settings.file_store_path}/#{params[:source_id]}/#{params[:poem_id]}.tei.xml", transcript.tei.document.to_xml )
   output = transcript.tei.document.to_xml
 end
 
-get '/:collId/:docId/html' do
-  file_path = "#{NB_STORE_PATH}/#{params[:collId]}/#{params[:docId]}"
+get '/poems/:source_id/:poem_id/html' do
+  file_path = "#{NB_STORE_PATH}/#{params[:source_id]}/#{params[:poem_id]}"
   nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
   transcript = SwiftPoemsProject::Transcript.new nota_bene
   html_doc = transcript.to_html File.join(File.dirname(__FILE__), 'xslt', 'tei_xhtml.xslt')
   html_doc.to_xml
 end
 
-get '/:collId/:docId/teibp' do
+get '/poems/:source_id/:poem_id/teibp' do
   return '"Best Practices for TEI in Libraries" transformations not yet implemented.'
 end
 
-get '/:collId/archive' do
-  collId = params[:collId]
+get '/sources/:source_id/archive' do
+  source_id = params[:source_id]
 
   # Convert and archive the collection
   begin
-    tmpCollDirPath = "tmp/#{collId}"
+    tmpCollDirPath = "tmp/#{source_id}"
     
     if not Dir.exists?(tmpCollDirPath)
       Dir.mkdir(tmpCollDirPath, 0755)
     end
 
-    Dir.glob("#{NB_STORE_PATH}/#{collId}/*").select { |path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) and not /tochk/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
+    Dir.glob("#{NB_STORE_PATH}/#{source_id}/*").select { |path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /ANOTHER/.match(path) and not /tochk/.match(path) and /.{3}\-/.match(path) }.each do |file_path|
       doc_id = File.basename(file_path)
       teiP5FilePath = "#{tmpCollDirPath}/#{doc_id}.xml"
       
@@ -106,27 +138,48 @@ get '/:collId/archive' do
     
   # Compress the XML Documents into a GZipped TArchive
   Dir.chdir('tmp')
-  system('tar', '-cvzf', "#{collId}.tar.gz", "#{collId}")
+  system('tar', '-cvzf', "#{source_id}.tar.gz", "#{source_id}")
 
-  Dir.glob("#{collId}/*xml").each { |tei_doc| File.delete(tei_doc) }
+  Dir.glob("#{source_id}/*xml").each { |tei_doc| File.delete(tei_doc) }
 
-  send_file("#{collId}.tar.gz",
+  send_file("#{source_id}.tar.gz",
             {
-              :filename => "#{collId}.tar.gz",
+              :filename => "#{source_id}.tar.gz",
               :type => 'application/x-gzip'
             })
 
   Dir.chdir('..')
 end
 
-set :haml, :format => :html5
-
 get '/' do
   haml :index, :locals => { :appPath => NB_STORE_PATH, :ignoredDirs => IGNORED_DIRS, :ignoredFiles => IGNORED_FILES }
 end
 
-# Support for the TEI P5 MIME type within a production environment
-configure do
-  mime_type :tei, 'application/tei+xml'
-  enable :cross_origin
+# Attempt to integrate a listener for the service
+# listener = Listen.to(NB_STORE_PATH, only: [ /.+\/.+{4}\/.+{8}$/ ]) do |modified, added, removed|
+listener = Listen.to(NB_STORE_PATH) do |modified, added, removed|
+  (modified + added).select { |path| path.match(/.+\/.+{4}\/.+{8}$/) and File.file?(path) }.each do |file_path|
+    logger.info "Encoding #{file_path}"
+
+    # Encode the file
+    nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+
+    begin
+      transcript = SwiftPoemsProject::Transcript.new nota_bene
+    rescue Exception => e
+      logger.info "Failed to encode #{file_path}: #{e.message}"
+    else
+      source_path = File.expand_path("#{file_path}/..")
+      source = File.basename(source_path)
+
+      poem_file_name = File.basename(file_path)
+      poem = poem_file_name[0..3]
+
+      Dir.mkdir( "#{FILE_STORE_PATH}/#{source}" ) unless File.exists?( "#{FILE_STORE_PATH}/#{source}" )
+      File.write( "#{FILE_STORE_PATH}/#{source}/#{poem_file_name}.tei.xml", transcript.tei.document.to_xml )
+
+      File.symlink( "#{FILE_STORE_PATH}/#{source}/#{poem_file_name}.tei.xml", "#{FILE_STORE_PATH}/#{poem}/#{poem_file_name}.tei.xml" ) unless File.exists?( "#{FILE_STORE_PATH}/#{poem}/#{poem_file_name}.tei.xml" )
+    end
+  end
 end
+listener.start

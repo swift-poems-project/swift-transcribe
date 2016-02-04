@@ -110,8 +110,6 @@ module SwiftPoemsProject
 
       normal_content = normal_content.join("\n")
 
-
-
       # This splits for each new stanza
       tokens = normal_content.split /_/
 #      tokens = poem.split /(?<=_)/
@@ -126,7 +124,13 @@ module SwiftPoemsProject
           :current_line_number => @current_line_number
         }
 
-        @stanzas << TeiStanza.new(self, stanza_content, @work_type, @stanzas.size + 1, )
+        # puts "content:"
+        # puts stanza_content
+
+        # puts "the following tags are opened from the previous stanza:"
+        # puts @opened_tags
+
+        @stanzas << TeiStanza.new(self, stanza_content, @work_type, @stanzas.size + 1, stanza_options)
         @stanzas.last.parse
 
         @opened_tags = @stanzas.last.opened_tags

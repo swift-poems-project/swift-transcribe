@@ -1,4 +1,8 @@
+#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
+
+require 'csv'
+
 module SwiftPoemsProject
 
   # Constants
@@ -168,8 +172,7 @@ module SwiftPoemsProject
 #    },
 
     # The end-of-center (FL, FL) delta
-#    '«FL»' => {
-      
+#    '«FL»' => {      
 #      '«MDNM»' => { 'note' => { 'rend' => "flush left" } },
 #    },
     
@@ -394,6 +397,7 @@ module SwiftPoemsProject
       xslt = Nokogiri::XSLT(File.read(xslt_file_path))
       xslt.transform(@tei.document)
     end
+
   end
 
   class Element
@@ -701,11 +705,13 @@ module SwiftPoemsProject
 
   module NotaBene
 
+    CLEANING_FILE_PATH = 'cleaning.csv'
+
     class Document
 
       attr_reader :content, :tokens, :file_path
 
-      def initialize(file_path)
+      def initialize(file_path, cleaning_file_path = CLEANING_FILE_PATH)
 
         @file_path = file_path
 
@@ -718,6 +724,8 @@ module SwiftPoemsProject
         # The tokens should be related to a single document
         @tokens = []
         @termToken = nil
+
+        clean cleaning_file_path
       end
 
       def tokenize
@@ -728,6 +736,17 @@ module SwiftPoemsProject
 
       def tokenize_titles(content)
         content.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
+      end
+
+      def clean(csv_file_path)
+        CSV.foreach(csv_file_path, headers: :first_row, return_headers: false) do |row|
+
+          # Replace each row
+          line_pattern = row[2]
+          replacement = row[3]
+
+          @content = @content.gsub(/#{Regexp.escape(line_pattern)}/, replacement)
+        end
       end
     end
   end

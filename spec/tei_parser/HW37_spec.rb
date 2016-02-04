@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 require_relative '../spec_helper'
 
 describe 'TeiParser' do
@@ -7,20 +9,58 @@ describe 'TeiParser' do
     @nb_store_path = '/var/lib/spp/master'
   end
 
-  @nb_store_path = '/var/lib/spp/master'
+  describe 'parsing all sources' do
 
-  # Dir.glob("#{@nb_store_path}/HW37/*").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path)and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) }.each do |file_path|
-  # Dir.glob("#{@nb_store_path}/HW37/006-HW37").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path)and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) }.each do |file_path|
-  Dir.glob("#{@nb_store_path}/HW37/011-HW37").select {|path| not /tocheck/.match(path) and not /PUMP/.match(path) and not /tochk/.match(path) and not /TOCHECK/.match(path) and not /proofed\.by/.match(path) and not /pages$/.match(path) and not /!W61500B/.match(path) and not /README$/.match(path) and not /M63514W2/.match(path) and not /FULL\.NB3/.match(path) and not /FULLTEXT\.HTM/.match(path) and not /FULL@\.NB3/.match(path)and not /TRANS/.match(path) and not /NEWFULL\.RTF/.match(path) and not /TR$/.match(path) }.each do |file_path|
-    
+    source = 'HW37'
+    source_dir = File.join(File.dirname(__FILE__), '../../xml', source)
+    @nb_store_path = '/var/lib/spp/master'
 
-    it "parses the Nota Bene document #{file_path}" do
+    coll_path = "#{@nb_store_path}/#{source}"
+    Dir.glob("#{coll_path}/*").each_index do |file_index|
+#    [0].each_index do |file_index|
 
-      expect {
+      describe "parsing the source #{coll_path}" do
 
-        @parser = SwiftPoetryProject::TeiParser.new "#{file_path}"
-        puts @parser.parse.to_xml
-      }.to_not raise_error
+        [ Dir.glob("#{coll_path}/*")[file_index] ].each do |file_path|
+#        [ "/var/lib/spp/master/HW37/016-HW37" ].each do |file_path|
+#        [ "/var/lib/spp/master/HW37/006-HW37" ].each do |file_path|
+#        [ "/var/lib/spp/master/HW37/060-HW37" ].each do |file_path|
+          
+          before :each do
+            @nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+          end
+
+          after :all do
+            nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
+            transcript = SwiftPoemsProject::Transcript.new nota_bene
+            output = transcript.tei.document.to_xml
+            Dir.mkdir source_dir unless Dir.exist? source_dir
+            File.open(File.join(source_dir, "#{File.basename(file_path)}.tei.xml"), 'w') {|f| f.write output }
+          end
+          
+          it "parses the transcript #{file_path} without error" do
+            expect {
+              transcript = SwiftPoemsProject::Transcript.new @nota_bene
+            }.to_not raise_error
+          end
+          
+          context "ensuring that the transcripts can be encoded" do
+            
+            before :each do
+              @transcript = SwiftPoemsProject::Transcript.new @nota_bene
+            end
+            
+            it "parses all Nota Bene tokens within the transcript #{file_path}" do
+              results = @transcript.tei.document.to_xml
+              
+              expect(results).not_to match(/«.+»/)
+              expect(results).not_to match(/\|/)
+
+              puts results
+            end
+          end
+        end
+      end
     end
   end
 end

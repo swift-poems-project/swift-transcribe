@@ -84,7 +84,7 @@ class SwiftEncodeCLI < Thor
       file_path = poem_file_path
       relative_path = poem_file_name
 
-        
+      # $stdout.puts "Encoding #{file_path}..."
 
       nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
       begin

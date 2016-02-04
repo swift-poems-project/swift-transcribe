@@ -52,6 +52,8 @@ module SwiftPoemsProject
     def parse
       @content.each_line do |line|
 
+        # puts "Appending the line: #{line}"
+
         line = line.sub POEM_ID_PATTERN, ''
         # line = line.lstrip
 
@@ -127,6 +129,7 @@ module SwiftPoemsProject
     end
 
     def push(token)
+
       # Parse for the line number
       if @lines.last.number.nil?
 
@@ -155,6 +158,5 @@ module SwiftPoemsProject
 
       return @current_line_number
     end
-
   end
 end

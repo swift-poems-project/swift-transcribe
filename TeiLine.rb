@@ -176,10 +176,16 @@ module SwiftPoemsProject
 
      def pushSingleToken(token)
 
-       if NB_DELTA_FLUSH_TEI_MAP.has_key? token
+       # Extended handling for "_" characters
+       # SPP-240
+       #
+       if token == NB_EMPTY_LINE
+         if @current_leaf.is_a? Nokogiri::XML::Element
+           @current_leaf.add_next_sibling Nokogiri::XML::Node.new(@lineElemName, @teiDocument)
+         end
+       elsif NB_DELTA_FLUSH_TEI_MAP.has_key? token
 
          current_leaf = FlushDelta.new(token, @teiDocument, @current_leaf)
-
        elsif NB_DELTA_ATTRIB_TEI_MAP.has_key? token
 
          current_leaf = AttributeNotaBeneDelta.new(token, @teiDocument, @current_leaf)

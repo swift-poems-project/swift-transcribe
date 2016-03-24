@@ -1681,7 +1681,6 @@ EOF
    end
 
    def parsePoem
-
      poem.parse
      poem.correct
      @teiDocument

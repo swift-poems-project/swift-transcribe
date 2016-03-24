@@ -15,6 +15,8 @@ module SwiftPoemsProject
 #  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}\d+\s/
 
   DECORATOR_PATTERN = /«MD[SUNMD]{2}»\*(«MDNM»)?/
+  
+  NB_EMPTY_LINE = '_'
 
   # Nota Bene toke maps
   NB_TERNARY_TOKEN_TEI_MAP = {
@@ -237,6 +239,8 @@ module SwiftPoemsProject
     '^' => {
       'lb' => {}
     },
+
+    NB_EMPTY_LINE => { }
   }
 
   NB_DELTA_FLUSH_TEI_MAP = {
@@ -296,6 +300,7 @@ module SwiftPoemsProject
 #    /(?<!«MDNM»|«FN1)·/ => ' ',
     /─ / => '─'    
   }
+
 
   # The XML TEI namespace
   TEI_NS = {'tei' => 'http://www.tei-c.org/ns/1.0'}

@@ -52,10 +52,9 @@ module SwiftPoemsProject
     def parse
       @content.each_line do |line|
 
-        # puts "Appending the line: #{line}"
-
         line = line.sub POEM_ID_PATTERN, ''
-        # line = line.lstrip
+
+        # puts "Appending the line: #{line}"
 
         if @lines.length > 1 or not @lines.last.content.empty?
           push_new_line

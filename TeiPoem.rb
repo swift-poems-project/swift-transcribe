@@ -82,7 +82,6 @@ module SwiftPoemsProject
       # These must be replaced with the "^" character (in order to distinguish these from line breaks within the text, which are encoded differently in TEI)
       poem.each_line do |line|
 
-
         # In order to improve legibility
         line_has_footnote_lb = line.index('«FN') && line.index('_') && line.index('.»')
 
@@ -110,8 +109,9 @@ module SwiftPoemsProject
       normal_content = normal_content.join("\n")
 
       # This splits for each new stanza
-      tokens = normal_content.split /_/
-#      tokens = poem.split /(?<=_)/
+      # tokens = normal_content.split /_/
+      # tokens = normal_content.lines
+      tokens = [ normal_content ]
     end
     
     def parse
@@ -122,9 +122,6 @@ module SwiftPoemsProject
           :footnote_index => @footnote_index,
           :current_line_number => @current_line_number
         }
-
-        # puts "content:"
-        # puts stanza_content
 
         # puts "the following tags are opened from the previous stanza:"
         # puts @opened_tags

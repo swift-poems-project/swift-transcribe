@@ -37,6 +37,7 @@ module SwiftPoemsProject
       # Legacy attribute
       @poem = @content
 
+      # @id = normalize_id(id)
       @id = id
       @work_type = work_type
       @lg_type = @work_type == POEM ? 'stanza' : 'verse-paragraph'
@@ -103,8 +104,6 @@ module SwiftPoemsProject
           end
         end
 
-
-
         normal_content << line
       end
 
@@ -135,45 +134,6 @@ module SwiftPoemsProject
 
         @opened_tags = @stanzas.last.opened_tags
         @footnote_index = @stanzas.last.footnote_index
-      end
-    end
-
-    def parse_deprecated
-
-      # Classify our tokens
-      while not @tokens.empty?
-
-        token = @tokens.shift
-
-        # Create a new stanza
-        # There are apparently stanzas within footnotes; We ignore these
-#        if /_+/.match token and @stanzas.last.opened_tags.empty?
-
-#          # Append the new stanza to the poem body
-#          @current_line_number += 1
-
-#          @stanzas << TeiStanza.new(self, @work_type, @stanzas.size + 1, {
-#                                      :opened_tags => @stanzas.last.opened_tags,
-#                                      :footnote_index => @stanzas.last.footnote_index,
-#                                      :current_line_number => @current_line_number
-#                                    })
-
-#          token = @tokens.shift
-#        end
-
-        # For each stanza...
-        @stanzas.last.parse
-
-        # Solution implemented for SPP-86
-        #
-        # @todo Refactor
-        if token.match /^[^«].+?»$/
-          raise NotImplementedError, "Could not parse the following terminal «FN1· sequence: #{token}"
-        end
-
-        # @current_line_number = @stanzas.last.push token
-
-        
       end
     end
 

@@ -302,6 +302,13 @@ module SwiftPoemsProject
 
   POEM_ID_PATTERN = /^[0-9A-Z\!\-]{8}\s+/
 
+  ID_ESCAPE_CHARS = {
+    '!' => '0021',
+    '#' => '0023',
+    '$' => '0024',
+    '@' => '0040',
+  }
+
   # This models the functionality unique to Swift Poems Project Transcripts (i. e. Nota Bene Documents)
   # All tokenization is to be refactored here
   class Transcript
@@ -311,6 +318,43 @@ module SwiftPoemsProject
     # Legacy attributes
     attr_reader :poemID, :teiDocument, :documentTokens, :headerElement, :poemElem, :workType
     attr_accessor :headnote_open, :footnote_index, :headnote_opened_index
+
+    # Normalize the Poem ID for character escape sequences
+    # Please see SPP-652
+    #
+    def normalize_id(id)
+
+      normal_id = id
+      ID_ESCAPE_CHARS.each_pair do |char, code|
+        normal_id = normal_id.gsub(/#{Regexp.escape(char)}/, code)
+      end
+
+      return normal_id
+    end
+
+    # Legacy functionality
+    # @todo Refactor
+    def parse_id
+
+      # Extract the poem ID
+      m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(@nota_bene.content)
+
+      # Searching for alternate patterns
+      # Y46B45L5
+      # Y09C27L3
+      m = /([0-9A-Z\!\-]{8})   /.match(@nota_bene.content) if not m
+
+      # «MDBO»Filename:«MDNM» 920-0201
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-#\$]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
+
+      if not m
+        raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
+      else
+        id = m[1]
+        normalize_id(id)
+      end
+    end
 
     def initialize(nota_bene)
 
@@ -372,32 +416,11 @@ module SwiftPoemsProject
       @footer = Footer.new self, lines.pop
     end
 
-    # Legacy functionality
-    # @todo Refactor
-    def parse_id
-
-      # Extract the poem ID
-      m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(@nota_bene.content)
-
-      # Searching for alternate patterns
-      # Y46B45L5
-      # Y09C27L3
-      m = /([0-9A-Z\!\-]{8})   /.match(@nota_bene.content) if not m
-
-      # «MDBO»Filename:«MDNM» 920-0201
-      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
-      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-#\$]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
-
-      raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
-
-      m[1]
-    end
 
     def to_html(xslt_file_path = 'xslt/tei_xhtml.xslt')
       xslt = Nokogiri::XSLT(File.read(xslt_file_path))
       xslt.transform(@tei.document)
     end
-
   end
 
   class Element
@@ -429,7 +452,7 @@ module SwiftPoemsProject
             respStmtElem = Nokogiri::XML::Node.new('respStmt', @transcript.tei.teiDocument)
             nameElem = Nokogiri::XML::Node.new('name', @transcript.tei.teiDocument)
             
-            transcriber_m = /Transcriber & date:.?«MDNM.?» (.+) /.match(line)
+            transcriber_m = /Transcriber & date:.?«MDNM.?» (.+)\s?/.match(line)
             
             if transcriber_m
               name = transcriber_m[1]
@@ -642,7 +665,6 @@ module SwiftPoemsProject
 
     # This is likely deprecated and should be removed
     def pushTitle
-        
       last_title = @titles.last
 
       # Add additional tokens
@@ -735,7 +757,7 @@ module SwiftPoemsProject
       end
 
       def tokenize_titles(content)
-        content.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?=_\|)|(?<=_\|)/
+        content.split /(?=«)|(?=\.»)|(?<=«FN1·)|(?<=»)|(?=\s\|)|(?<=\s\|)|(?=_\|)|(?<=_\|)/
       end
 
       def clean(csv_file_path)

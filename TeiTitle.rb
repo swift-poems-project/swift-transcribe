@@ -206,7 +206,7 @@ module SwiftPoemsProject
         token = token.sub(/\|/, '')
         token = token.lstrip
       end
-      
+
       @current_leaf.add_child Nokogiri::XML::Text.new token, @document
     end
     

@@ -86,25 +86,43 @@ def logger
   $access_logger
 end
 
-get '/poems/:source_id/:poem_id' do
+get '/' do
+  haml :index
+end
+
+get '/sources' do
+  haml :sources, :locals => { :appPath => NB_STORE_PATH, :ignoredDirs => IGNORED_DIRS, :ignoredFiles => IGNORED_FILES }
+end
+
+get '/sources/:source_id' do
+  haml :source, :locals => { :appPath => NB_STORE_PATH, :ignoredDirs => IGNORED_DIRS, :ignoredFiles => IGNORED_FILES, :source_id => params[:source_id] }
+end
+
+get '/transcripts/:poem_id/download' do
   content_type :tei
-  file_path = "#{NB_STORE_PATH}/#{params[:source_id]}/#{params[:poem_id]}"
+
+  source_id = params[:poem_id][-4..-1]
+  file_path = "#{NB_STORE_PATH}/#{source_id}/#{params[:poem_id]}"
   nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
   transcript = SwiftPoemsProject::Transcript.new nota_bene
 
   # Create the source directory if it doesn't already exist
-  Dir.mkdir( "#{settings.file_store_path}/#{params[:source_id]}" ) unless File.exists?( "settings.file_store_path/#{params[:source_id]}" )
+  Dir.mkdir( "#{settings.file_store_path}/#{source_id}" ) unless File.exists?( "#{settings.file_store_path}/#{source_id}" )
 
-  File.write( "#{settings.file_store_path}/#{params[:source_id]}/#{params[:poem_id]}.tei.xml", transcript.tei.document.to_xml )
+  File.write( "#{settings.file_store_path}/#{source_id}/#{params[:poem_id]}.tei.xml", transcript.tei.document.to_xml )
   output = transcript.tei.document.to_xml
 end
 
-get '/poems/:source_id/:poem_id/html' do
-  file_path = "#{NB_STORE_PATH}/#{params[:source_id]}/#{params[:poem_id]}"
+get '/transcripts/:poem_id' do
+  source_id = params[:poem_id][-4..-1]
+
+  file_path = "#{NB_STORE_PATH}/#{source_id}/#{params[:poem_id]}"
   nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
   transcript = SwiftPoemsProject::Transcript.new nota_bene
   html_doc = transcript.to_html File.join(File.dirname(__FILE__), 'xslt', 'tei_xhtml.xslt')
-  html_doc.to_xml
+
+  # html_doc.to_xml
+  haml :transcript, :locals => { :document => html_doc.to_xml, :transcript_id => params[:poem_id] }
 end
 
 get '/poems/:source_id/:poem_id/teibp' do
@@ -151,13 +169,9 @@ get '/sources/:source_id/archive' do
   Dir.chdir('..')
 end
 
-get '/' do
-  haml :index, :locals => { :appPath => NB_STORE_PATH, :ignoredDirs => IGNORED_DIRS, :ignoredFiles => IGNORED_FILES }
-end
-
 # Attempt to integrate a listener for the service
 # listener = Listen.to(NB_STORE_PATH, only: [ /.+\/.+{4}\/.+{8}$/ ]) do |modified, added, removed|
-listener = Listen.to(NB_STORE_PATH) do |modified, added, removed|
+listener = Listen.to(NB_STORE_PATH) do |modified, added|
   (modified + added).select { |path| path.match(/.+\/.+{4}\/.+{8}$/) and File.file?(path) }.each do |file_path|
     logger.info "Encoding #{file_path}"
 

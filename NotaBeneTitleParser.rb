@@ -57,6 +57,10 @@ module SwiftPoemsProject
 
       def push(token)
 
+        puts 'TRACE'
+        puts token
+        exit(1)
+
         if @titles.length == 1 and @titles.last.elem.content.empty?
 
           if /\|/.match token

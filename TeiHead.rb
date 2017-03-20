@@ -86,6 +86,7 @@ module SwiftPoemsProject
 
       # SPP-156
       @footnote_index = options[:footnote_index] || 0
+      @mode = options.fetch(:mode, READING)
     end
     
     def pushToken(token)
@@ -143,10 +144,10 @@ module SwiftPoemsProject
           
           opened_tag = @heads.opened_tags.first
 
+          # Recursively iterate for existing, opened tags
           while not opened_tag.nil? and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
             closed_tag = @heads.opened_tags.shift
-
             closed_tag_name = NB_MARKUP_TEI_MAP[closed_tag.name][token].keys[0]
 
             # @todo Integrate Nota Bene Delta Objects
@@ -160,7 +161,9 @@ module SwiftPoemsProject
           end
 
           # Work-around for "overridden" Nota Bene Deltas
-          if not( /^«FN/.match @current_leaf.name and /»/.match token) and token != '«MDNM»' and not /\.»/.match token
+          #
+          # Is this work-around still needed?
+          if not( /^«FN/.match @current_leaf.name and /»/.match token) and token != '«MDNM»' and not /\.?»/.match token
             
             # Add the cloned token
             newLeaf = Nokogiri::XML::Node.new token, @document
@@ -267,16 +270,14 @@ module SwiftPoemsProject
       end
       
       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-      NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-        
-        token = token.gsub(nbCharTokenPattern, utf8Char)
+      NB_ASCII_SEQS.each do |ascii_seq, utf8_seq|
+        token = token.gsub(ascii_seq, utf8_seq)
       end
       
-      if token == '|'
-        
+      if token == '|' && @mode == READING
+        # This ensures that "[pipes] consistently signify a blank line" as specified by the PI
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
       else
-        
         @current_leaf.add_child Nokogiri::XML::Text.new token, @document
       end
     end
@@ -335,10 +336,9 @@ module SwiftPoemsProject
         @heads.opened_tags[1].parent.add_child @heads.opened_tags[0]
         @heads.opened_tags.delete_at(1)
 
-      elsif token == '_' # Open a new paragraph for the '_' operator
+      elsif token == '_' && @mode == READING
 
-        # Resolves SPP-620
-        # pushParagraph
+        # This ensures that "underbars consistently signify a blank line" as specified by the PI
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
 
       elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token or

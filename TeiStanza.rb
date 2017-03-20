@@ -54,8 +54,6 @@ module SwiftPoemsProject
 
         line = line.sub POEM_ID_PATTERN, ''
 
-        # puts "Appending the line: #{line}"
-
         if @lines.length > 1 or not @lines.last.content.empty?
           push_new_line
         end
@@ -149,8 +147,10 @@ module SwiftPoemsProject
         @current_line_number = @lines.last.push token
       else
 
+        # @todo Refactor
+        # Probably redundant with Transcript#parse_id
         token = token.sub /\r/, ''
-        token = token.sub(/^[0-9A-Z\!\-]{8}/, '').strip if token.sub(/^[0-9A-Z\!\-]{8}/, '').strip.empty?
+        token = token.sub(/^[0-9A-Z\!\-\#\$]{8}/, '').strip if token.sub(/^[0-9A-Z\!\-]{8}/, '').strip.empty?
 
         @current_line_number = @lines.last.push token unless token.strip.empty?
       end

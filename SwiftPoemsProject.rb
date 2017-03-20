@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 require 'csv'
+require "#{File.dirname(__FILE__)}/reporting"
 
 module SwiftPoemsProject
 
@@ -10,6 +11,10 @@ module SwiftPoemsProject
   # Types of documents
   POEM = 'poem'
   LETTER = 'letter'
+
+  # Modes for encoding
+  READING = 'reading'
+  COLLATION = 'collation'
 
   # Regular expression for extracting poem ID's
 #  POEM_ID_PATTERN = /[0-9A-Z\!\-]{8}\s{3}\d+\s/
@@ -25,8 +30,7 @@ module SwiftPoemsProject
 
       :secondary => {
 
-#        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
-        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+        '«MDSD»' => { 'hi' => { 'rend' => 'small-caps' } }
       },
 
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } }
@@ -37,11 +41,9 @@ module SwiftPoemsProject
     '«MDBU»' => {
 
       :secondary => { '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
-
       },
 
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
-        
       }
     },
 
@@ -49,20 +51,20 @@ module SwiftPoemsProject
 
       :secondary => {
 
-        '«MDUL»' => { 'hi' => { 'rend' => 'underline'  } }
+        '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
       },
       :terminal => {
 
-        '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+        '«MDNM»' => { 'hi' => { 'rend' => 'small-caps' } }
       },
     },
 
     '«MDUL»' => {
 
       :secondary => {
-        '«FC»' => { 'hi' => { 'rend' => 'underline' } },
-        '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
-        '«MDSD»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } },
+        '«FC»' => { 'hi' => { 'rend' => 'underlined' } },
+        '«MDBO»' => { 'hi' => { 'rend' => 'underlined' } },
+        '«MDSD»' => { 'hi' => { 'rend' => 'small-caps' } },
       },
 
       :terminal => { '«MDNM»' => { 'head' => { } } }
@@ -73,8 +75,8 @@ module SwiftPoemsProject
 
       :secondary => {
 
-        '«MDBU»' => { 'hi' => { 'rend' => 'sup' } },
-        '«MDUL»' => { 'hi' => { 'rend' => 'underline' } }
+        '«MDBU»' => { 'hi' => { 'rend' => 'superscript' } },
+        '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
       },
 
       :terminal => { '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
@@ -83,23 +85,34 @@ module SwiftPoemsProject
     },
   }
 
-  NB_MARKUP_TEI_MAP = {
+  XML_CHAR_REFS = {
+    '&' => '&amp;',
+    '"' => '&quot;',
+    "'" => '&apos;',
+    '<' => '&lt;',
+    '>' => '&gt;',
+  }
 
-    '«DECORATOR»' => {
-        
-      '«/DECORATOR»' => { 'unclear' => { 'reason' => 'illegible' } }
-    },
-      
+  NB_ASCII_SEQS = {
+    /\\ae\\/ => 'æ',
+    /\\AE\\/ => 'Æ',
+    /\\oe\\/ => 'œ',
+    /\\OE\\/ => 'Œ',
+    /``/ => '“',
+    /''/ => '”',
+    /─/ => '─'
+  }
+
+  NB_MODECODES = {
+
     '«MDUL»' => {
-        
-      '«MDNM»' => { 'hi' => { 'rend' => 'underline' } },
-      '«MDBO»' => { 'hi' => { 'rend' => 'underline' } },
-      '«MDUL»' => { 'hi' => { 'rend' => 'underline' } },
+      '«MDNM»' => { 'hi' => { 'rend' => 'italics' } },
+      '«MDBO»' => { 'hi' => { 'rend' => 'black-letter' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } },
+      '«MDBR»' => { 'hi' => { 'rend' => 'small-caps-italic' } },
     },
     
     '«MDBO»' => {
-        
-      #'«MDNM»' => { 'hi' => { 'rend' => 'bold' } }
       '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
     },
     
@@ -107,47 +120,172 @@ module SwiftPoemsProject
     # http://www.tei-c.org/release/doc/tei-p5-doc/en/html/ref-att.global.html#tei_att.rend
 
     '«MDBR»' => {
-
-      '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS-ITALICS' } }
+      '«MDNM»' => { 'hi' => { 'rend' => 'small-caps-italic' } }
     },
 
     '«MDBU»' => {
-
         #'«MDNM»' => { 'hi' => { 'rend' => 'bold underline' } }
         # NOTE: This is not within the standard TEI (?)
         # (Formerly "special-state")
-      '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } },
-      '«MDUL»' => { 'hi' => { 'rend' => 'black-letter' } }
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial-italic' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
     },
 
     '«MDDN»' => {
-        
       '«MDNM»' => { 'hi' => { 'rend' => 'strikethrough' } }
     },
     
     '«MDRV»' => {
-      
       '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } },
-      '«MDUL»' => { 'hi' => { 'rend' => 'italic-display-initial' } }
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
     },
 
     '«MDSD»' => {
-
-      #'«MDNM»' => { 'hi' => { 'rend' => 'subscript' } }
-      '«MDNM»' => { 'hi' => { 'rend' => 'SMALL-CAPS' } }
+      '«MDNM»' => { 'hi' => { 'rend' => 'small-caps' } }
     },
 
-    # Source: 
-      
+    # Source:
     '«MDSU»' => {
-        
-        '«MDNM»' => { 'hi' => { 'rend' => 'sup' } },
-        '«MDBU»' => { 'hi' => { 'rend' => 'sup' } }
-      },
+      '«MDNM»' => { 'hi' => { 'rend' => 'superscript' } },
+      '«MDBU»' => { 'hi' => { 'rend' => 'display-initial-italic' } }
+    },
+
+    # Extended modecodes
+    '«MDBS»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'large-writing' } }
+    },
+    '«MDBT»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'large-writing-underlined' } }
+    },
+    '«MDUM»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'underlined' } }
+    },
+    '«MDUP»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'underlined-double' } }
+    },
+    '«MDUR»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'red-ink' } }
+    },
+    '«MDUS»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'red-ink-large' } }
+    },
+    '«MDUN»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'printed-writing' } }
+    },
+    '«MDUO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'printed-writing-underlined' } }
+    },
+    '«MDSR»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'superscript-italic' } }
+    },
+    '«MDRO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial-black-letter' } }
+    },
+    '«MDBP»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'fraktur' } }
+    },
+    '«MDBQ»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'fraktur-large' } }
+    },
+    '«MDBV»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'undefined' } }
+    },
+  }
+
+  NB_MARKUP_TEI_MAP = {
+
+    '«DECORATOR»' => {
+      '«/DECORATOR»' => { 'unclear' => { 'reason' => 'illegible' } }
+    },
+
+    '«MDUL»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'italics' } },
+      '«MDBO»' => { 'hi' => { 'rend' => 'black-letter' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } },
+      '«MDBR»' => { 'hi' => { 'rend' => 'small-caps-italic' } },
+    },
+    
+    '«MDBO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'black-letter' } }
+    },
+    
+    # "These Guidelines make no binding recommendations for the values of the rend attribute; the characteristics of visual presentation vary too much from text to text and the decision to record or ignore individual characteristics varies too much from project to project. Some potentially useful conventions are noted from time to time at appropriate points in the Guidelines. The values of the rend attribute are a set of sequence-indeterminate individual tokens separated by whitespace."
+    # http://www.tei-c.org/release/doc/tei-p5-doc/en/html/ref-att.global.html#tei_att.rend
+
+    '«MDBR»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'small-caps-italic' } }
+    },
+
+    '«MDBU»' => {
+        #'«MDNM»' => { 'hi' => { 'rend' => 'bold underline' } }
+        # NOTE: This is not within the standard TEI (?)
+        # (Formerly "special-state")
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial-italic' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
+    },
+
+    '«MDDN»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'strikethrough' } }
+    },
+    
+    '«MDRV»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial' } },
+      '«MDUL»' => { 'hi' => { 'rend' => 'italics' } }
+    },
+
+    '«MDSD»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'small-caps' } }
+    },
+
+    # Source:
+    '«MDSU»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'superscript' } },
+      '«MDBU»' => { 'hi' => { 'rend' => 'display-initial-italic' } }
+    },
+
+    # Extended modecodes
+    '«MDBS»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'large-writing' } }
+    },
+    '«MDBT»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'large-writing-underlined' } }
+    },
+    '«MDUM»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'underlined' } }
+    },
+    '«MDUP»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'underlined-double' } }
+    },
+    '«MDUR»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'red-ink' } }
+    },
+    '«MDUS»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'red-ink-large' } }
+    },
+    '«MDUN»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'printed-writing' } }
+    },
+    '«MDUO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'printed-writing-underlined' } }
+    },
+    '«MDSR»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'superscript-italic' } }
+    },
+    '«MDRO»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'display-initial-black-letter' } }
+    },
+    '«MDBP»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'fraktur' } }
+    },
+    '«MDBQ»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'fraktur-large' } }
+    },
+    '«MDBV»' => {
+      '«MDNM»' => { 'hi' => { 'rend' => 'undefined' } }
+    },
 
     # For footnotes
     '«FN1·' => {
-      
       '»' => { 'note' => { 'place' => 'foot' } },
       '.»' => { 'note' => { 'place' => 'foot' } },
       '──────»' => { 'note' => { 'place' => 'foot' } }
@@ -155,14 +293,12 @@ module SwiftPoemsProject
 
     # Additional footnotes
     '«FN1' => {
-      
       '»' => { 'note' => { 'place' => 'foot' } },
       '.»' => { 'note' => { 'place' => 'foot' } }
     },
 
     # Additional footnotes
     '«FN1«MDNM»' => {
-        
       '»' => { 'note' => { 'place' => 'foot' } }
     },
 
@@ -186,10 +322,8 @@ module SwiftPoemsProject
     
     # <gap>
     'om' => {
-
       '.' => { 'gap' => {} }
     },
-
   }
 
   # This hash is for Nota Bene tokens which encompass a single line (i. e. they are terminated by a newline character rather than another token)
@@ -305,14 +439,63 @@ module SwiftPoemsProject
   # The XML TEI namespace
   TEI_NS = {'tei' => 'http://www.tei-c.org/ns/1.0'}
 
-  POEM_ID_PATTERN = /^[0-9A-Z\!\-]{8}\s+/
+  POEM_ID_PATTERN = /^[0-9A-Z\!\-#\$\·]{8}\s+/
 
   ID_ESCAPE_CHARS = {
     '!' => '0021',
     '#' => '0023',
     '$' => '0024',
-    '@' => '0040',
+    '%' => '0025',
+    '@' => '0040'
   }
+
+  # This specifies the excluded directories for the project
+  DIR_PATHS_EXCLUDED = ['.',
+                        '4DOS750',
+                        'BIBLS',
+                        'CASE',
+                        'DESCRIBE',
+                        'EDIT',
+                        'FAIRBROT',
+                        'FAULKNER',
+                        'HW37',
+                        'INSTALL',
+                        'MSSOURCE',
+                        'NB',
+                        'NEWDOS',
+                        'POEMCOLL',
+                        'PRSOURCE',
+                        'STEMMAS',
+                        'TEI-SAMP',
+                        'VDOS',
+                        'XML-TEST']
+
+  GLOB_PATTERNS_EXCLUDED = [ /.*\.xls*/i,
+                             /.*\.doc*/i,
+                             /.*\.pdf/i,
+                             /readme/i,
+                             /another/i,
+                             /proof*\.*/i,
+                             /!W27*/i,
+                             /!W28*/i,
+                             /Dosbox*/i ]
+
+  MIN_BYTES_INCLUDED = 900
+
+  def self.includes?(path)
+
+    dir_path = File.basename(File.expand_path("..", path))
+    is_included = !DIR_PATHS_EXCLUDED.include?(File.basename(dir_path))
+
+#    is_included = is_included && !DIR_PATHS_EXCLUDED.include?(File.expand_path("..", path))
+
+    GLOB_PATTERNS_EXCLUDED.each do |glob_pattern|
+      # is_included = is_included && /#{Regexp::escape(glob_pattern)}/i.match(path).nil?
+      is_included = is_included && glob_pattern.match(path).nil?
+    end
+
+    is_included && File.size(path) >= MIN_BYTES_INCLUDED
+  end
 
   # This models the functionality unique to Swift Poems Project Transcripts (i. e. Nota Bene Documents)
   # All tokenization is to be refactored here
@@ -342,16 +525,16 @@ module SwiftPoemsProject
     def parse_id
 
       # Extract the poem ID
-      m = /(.?\d\d\d\-?[0-9A-Z\!\-]{4,5})   /.match(@nota_bene.content)
+      m = /(.?\d\d\d\-?[0-9A-Z\!\-#\$]{4,5})   /.match(@nota_bene.content)
 
       # Searching for alternate patterns
       # Y46B45L5
       # Y09C27L3
-      m = /([0-9A-Z\!\-]{8})   /.match(@nota_bene.content) if not m
+      m = /([0-9A-Z\!\-#\$]{8})   /.match(@nota_bene.content) if not m
 
       # «MDBO»Filename:«MDNM» 920-0201
       m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
-      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-#\$]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
+      m = /«MDBO»Filename:«MDNM» ([0-9A-Z\!\-#\$%]{7,8}[#\$@]?)/.match(@nota_bene.content) if not m
 
       if not m
         raise NoteBeneFormatException.new "#{@filePath} features an ID of an unsupported format" unless m
@@ -361,12 +544,18 @@ module SwiftPoemsProject
       end
     end
 
-    def initialize(nota_bene)
+
+    def initialize(nota_bene, mode)
 
       @nota_bene = nota_bene
       @tei = TEI::Document.new
 
-      lines = @nota_bene.content.split(/\$\$\r?\n\S{8}?\s{3}/)
+      lines = @nota_bene.content.split(/\$\$\r\n--\r\n\S{8}?\s{3}/)
+
+      # Handle anomalies for the header delimiter
+      if lines.length != 2
+        lines = @nota_bene.content.split(/\$\$\s*\r?\n\S{8}?\s{3}/)
+      end
 
       # Parsing the header
       # @todo Refactor the exception if a header, body, and footer isn't present
@@ -374,7 +563,7 @@ module SwiftPoemsProject
         raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript #{@nota_bene.file_path}: doesn't have a header"
       end
 
-      @header = Header.new self, lines.shift
+      @header = Header.new self, lines.shift, mode
 
       lines = lines.last.split(/##\s*\r?\n/)
 
@@ -400,7 +589,7 @@ module SwiftPoemsProject
       @poemID = @id
 
       # This deprecates "titleAndHeadnote"
-      @heading = Heading.new self, lines.shift
+      @heading = Heading.new self, lines.shift, mode
       if @heading.content.match(/letter/i)
         @workType = LETTER
       else
@@ -409,16 +598,14 @@ module SwiftPoemsProject
       end
 
       # Parsing the body and footer
-
       lines = lines.last.split(/%%\r?\n?/)
       # @todo Refactor the exception
-      if lines.length != 2
+      if lines.length < 2
         raise NotImplementedError.new "Could not parse the structure of the Nota Bene transcript #{@nota_bene.file_path}: doesn't have a body and footer"
       end
 
-      @body = Body.new self, lines.shift
-
-      @footer = Footer.new self, lines.pop
+      @body = Body.new self, lines.shift, mode
+      @footer = Footer.new self, lines.pop, mode
     end
 
 
@@ -432,9 +619,10 @@ module SwiftPoemsProject
     
     attr_reader :content, :transcript
 
-    def initialize(transcript, content)
+    def initialize(transcript, content, mode)
       @transcript = transcript
       @content = content
+      @mode = mode
     end
   end
 
@@ -442,13 +630,20 @@ module SwiftPoemsProject
   # (These are blocks of text which contain SPP Transcript metadata, formatted in a manner which is unique to the project)
   class Header < Element
 
-    def initialize(transcript, content)
-      super(transcript,content)
+    def initialize(transcript, content, mode)
+      super(transcript,content, mode)
 
       @content.each_line do |line|
         
         line.chomp!
-        
+
+        if /Other editing\:/.match(line)
+          other_editing_m = /Other editing\:\s?«MDNM»(.+)/.match(line)
+          other_editing_m = /Other editing\:\s?(.+)/.match(line) unless other_editing_m
+
+          @transcript.tei.headerElement.at_xpath('tei:encodingDesc/tei:p', TEI_NS).content = other_editing_m[1]
+        end
+
         if /& dates?:/.match(line)
           
           # Extracting the <name> values from the parse "Transcriber & date" value
@@ -457,14 +652,14 @@ module SwiftPoemsProject
             respStmtElem = Nokogiri::XML::Node.new('respStmt', @transcript.tei.teiDocument)
             nameElem = Nokogiri::XML::Node.new('name', @transcript.tei.teiDocument)
             
-            transcriber_m = /Transcriber & date:.?«MDNM.?» (.+)\s?/.match(line)
+            transcriber_m = /Transcriber & date:.?«MDNM.?»\s?(.+)\s?/.match(line)
             
             if transcriber_m
               name = transcriber_m[1]
               nameElem['key'] = name
               respStmtElem.add_child(nameElem)
             else
-              raise NotImplementedError.new "Failed to parse the transcribers from #{line}"
+              raise NotImplementedError.new "Failed to extract the transcribers from #{line}"
             end
             
             respElem = Nokogiri::XML::Node.new('resp', @transcript.tei.teiDocument)
@@ -472,6 +667,7 @@ module SwiftPoemsProject
             respStmtElem.add_child(respElem)
             
             @transcript.tei.headerElement.at_xpath('tei:fileDesc/tei:titleStmt', TEI_NS).add_child(respStmtElem)
+
           elsif /Proofed by & dates?:/.match(line)
             
             respStmtElem = Nokogiri::XML::Node.new('respStmt', @transcript.tei.teiDocument)
@@ -553,13 +749,16 @@ module SwiftPoemsProject
     attr_reader :teiDocument, :documentTokens, :headerElement
 
     # Parse the title and headnotes
-    def initialize(transcript, content)
-      super(transcript,content)
+    def initialize(transcript, content, mode)
+      super(transcript, content, mode)
 
       # Legacy attributes
       @teiDocument = @transcript.teiDocument
       @documentTokens = @transcript.documentTokens
       @headerElement = @transcript.headerElement
+
+      # Handle imbalanced modecodes
+      @content = @content.gsub(/«MDRV»(.)«MDUL»/, '«MDRV»\\1«MDNM»«MDUL»')
 
       # Single parser instance must be utilized for multiple lines
       # @todo Refactor and restructure the parsing process
@@ -580,7 +779,7 @@ module SwiftPoemsProject
       title_content = lines.shift
       headnotes_content = lines.shift
 
-      titles = TitleSet.new(self, @content, @transcript.headerElement, @transcript.poemID, { :footnote_index => @transcript.footnote_index })
+      titles = TitleSet.new(self, @content, @transcript.headerElement, @transcript.poemID, mode, { :footnote_index => @transcript.footnote_index })
       title_content.each_line do |line|        
 
         line.chomp!
@@ -607,10 +806,10 @@ module SwiftPoemsProject
 
         @transcript.footnote_index = titles.footnote_index
       end
-        
+
       # Omit lines containing HN and -- for Headnote values
       # (These values do not map to any Element within a given TEI schema
-        
+
       headnotes_content.each_line do |line|
 
         # ...remove the poem ID
@@ -623,6 +822,9 @@ module SwiftPoemsProject
         # @todo Refactor
         @transcript.headnote_open = true
 
+        # Remove the backspaces
+        line = line.gsub(/ 08\./, '')
+
         headnote_parser.parse line
         @transcript.footnote_index = headnote_parser.footnote_index
       end
@@ -634,8 +836,8 @@ module SwiftPoemsProject
 
     attr_reader :sponsor, :elem, :opened_tags, :footnote_index, :document, :poem    
 
-    def initialize(heading, content, element, poem_id, options = {})
-      super(heading.transcript,content)
+    def initialize(heading, content, element, poem_id, mode, options = {})
+      super(heading.transcript, content, mode)
 
       @element = element
 
@@ -711,8 +913,8 @@ module SwiftPoemsProject
   class Body < Element
 
     # Parse the title and headnotes
-    def initialize(transcript, content)
-      super(transcript,content)
+    def initialize(transcript, content, mode)
+      super(transcript,content, mode)
 
       # Set the identifier
       @transcript.tei.poemElement['n'] = @transcript.poemID
@@ -722,8 +924,158 @@ module SwiftPoemsProject
       # Legacy
       # @todo Refactor so that the above becomes valid
       normal_content = SwiftPoemsProject::Poem.normalize(@content)
-      @poem = SwiftPoemsProject::Poem.new(@transcript, normal_content, @transcript.poemID, @transcript.workType, @transcript.tei.poemElem, @transcript.footnote_index)
-      @poem.parse
+
+      nota_bene_content = normal_content
+
+      # Replace the ligatures, quotes, and dashes
+      NB_ASCII_SEQS.each_pair do |ascii_seq, utf8_seq|
+        nota_bene_content = nota_bene_content.gsub(ascii_seq, utf8_seq)
+      end
+
+      # XML character entity references must be replaced before being parsed as raw XML
+      XML_CHAR_REFS.each_pair do |char_ref, escaped|
+        nota_bene_content = nota_bene_content.gsub(char_ref, escaped)
+      end
+
+      # Handle the Nota Bene Modecode
+      NB_MODECODES.each_pair do |modecode, value|
+        # nota_bene_content = nota_bene_content.gsub(/#{modecode}.*(?!«M.{3}»)/, "<hi rend=\"VALUE\">\\1</hi>")
+        # nota_bene_content = nota_bene_content.gsub(/#{modecode}(.*)(?!(«M.{3}»))/, "<hi rend=\"VALUE\">\\1")
+
+        closing_mode = value.keys.first
+        element_name = value[closing_mode].keys.first
+        attrs = []
+
+        value[closing_mode][element_name].each_pair do |attr_name, attr_value|
+          attrs << "#{attr_name}=\"#{attr_value}\""
+        end
+
+        nota_bene_content = nota_bene_content.gsub(/#{modecode}(.*?)«MDNM»/, "<hi #{attrs.join(' ')}>\\1</hi>")
+        nota_bene_content = nota_bene_content.gsub(/#{modecode}/, "<hi #{attrs.join(' ')}>")
+      end
+
+      nota_bene_content = nota_bene_content.gsub(/«MDNM»/, "</hi>")
+      nota_bene_content = nota_bene_content.gsub(/«FN1(.*?)»/, '<note place="foot">\\1</foot>')
+
+      # lines = ['<lg n="1" type="stanza">']
+      # Lines should be structured as a NodeSet
+      # lines = Nokogiri::XML::NodeSet.new(@transcript.tei.teiDocument)
+      lines = []
+      stanza = Nokogiri::XML::Node.new('lg', @transcript.tei.teiDocument)
+      stanza['n'] = "1"
+
+      # Create <l> elements by iterating through each Nota Bene line
+      # 090-26L2   133  Against Dissenters would repine,
+      #
+      nota_bene_content.each_line do |line|
+
+        # Attempt to extract the line number
+        line_m = line.match(/([0-9a-zA-Z\-]{8})   (\d+)  /)
+        if line_m
+          poem_id = line_m[1]
+          line_number = line_m[2]
+          line_text = line.gsub(/([0-9a-zA-Z\-]{8})   (\d+)  /, '')
+          line_text = line_text.chomp
+
+          xml_id = "swift-#{poem_id}-line-#{line_number}"
+          rend_values = []
+
+          # Remove any modecodes for flush-left and flush-center, and add these as attributes to the <tei:l> element
+          if line_text.match(/(.*?)«LD\s?»(.+?)/)
+            line_text = line_text.sub(/(.*?)«LD\s?»(.+)</, '\\1<space>\\2</space>')
+            line_content_prefix = "<l "
+          elsif line_text.match(/^(.*?)«FC»(.+?)«FL»/)
+            # line_content_prefix = "<l rend=\"center\" "
+            line_content_prefix = "<l "
+            rend_values << 'center'
+
+            line_text = line_text.sub(/^(.*?)«FC»(.+)«FL»/, '\\1\\2')
+          elsif line_text.match(/^(.*?)«FR»(.+?)«FL»/)
+            # line_content_prefix = "<l rend=\"flush-right\" "
+            line_content_prefix = "<l "
+            rend_values << 'flush-right'
+
+            line_text = line_text.sub(/^(.*?)«FR»(.+)«FL»/, '\\1\\2')
+          else
+            line_content_prefix = "<l "
+          end
+
+          # Remove any modecodes for indentation, and add these as attributes to the <tei:l> element
+          if line_text.match(/(\|+)/)
+            indent_match = line_text.match(/(\|+)/)
+            indent_depth = indent_match[1].count('|')
+
+            # line_content_prefix += "indent(#{indent_depth}) "
+            rend_values << "indent(#{indent_depth})"
+
+            # Replace "|" sequence
+            if @mode == READING
+              line_text = line_text.sub(/\|/, '')
+            end
+          end
+
+          # Replace all "_" sequences with newlines
+          if @mode == READING
+            line_text = line_text.sub(/_/, '<lb/>')
+          end
+
+          if not rend_values.empty?
+            line_content_prefix += "rend=\"#{rend_values.join(' ')}\" "
+          end
+
+          # Create the actual XML Element to be appended to the TEI Document
+          line_content = line_content_prefix + "xml:id=\"#{xml_id}\" n=\"#{line_number}\">" + line_text + "</l>"
+          line_element = Nokogiri::XML.fragment(line_content)
+
+
+          if line_element.to_xml != line_content
+
+            # When the fragment's first child is a <l>...
+            if line_element.children.length > 1
+
+              if line_element.children.first.name == 'l'
+
+                # previous_line_element = line_element = Nokogiri::XML.fragment(lines.last)
+                previous_line_element = lines.last
+                opened_element = previous_line_element.children.last.children.last
+                opened_element_raw = opened_element.to_xml.sub(/>.+$/, '>')
+
+                line_content = "<l xml:id=\"#{xml_id}\" n=\"#{line_number}\">" + opened_element_raw + line_text + "</l>"
+              end
+            end
+          end
+
+          # Clean artifacts from the Nota Bene encoding
+          line_content = line_content.gsub(/\.{2,}/, '.')
+          line_element = Nokogiri::XML.fragment(line_content)
+
+          # Ensure that entity references "&apos;" are replaced by "'" characters
+          # Resolves SPP-861
+          if /&apos;/.match line_content
+            replaced_line_content = line_content.gsub(/&apos;/, "'")
+            replaced_line_element = Nokogiri::XML.fragment(replaced_line_content)
+
+            if replaced_line_element.content != line_element.content
+              
+              line_element = replaced_line_element
+
+            end
+          end
+
+          # Line elements are appended to the NodeSet
+          lines << line_element
+        else
+          # raise "Could not extract the line number from #{line}"
+          # If the line number cannot be extracted, this is likely the end of the transcript body
+        end
+      end
+
+      lines.each do |line_element|
+        stanza.add_child(line_element)
+      end
+
+      # Add the stanza containing the line elements
+      @transcript.tei.poemElem.add_child(stanza)
     end
   end
   
@@ -738,15 +1090,50 @@ module SwiftPoemsProject
 
       attr_reader :content, :tokens, :file_path
 
-      def initialize(file_path, cleaning_file_path = CLEANING_FILE_PATH)
+      def translate_modecodes(content)
 
-        @file_path = file_path
+        extended_modecodes = {
+          '≈«MDBO»' => '«MDBS»', # large writing
+          '¿«MDBO»' => '«MDBT»', # large underlined writing
+          '≈«MDUL»' => '«MDUM»', # underlining
+          '¿«MDUL»' => '«MDUR»', # red ink
+          '¿«MDRV»' => '«MDUS»', # red ink large writing
+          '■«MDSD»' => '«MDUP»', # double underlined
+          '≈«MDSD»' => '«MDUN»', # printed writing
+          '¿«MDSD»' => '«MDUO»', # printed underlined writing
+          '≈«MDSU»' => '«MDSR»', # italic superscript
+          '■«MDBU»' => '«MDRO»', # black letter display initial
+          '■«MDBO»' => '«MDBP»', # Fraktur
+          '■«MDBR»' => '«MDBQ»', # large Fraktur
+          '≈«MDBU»' => '«MDBV»' # special state to be further defined
+        }
 
-        # Legacy attribute
-        @filePath = @file_path
+        extended_modecodes.each_pair do |modecode, translated|
+          content = content.gsub(modecode, translated)
+        end
 
-        # Read the file and convert the CP437 encoding into UTF-8
-        @content = File.read(@filePath, :encoding => 'cp437:utf-8')
+        content
+      end
+
+#      def initialize(file_path = nil, content = nil, cleaning_file_path = CLEANING_FILE_PATH)
+      def initialize(options)
+        file_path = options.fetch(:file_path, nil)
+        content = options.fetch(:content, nil)
+        cleaning_file_path = options.fetch(:cleaning_file_path, CLEANING_FILE_PATH)
+
+        if content.nil?
+          @file_path = file_path
+
+          # Legacy attribute
+          @filePath = @file_path
+          
+          # Read the file and convert the CP437 encoding into UTF-8
+          @content = File.read(@filePath, :encoding => 'cp437:utf-8')
+        else
+          @content = content
+        end
+
+        @content = translate_modecodes(@content)
 
         # The tokens should be related to a single document
         @tokens = []
@@ -756,7 +1143,6 @@ module SwiftPoemsProject
       end
 
       def tokenize
-        
         # This splits for each Nota Bene mode code
         @tokens = @content.split /(?=«)|(?=[\.─\\a-z]»)|(?<=«FN1·)|(?<=»)|(?=om\.)|(?<=om\.)|(?=\\)|(?<=\\)|(?=_)|(?<=_)|(?=\|)|(?<=\|)|\n/
       end
@@ -766,7 +1152,7 @@ module SwiftPoemsProject
       end
 
       def clean(csv_file_path)
-        CSV.foreach(csv_file_path, headers: :first_row, return_headers: false) do |row|
+        ::CSV.foreach(csv_file_path, headers: :first_row, return_headers: false) do |row|
 
           # Replace each row
           line_pattern = row[2]
@@ -809,16 +1195,10 @@ EOF
       </sourceDesc>
     </fileDesc>
 
-<encodingDesc>
-    <editorialDecl>
-      <correction>
-	<p>#{(Nokogiri::XML::Text.new 'To be drafted.', (Nokogiri::XML '<tei/>')).to_xml}</p>
-      </correction>
-      <normalization>
-	<p>#{(Nokogiri::XML::Text.new 'To be drafted.', (Nokogiri::XML '<tei/>')).to_xml}</p>
-      </normalization>
-    </editorialDecl>
-</encodingDesc>
+    <encodingDesc>
+      <p></p>
+    </encodingDesc>
+
     <profileDesc>
       <langUsage>
         <language ident="en">English</language>
@@ -826,12 +1206,11 @@ EOF
     </profileDesc>
   </teiHeader>
   <text>
-<body>
-    <div type="book">
-      <div>
+    <body>
+      <div type="book">
+        <div></div>
       </div>
-    </div>
-</body>
+    </body>
   </text>
 </TEI>
 EOF

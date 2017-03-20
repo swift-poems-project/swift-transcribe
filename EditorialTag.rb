@@ -4,7 +4,8 @@ module SwiftPoemsProject
 
   module EditorialMarkup
 
-    EDITORIAL_TOKENS = ['\\']
+#    EDITORIAL_TOKENS = ['\\']
+    EDITORIAL_TOKENS = []
 
     EDITORIAL_TOKEN_PATTERNS = [
                                 /(written above deleted)\s(.+)/,

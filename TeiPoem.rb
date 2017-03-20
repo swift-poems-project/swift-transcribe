@@ -6,6 +6,8 @@ module SwiftPoemsProject
 
   NB_BLOCK_LITERAL_PATTERNS = [
                                /(«MDSU»\*\*?«MDSD»\*)+«MDSU»\*«MDNM»\*?/,
+                               /#{Regexp.escape("«MDSD»*«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDUL»")}/,
+                               /#{Regexp.escape("«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDNM»*«MDSD»*«MDNM»*")}/,
                                /#{Regexp.escape("«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»**«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*«MDSD»*«MDSU»*")}/,
                               ]
 

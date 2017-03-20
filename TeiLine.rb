@@ -104,7 +104,17 @@ module SwiftPoemsProject
      def mint_xml_id(line_number)
 
        @xml_id = "spp-#{@stanza.poem.id}-line-#{line_number}"
-       @elem['xml:id'] = @xml_id
+
+       # Ensure that the line ID hasn't already been minted
+       line_element = @teiDocument.at_xpath("//tei:l[@xml:id='#{@xml_id}']", TEI_NS)
+       if not line_element.nil?
+         $stderr.puts "Warning: Could not mint the XML identifier for #{line_number}"
+         $stderr.puts "#{line_element.to_xml}"
+         exit(1)
+         mint_xml_id("#{line_number}-alt")
+       else
+         @elem['xml:id'] = @xml_id
+       end
      end
 
      def number(value = nil)
@@ -149,7 +159,7 @@ module SwiftPoemsProject
          if /\s3\}$/.match token
 
            @stanza.elem['type'] = 'triplet'
-           token = token.sub /\s3\}$/, ''
+           # token = token.sub /\s3\}$/, ''
          end
 
          # Transform pipes into @rend values
@@ -256,7 +266,7 @@ module SwiftPoemsProject
        return closed_tag
      end
 
-     def pushTerminalToken(token, opened_tag)
+     def push_terminal_token(token, opened_tag)
 
        # This closes a footnote
        if /^«FN1/.match opened_tag.name and /»$/.match token
@@ -416,6 +426,8 @@ module SwiftPoemsProject
        # Normalize the text
        token = token.gsub /^·/, ''
        token = token.gsub /·/, ' '
+
+       return token if token.empty?
 
        case editorial_tag
        when EditorialMarkup::AddTag, EditorialMarkup::DelTag, EditorialMarkup::CaretAddTag
@@ -639,7 +651,7 @@ module SwiftPoemsProject
        # Check to see if this is a terminal token
        if opened_tag and NB_MARKUP_TEI_MAP.has_key? opened_tag.name and NB_MARKUP_TEI_MAP[opened_tag.name].has_key? token
 
-         pushTerminalToken token, opened_tag
+         push_terminal_token token, opened_tag
          #
          # If there isn't an opened tag, but the current token appears to be a terminal token, raise an exception
          #

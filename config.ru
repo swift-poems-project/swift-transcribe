@@ -1,3 +1,9 @@
+require "rubygems"
+require "sinatra"
 
-require './app'
-run Sinatra::Application
+Bundler.require
+
+require File.expand_path('../app', __FILE__)
+require 'sidekiq/web'
+
+run Rack::URLMap.new('/' => Sinatra::Application, '/sidekiq' => Sidekiq::Web)

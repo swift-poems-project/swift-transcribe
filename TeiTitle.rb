@@ -17,6 +17,7 @@ module SwiftPoemsProject
       @headerElement = header.elem
 
       @footnote_index = options[:footnote_index] || 0
+      @mode = options.fetch(:mode, READING)
 
       @elem = Nokogiri::XML::Node.new('title', @document)
       
@@ -66,7 +67,7 @@ module SwiftPoemsProject
 
           # Implementing handling for footnote index generation
           # SPP-156
-          if /^«FN1/.match @current_leaf.name and /»$/.match token
+          if /^«FN1/.match @current_leaf.name and /\.?»$/.match token
 
             @footnote_index += 1
             # @current_leaf['n'] = @footnote_index
@@ -140,6 +141,18 @@ module SwiftPoemsProject
             closed_tag = @header.opened_tags.shift
             opened_tag = @header.opened_tags.first
           end
+        elsif NB_SINGLE_TOKEN_TEI_MAP.has_key? token
+
+          if NB_DELTA_FLUSH_TEI_MAP.has_key? token
+
+            current_leaf = FlushDelta.new(token, @document, @current_leaf)
+          elsif NB_DELTA_ATTRIB_TEI_MAP.has_key? token
+
+            current_leaf = AttributeNotaBeneDelta.new(token, @document, @current_leaf)
+          else
+
+            current_leaf = UnaryNotaBeneDelta.new(token, @document, @current_leaf)
+          end
         else
 
           # Add a new child node to the current leaf
@@ -195,16 +208,21 @@ module SwiftPoemsProject
       end
 
       # Replace all Nota Bene deltas with UTF-8 compliant Nota Bene deltas
-      NB_CHAR_TOKEN_MAP.each do |nbCharTokenPattern, utf8Char|
-        token = token.gsub(nbCharTokenPattern, utf8Char)
+      NB_ASCII_SEQS.each_pair do |ascii_seq, utf8_seq|
+        token = token.gsub(ascii_seq, utf8_seq)
       end
 
       # Obviously this cannot handle multiple line breaks (!)
-      # if token == '_|'
-      if /_?\|/.match token
+      if /_/.match token and @mode == READING
+        @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
+        token = token.sub(/_/, '')
+        # token = token.lstrip
+      end
+
+      if /\|/.match token and @mode == READING
+        # Disable this in order to ensure that pipes do not encode line breaks (as requested by the PI)
         @current_leaf.add_child Nokogiri::XML::Node.new 'lb', @document
         token = token.sub(/\|/, '')
-        token = token.lstrip
       end
 
       @current_leaf.add_child Nokogiri::XML::Text.new token, @document

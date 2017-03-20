@@ -4,3 +4,10 @@ port=4568
 
 # Nota Bene local file store
 nb_store_path=/usr/local/nb_store
+docx_store_path=/usr/local/tei_store
+docx_store_path=/usr/local/docx_store
+
+# Redis
+redis_host=localhost
+redis_post=6379
+redis_key=swift-encode-messages

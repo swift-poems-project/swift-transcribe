@@ -19,6 +19,10 @@ require_relative 'NotaBeneDelta'
 require_relative 'NotaBeneHeadnoteParser'
 require_relative 'NotaBeneTitleParser'
 
+require_relative 'nota_bene_g_drive_store'
+require_relative 'tei_encoder'
+require_relative 'tei_file_encoder'
+
 module SwiftPoetryProject
 
   POEM = 'poem'
@@ -1537,7 +1541,7 @@ EOF
        if lineElement.content.match(/3\}$/)
 
          stanzaElement['type'] = 'triplet'
-         lineElement.content = lineElement.content.sub(/ 3\}/, '')
+         # lineElement.content = lineElement.content.sub(/ 3\}/, '')
        end
 
        parseNotaBeneTextMarkup lineElement

@@ -1,9 +1,8 @@
-require "rubygems"
-require "sinatra"
-
 Bundler.require
 
-require File.expand_path('../app', __FILE__)
+require "rubygems"
 require 'sidekiq/web'
+require "sinatra"
+require File.expand_path('../app', __FILE__)
 
-run Rack::URLMap.new('/' => Sinatra::Application, '/sidekiq' => Sidekiq::Web)
+run Rack::URLMap.new('/' => SwiftPoemsProject::App, '/sidekiq' => Sidekiq::Web)

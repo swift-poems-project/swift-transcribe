@@ -12,3 +12,6 @@ teitodocx_bin_path=/usr/local/bin
 redis_host=localhost
 redis_post=6379
 redis_key=swift-encode-messages
+
+# reporting
+report_email_address=""

@@ -1,0 +1,13 @@
+
+.navbar-brand img {
+    height: 48px;
+}
+
+.navbar-brand {
+    height: 64px;
+    padding: 8px;
+}
+
+.navbar-header {
+    float: inherit;
+}

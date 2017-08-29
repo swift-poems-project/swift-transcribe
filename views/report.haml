@@ -1,0 +1,72 @@
+
+%h3
+  Encoding Reports
+.container
+  %p
+  Swift Poems Project transcripts are encoded into the TEI extension of the XML.  For those cases where files have been submitted to the file store and the encoding process has failed, reports can be generated indicating the failures.
+%h4
+  Transcripts Excluded From Processing
+.container
+  %p
+  The following file store directories are excluded from the processing:
+  %ul
+    %li 4DOS750
+    %li BIBLS
+    %li CASE
+    %li DESCRIBE
+    %li EDIT
+    %li FAIRBROT
+    %li FAULKNER
+    %li HW37
+    %li INSTALL
+    %li MSSOURCE
+    %li NB
+    %li NEWDOS
+    %li POEMCOLL
+    %li PRSOURCE
+    %li STEMMAS
+    %li TEI-SAMP
+    %li vDos
+    %li XML-TEST
+    %li incoming
+  %p
+  The following file store resources are excluded from the processing:
+  %ul
+    %li readme
+    %li another
+    %li tocheck
+    %li TOCHECK
+    %li SOURCES
+    %li PUMP
+    %li J0311801
+    %li J0311851
+    %li J0311871
+    %li J03155H1
+    %li !W61500B
+    %ul
+      %li Files beginning with "proof"
+      %li Files beginning with "!W27"
+      %li Files beginning with "!W28"
+      %li Files beginning with "Dosbox"
+      %li Files beginning with "tocheck."
+      %li Files beginning with "tochk."
+    %ul
+      %li Files ending with ".bak"
+      %li Files ending with ".tmp"
+      %li Files ending with ".doc"
+      %li Files ending with ".ORI"
+    %ul
+      %li Files smaller than 900 bytes in size
+
+%h4==Report for #{ Date.today }
+%table.table
+  %tr
+    %th Poem ID
+    %th Source ID
+    %th Encoding Status
+    %th TEI Document URI
+    %th Last Modification Time
+  - report.rows.each do |row|
+    %tr
+      - row.each do |column|
+        %td=column

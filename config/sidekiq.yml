@@ -1,0 +1,3 @@
+development:
+  :verbose: true
+  :logfile: log/sidekiq_development.log

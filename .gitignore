@@ -40,3 +40,21 @@ build/
 *\.xml
 *\.lock
 *\.swp
+
+###
+# ignore some accumulated test/production cruft
+###
+
+.credentials
+config/server.conf
+*client_secret*.json
+config/swift-poems-project*.json
+config/excluded_files.yml
+*.csv
+*.bak
+log/*
+*.out
+swift_poems_project_encode*
+*.orig
+run_server.sh
+sinatra_gdrive_test.rb

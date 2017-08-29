@@ -1,0 +1,24 @@
+
+%h3
+  About
+.container
+  %p
+  An SPP SOURCE is a printed or manuscript text that contains one or more SPP poems. Each source is identified by a unique four-character name. Printed sources are of three kinds: sources listed in Foxon, periodical sources, and all other printed sources. Sources listed in D. F. Foxon,
+  %span English verse 1701-1750
+  , are normally identified by their Foxon numbers. Periodical sources are identified as described in the file \spp\inv\INVINTRO (search for the word "periodicals"). Other printed sources are identified as described in the file \spp\inv\INVGUIDE. Manuscript sources are identified as described in the files \spp\inv\MINV and \spp\inv\NINV.
+  %p
+    Since, for example, the first London edition of "The lady's dressing room" is listed in Foxon, an SPP file describing that source would be named (following Foxon) S869. A transcription of the the poem from S869 would be named by combining the poem's four-character name, 525-, with the four-character name of the source to produce 525-S869 (note that the hyphen in this name is part of the poem name rather than a separator). We call 525-S869 a poemtext; thus far we have transcribed 37 poemtexts of 525-.
+
+%h3 Transcript
+%table.table
+  %tr
+    %th ID
+    %th 
+    %th 
+  - transcript_ids.each do |transcript_id|
+    %tr
+      %td=transcript_id
+      %td
+        %a.btn.btn-primary(title=transcript_id){:href => "/transcripts/#{transcript_id}", :role => "button"} View
+      %td
+        %a.btn.btn-primary(title=transcript_id){:href => "/transcripts/#{transcript_id}/encode", :role => "button"} Encode

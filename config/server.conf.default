@@ -4,8 +4,9 @@ port=4568
 
 # Nota Bene local file store
 nb_store_path=/usr/local/nb_store
-docx_store_path=/usr/local/tei_store
+file_store_path=/usr/local/tei_store
 docx_store_path=/usr/local/docx_store
+teitodocx_bin_path=/usr/local/bin
 
 # Redis
 redis_host=localhost

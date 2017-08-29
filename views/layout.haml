@@ -1,0 +1,38 @@
+!!! 5
+%head
+  %title Swift Encode
+  
+  %link{:rel => "stylesheet", :href => "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", :integrity => "sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7", :crossorigin => "anonymous"}
+  %link{:rel => "stylesheet", :href => "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :integrity => "sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r", :crossorigin => "anonymous"}
+
+  %link{:rel => "stylesheet", :href => "/css/app.css"}
+
+  %script{:src => "//code.jquery.com/jquery-1.12.0.min.js"}
+  %script{:src => "//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js", :integrity => "sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS", :crossorigin => "anonymous"}
+
+%body
+  %nav.navbar.navbar-inverse.navbar-fixed-top{:role => "navigation"}
+    .container
+      .navbar-header
+        %button.navbar-toggle.collapsed{:type => "button", :"data-toggle" => "collapse", :"data-target" => "#navbar", :"aria-expanded" => "false", :"aria-controls" => "navbar" }
+          %span.sr-only Toggle navigation
+          %span.icon-bar
+          %span.icon-bar
+          %span.icon-bar
+        %a.navbar-brand.pull-left{:href => "//digital.lafayette.edu"}
+          %img{:src => "/img/dss_logo.png"}
+        %a.navbar-brand.pull-right{:href => "//github.com/LafayetteCollegeLibraries/swift-encode"}
+          %img{:src => "/img/github-icon.png"}
+      #navbar.navbar-collapse.collapse
+  .jumbotron
+    .container
+      %h1 Swift Encode
+      %h2 Encoding Engine for the Swift Poems Project
+      %p
+        %a.btn.btn-primary.btn-lg{:href => "/sources", :role => "button"} Browse Sources
+      %p
+        %a.btn.btn-primary.btn-lg{:href => "/sources/encode", :role => "button"} Encode All Sources
+      %p
+        %a.btn.btn-primary.btn-lg{:href => "/sources/report", :role => "button"} Generate an Encoding Report
+  .container
+    =yield

@@ -119,7 +119,7 @@ class Swift < Thor
 
     mail = Mail.new do
       from     'no-reply@swift.lafayette.edu'
-      to       'griffinj@lafayette.edu'
+      to       'malantoa@lafayette.edu'
       subject  "Swift Poems Project Encoding Report for #{DateTime.now.strftime('%Y_%m_%d')}"
       body     "Please find attached the report for the latest encoding of Nota Bene files."
       add_file :filename => report_file_name, :content => File.read(report_file_path)

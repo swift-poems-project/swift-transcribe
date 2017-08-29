@@ -1,0 +1,20 @@
+
+%h3
+  About
+.container
+  %p
+    To be drafted
+
+%h3 Transcript
+%table.table
+  %tr
+    %th ID
+    %th 
+    %th 
+  - transcript_ids.each do |transcript_id|
+    %tr
+      %td=transcript_id
+      %td
+        %a.btn.btn-primary(title=transcript_id){:href => "/transcripts/#{transcript_id}", :role => "button"} View
+      %td
+        %a.btn.btn-primary(title=transcript_id){:href => "/transcripts/#{transcript_id}/encode", :role => "button"} Encode

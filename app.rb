@@ -147,16 +147,23 @@ get '/transcripts/:poem_id/download' do
   output = transcript.tei.document.to_xml
 end
 
-get '/transcripts/:poem_id' do
-  source_id = params[:poem_id][-4..-1]
+get '/transcripts/:transcript' do
+  transcript_id = params.fetch('transcript', nil)
 
-  file_path = "#{NB_STORE_PATH}/#{source_id}/#{params[:poem_id]}"
-  nota_bene = SwiftPoemsProject::NotaBene::Document.new file_path
-  transcript = SwiftPoemsProject::Transcript.new nota_bene
-  html_doc = transcript.to_html File.join(File.dirname(__FILE__), 'xslt', 'tei_xhtml.xslt')
+  @encoder = SwiftPoemsProject::TeiEncoder.new
 
-  # html_doc.to_xml
-  haml :transcript, :locals => { :document => html_doc.to_xml, :transcript_id => params[:poem_id] }
+  response = {}
+  if transcript_id
+    
+    result = @nota_bene_store.transcript(transcript_id)
+
+    transcript_content = result[:content].encode('utf-8','cp437')
+    response_content = @encoder.encode('001A', transcript_id, transcript_content, result[:mtime])
+    
+    response = { 'id' => transcript_id, 'tei' => response_content }
+  end
+
+  return JSON.generate(response)
 end
 
 get '/sources/:source_id/archive' do
@@ -226,44 +233,31 @@ post '/transcripts/:source_id/:transcript_id/encode', :provides => 'json' do
 end
 
 # Handles the request for browsing a poem
-get '/poems/:poem_id', :provides => 'json' do
+get '/poems/:poem', :provides => 'json' do
+  poem_id = params.fetch('poem', nil)
 
   response = []
+  # This just returns the poem ID's for the moment
   @nota_bene_store.transcripts(poem_id: poem_id).each do |result|
-    
+
     transcript_id = result[:id]
     response << transcript_id
   end
 
   return JSON.generate(response)
-
-=begin
-  poem_id = params[:poem_id]
-  transcript_ids = []
-
-  Dir.glob( "#{NB_STORE_PATH}/**/*" ).select {|path| path.match(/#{NB_STORE_PATH}\/.+\/#{poem_id}.{4}$/) }.each do |poem_file_path|
-    transcript_id = File.basename(poem_file_path)
-    transcript_ids << transcript_id
-  end
-
-  haml :poem, :locals => { :transcript_ids => transcript_ids }
-=end
 end
 
 # Handles the request for browsing all of the poems
 get '/poems' do
 
-=begin
   poem_ids = []
   Dir.glob( "#{NB_STORE_PATH}/**/*" ).select {|path| path.match(/#{NB_STORE_PATH}\/.+\/.{8}$/) }.each do |poem_file_path|
     transcript_id = File.basename(poem_file_path)
     poem_id = transcript_id[0,4]
-    poem_ids << poem_id unless poem_ids.include?(poem_id)
+    poem_ids << poem_id
   end
 
-  haml :poems, :locals => { :poem_ids => poem_ids }
-=end
-  nil
+  return JSON.generate( poem_ids.uniq.map {|poem_id| {id: poem_id}} )
 end
 
 post '/transcripts/encode', :provides => 'json' do

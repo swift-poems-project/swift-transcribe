@@ -119,15 +119,17 @@ class Swift < Thor
       end
     end
 
+    return if !REPORT_EMAIL_ADDRESS
+
     mail = Mail.new do
       from     'no-reply@swift.lafayette.edu'
       to       REPORT_EMAIL_ADDRESS
       subject  "Swift Poems Project Encoding Report for #{DateTime.now.strftime('%Y_%m_%d')}"
       body     "Please find attached the report for the latest encoding of Nota Bene files."
       add_file :filename => report_file_name, :content => File.read(report_file_path)
-    end unless !REPORT_EMAIL_ADDRESS
+    end
 
-    mail.deliver! if mail
+    mail.deliver!
   end
 
   desc "sync_poems", "encode all transcripts within all poems"
@@ -156,15 +158,17 @@ class Swift < Thor
       end
     end
 
+    return if !REPORT_EMAIL_ADDRESS
+
     mail = Mail.new do
       from     'no-reply@swift.lafayette.edu'
       to       REPORT_EMAIL_ADDRESS
       subject  "Swift Poems Project Synchronization Report for #{DateTime.now.strftime('%Y_%m_%d')}"
       body     "Please find attached the report for the latest synchronization of Nota Bene files from Google Drive."
       add_file :filename => report_file_name, :content => File.read(report_file_path)
-    end unless !REPORT_EMAIL_ADDRESS
+    end
 
-    mail.deliver! if mail
+    mail.deliver!
   end
 
   desc "encode_poem POEM", "encode all transcripts for the poem POEM into the TEI-P5"

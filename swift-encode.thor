@@ -119,7 +119,7 @@ class Swift < Thor
       end
     end
 
-    return if REPORT_EMAIL_ADDRESS.empty?
+    return if REPORT_EMAIL_ADDRESS.nil? || REPORT_EMAIL_ADDRESS.empty?
 
     mail = Mail.new do
       from     'no-reply@swift.lafayette.edu'
@@ -158,7 +158,7 @@ class Swift < Thor
       end
     end
 
-    return if REPORT_EMAIL_ADDRESS.empty?
+    return if REPORT_EMAIL_ADDRESS.nil? || REPORT_EMAIL_ADDRESS.empty?
 
     mail = Mail.new do
       from     'no-reply@swift.lafayette.edu'
